@@ -1,0 +1,30 @@
+{
+  "name": "twitch2ma",
+  "version": "1.0.0",
+  "description": "Twitch chat bot that runs commands on the MA GrandMA2 using Telnet",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "postversion": "git push && git push --tags"
+  },
+  "author": "Julian Rabe",
+  "license": "MIT",
+  "dependencies": {
+    "@d-fischer/typed-event-emitter": "^3.0.0",
+    "humanize-duration": "^3.23.0",
+    "source-map-support": "^0.5.19",
+    "telnet-client": "^1.4.2",
+    "twitch": "^4.0.10",
+    "twitch-chat-client": "^4.0.10"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.3",
+    "@types/humanize-duration": "^3.18.0",
+    "@types/source-map-support": "^0.5.1"
+  },
+  "bin": {
+    "twitch2ma": "./cli.js"
+  }
+}
