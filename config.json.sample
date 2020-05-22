@@ -1,0 +1,25 @@
+{
+  "timeout": 20,
+  "ma": {
+    "host": "192.168.0.20",
+    "user": "administrator",
+    "password": "admin"
+  },
+  "twitch": {
+    "clientId": "your-client-id",
+    "accessToken": "your-access-token",
+    "channel": "your-twitch-channel"
+  },
+  "commands": [
+    {
+      "chatCommand": "red",
+      "consoleCommand": "Macro 1",
+      "message": "{user} set the lights to red!"
+    },
+    {
+      "chatCommand": "blue",
+      "consoleCommand": "Macro 2",
+      "message": "{user} set the lights to blue!"
+    }
+  ]
+}
