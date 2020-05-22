@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "14"
+
+deploy:
+  provider: npm
+  email: "mail@julianrabe.com"
+  api_key: $NPM_TOKEN
+  on:
+    tags: true
+    branch: master
+  skip_cleanup: true
