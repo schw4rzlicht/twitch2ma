@@ -149,7 +149,7 @@ export default class Twitch2Ma extends EventEmitter {
                                 .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
                         }
                     } else {
-                        let differenceString = humanizeDuration(difference - difference % 1000);
+                        let differenceString = humanizeDuration(difference + (1000 - difference % 1000));
                         this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
                     }
                 }
