@@ -142,7 +142,7 @@ export default class Twitch2Ma extends EventEmitter {
                                 .then(() => lastCall = now)
                                 .then(() => {
                                     if (command.message !== undefined) {
-                                        this.chatClient.say(channel, command.message.replace("{user}", user));
+                                        this.chatClient.say(channel, command.message.replace("{user}", `@${user}`));
                                     }
                                 })
                                 .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
@@ -150,7 +150,7 @@ export default class Twitch2Ma extends EventEmitter {
                         }
                     } else {
                         let differenceString = humanizeDuration(difference - difference % 1000);
-                        this.chatClient.say(channel, `${user}, please wait ${differenceString} and try again!`);
+                        this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
                     }
                 }
             }
