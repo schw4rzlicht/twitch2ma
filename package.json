@@ -1,6 +1,6 @@
 {
   "name": "twitch2ma",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Twitch chat bot that runs commands on the MA GrandMA2 using Telnet",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
