@@ -16,6 +16,7 @@ class Command {
     public chatCommand: string;
     public consoleCommand: string;
     public message: string = null;
+    public help: string = null;
 }
 
 export default class Config {

@@ -68,7 +68,7 @@ export default class Twitch2Ma extends EventEmitter {
     telnetLogin(): Promise<void> {
         return this.telnet.exec(`Login ${this.config.ma.user} ${this.config.ma.password}`)
             .then(message => {
-                if(!message.match(`Logged in as User '${this.config.ma.user}'`)) {
+                if (!message.match(`Logged in as User '${this.config.ma.user}'`)) {
                     throw new TelnetError(`Could not log in as user ${this.config.ma.user}!`);
                 }
             });
@@ -95,28 +95,57 @@ export default class Twitch2Ma extends EventEmitter {
 
             let now = new Date().getTime();
 
-            let chatCommand = message.match(/!(\w+)/);
+            let chatCommand = message.match(/!(\w+)( !?\w+)?/);
             if (chatCommand !== null) {
 
-                let difference = lastCall === null ? -1 : lastCall + this.config.timeout * 1000 - now;
+                if (chatCommand[1] === "ma") {
+                    let message: string;
+                    if (chatCommand[2] !== undefined) {
 
-                if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
-                    let command = commandMap.get(chatCommand[1]);
-                    if (command !== null) {
-                        this.telnet
-                            .send(command.consoleCommand)
-                            .then(() => lastCall = now)
-                            .then(() => {
-                                if (command.message !== null) {
-                                    this.chatClient.say(channel, command.message.replace("{user}", user));
-                                }
-                            })
-                            .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
-                            .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        let maCommand = chatCommand[2].match(/ !?(\w+)/)[1];
+                        let command = commandMap.get(maCommand);
+
+                        if (command === undefined) {
+                            message = `Command !${maCommand} does not exist! Type !ma for a list of available commands.`;
+                        } else if (command.help !== null) {
+                            message = `Help for !${maCommand}: ${command.help}`;
+                        } else {
+                            message = `No help for !${maCommand} available!`;
+                        }
+                    } else if (this.config.commands.length > 0) {
+                        let commands: string[] = [];
+                        for (const command of this.config.commands) {
+                            commands.push(`!${command.chatCommand}`);
+                        }
+
+                        message = "Available commands are: " + commands.join(", ") + ". Type !ma !command for help.";
+                    } else {
+                        message = "There are no commands available.";
                     }
+                    this.chatClient.say(channel, message);
+
                 } else {
-                    let differenceString = humanizeDuration(difference - difference % 1000);
-                    this.chatClient.say(channel, `${user}, please wait ${differenceString} and try again!`);
+
+                    let difference = lastCall === null ? -1 : lastCall + this.config.timeout * 1000 - now;
+
+                    if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
+                        let command = commandMap.get(chatCommand[1]);
+                        if (command !== undefined) {
+                            this.telnet
+                                .send(command.consoleCommand)
+                                .then(() => lastCall = now)
+                                .then(() => {
+                                    if (command.message !== null) {
+                                        this.chatClient.say(channel, command.message.replace("{user}", user));
+                                    }
+                                })
+                                .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
+                                .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        }
+                    } else {
+                        let differenceString = humanizeDuration(difference - difference % 1000);
+                        this.chatClient.say(channel, `${user}, please wait ${differenceString} and try again!`);
+                    }
                 }
             }
         });

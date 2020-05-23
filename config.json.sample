@@ -14,12 +14,18 @@
     {
       "chatCommand": "red",
       "consoleCommand": "Macro 1",
-      "message": "{user} set the lights to red!"
+      "message": "{user} set the lights to red!",
+      "help": "Sets the lights to red"
     },
     {
       "chatCommand": "blue",
       "consoleCommand": "Macro 2",
-      "message": "{user} set the lights to blue!"
+      "message": "{user} set the lights to blue!",
+      "help": "Sets the lights to blue"
+    },
+    {
+      "chatCommand": "yellow",
+      "consoleCommand": "Macro 2"
     }
   ]
 }
