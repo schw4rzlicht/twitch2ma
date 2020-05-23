@@ -1,6 +1,7 @@
 import Twitch2Ma from "./Twitch2Ma";
 import Fs from "fs";
 import Ajv from "ajv";
+import configSchema from "./config.schema.json";
 
 if(process.argv[2] === null || process.argv[2] === undefined) {
     exitWithError(new Error("No config file specified!"));
@@ -18,7 +19,7 @@ let ajv = new Ajv({
     useDefaults: true
 });
 
-ajv.validate(JSON.parse(Fs.readFileSync("../resources/config.schema.json", {encoding: "utf-8"})), jsonObject);
+ajv.validate(configSchema, jsonObject);
 
 if(ajv.errors !== null) {
     exitWithError(new Error("Config file is invalid: " + ajv.errorsText()));
