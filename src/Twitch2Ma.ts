@@ -98,20 +98,20 @@ export default class Twitch2Ma extends EventEmitter {
             let chatCommand = message.match(/!(\w+)( !?\w+)?/);
             if (chatCommand !== null) {
 
-                if (chatCommand[1] === "ma") {
+                if (chatCommand[1] === "lights") {
                     let message: string;
                     if (chatCommand[2] !== undefined) {
 
-                        let maCommand = chatCommand[2].match(/ !?(\w+)/)[1];
-                        let command = commandMap.get(maCommand);
+                        let helpCommand = chatCommand[2].match(/ !?(\w+)/)[1];
+                        let command = commandMap.get(helpCommand);
 
                         if (command === undefined) {
-                            message = `Command !${maCommand} does not exist! Type !ma for a list of available commands.`;
+                            message = `Command !${helpCommand} does not exist! Type !lights for a list of available commands.`;
                         } else {
                             if (command.help !== undefined) {
-                                message = `Help for !${maCommand}: ${command.help}`;
+                                message = `Help for !${helpCommand}: ${command.help}`;
                             } else {
-                                message = `No help for !${maCommand} available!`;
+                                message = `No help for !${helpCommand} available!`;
                             }
                             this.emit(this.onHelpExecuted, channel, user, command.chatCommand);
                         }
@@ -122,7 +122,7 @@ export default class Twitch2Ma extends EventEmitter {
                                 commands.push(`!${command.chatCommand}`);
                             }
 
-                            message = "Available commands are: " + commands.join(", ") + ". Type !ma !command for help.";
+                            message = "Available commands are: " + commands.join(", ") + ". Type !lights !command for help.";
                         } else {
                             message = "There are no commands available.";
                         }

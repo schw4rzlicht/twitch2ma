@@ -4,7 +4,7 @@
 [GrandMA 2](https://www.malighting.com/grandma2/) console using telnet.
 
 Viewers can run user-defined commands like `!red` in chat to trigger whatever action on the desk. Additionally, viewers
-can always run `!ma` in chat to list all available commands.
+can always run `!lights` in chat to list all available commands.
 
 ## Installation
 
@@ -34,13 +34,13 @@ moderators and the channel owners.
   - `channel`: The channel you want the bot to listen to
 - `commands`: A definition of your commands. You can define as many commands as you want to. Commands always start with
 `!`. So when `chatCommand` is `red` for example, viewers have to put `!red` into the chat to trigger it.
-  - `chatCommand`: The command viewers need to use to trigger the action. Pleasae be aware that the command `ma` is
+  - `chatCommand`: The command viewers need to use to trigger the action. Pleasae be aware that the command `lights` is
   reserved to display help for the viewers.
   - `consoleCommand`: The command that gets executed on the desk. Could be anything you could use in the command line of
   the desk.
   - `message`: A message that is sent to Twitch chat by the bot when the command was executed on the desk. `{user}` gets
   replaced by the user who issued the command in the chat. Not mandatory.
-  - `help`: The message to be displayed when viewers run the command `!ma !chatCommand` so they know what the 
+  - `help`: The message to be displayed when viewers run the command `!lights !chatCommand` so they know what the 
   corresponding command does. Not mandatory.
 
 ### Twitch authentication
