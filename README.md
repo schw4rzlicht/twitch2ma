@@ -42,12 +42,12 @@ moderators and the channel owners.
   - `help`: The message to be displayed when viewers run the command `!ma !chatCommand` so they know what the 
   corresponding command does. Not mandatory.
 
-### Twitch authentification
+### Twitch authentication
 
 As mentioned above, you need a `clientId` and an `accessToken` when connecting the bot to a channel. To obtain these, 
 you will need to register an app on [dev.twitch.tv](https://dev.twitch.tv/console/apps). Just use any name you like for 
 the app. `OAuth Redirect URLSs` don't matter either, just fill in anything. Category is `Chat Bot` of course. You can
-get your `clientId` from the manage-page now.
+get your `clientId` from the manage page now.
 
 After you have done that, you will need an access token. Unfortunately, this is not done by `twitch2ma` yet, so you have
 to get it manually with [this neat tool](https://twitchapps.com/tmi/). You will get an OAuth token like 
