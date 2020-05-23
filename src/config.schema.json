@@ -20,7 +20,7 @@
         },
         "user": {
           "description": "The user name of the user to log in to the desk",
-          "type": "string",
+          "tye": "string",
           "default": "administrator"
         },
         "password": {
