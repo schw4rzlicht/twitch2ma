@@ -16,7 +16,7 @@
         "host": {
           "description": "The IP address of the desk",
           "type": "string",
-          "format": "ipv4"
+          "format": "dunno"
         },
         "user": {
           "description": "The user name of the user to log in to the desk",
