@@ -107,20 +107,26 @@ export default class Twitch2Ma extends EventEmitter {
 
                         if (command === undefined) {
                             message = `Command !${maCommand} does not exist! Type !ma for a list of available commands.`;
-                        } else if (command.help !== null) {
-                            message = `Help for !${maCommand}: ${command.help}`;
                         } else {
-                            message = `No help for !${maCommand} available!`;
+                            if (command.help !== undefined) {
+                                message = `Help for !${maCommand}: ${command.help}`;
+                            } else {
+                                message = `No help for !${maCommand} available!`;
+                            }
+                            this.emit(this.onHelpExecuted, channel, user, command.chatCommand);
                         }
-                    } else if (this.config.commands.length > 0) {
-                        let commands: string[] = [];
-                        for (const command of this.config.commands) {
-                            commands.push(`!${command.chatCommand}`);
-                        }
-
-                        message = "Available commands are: " + commands.join(", ") + ". Type !ma !command for help.";
                     } else {
-                        message = "There are no commands available.";
+                        if (this.config.commands.length > 0) {
+                            let commands: string[] = [];
+                            for (const command of this.config.commands) {
+                                commands.push(`!${command.chatCommand}`);
+                            }
+
+                            message = "Available commands are: " + commands.join(", ") + ". Type !ma !command for help.";
+                        } else {
+                            message = "There are no commands available.";
+                        }
+                        this.emit(this.onHelpExecuted, channel, user);
                     }
                     this.chatClient.say(channel, message);
 
@@ -135,7 +141,7 @@ export default class Twitch2Ma extends EventEmitter {
                                 .send(command.consoleCommand)
                                 .then(() => lastCall = now)
                                 .then(() => {
-                                    if (command.message !== null) {
+                                    if (command.message !== undefined) {
                                         this.chatClient.say(channel, command.message.replace("{user}", user));
                                     }
                                 })
@@ -155,4 +161,5 @@ export default class Twitch2Ma extends EventEmitter {
 
     onError = this.registerEvent<(error: Error) => any>();
     onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, consoleCommand: string) => any>();
+    onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
 }

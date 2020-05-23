@@ -16,6 +16,15 @@ const twitch2ma = new Twitch2Ma(JSON.parse(jsonObject));
 
 twitch2ma.onCommandExecuted((channel, user, chatCommand, consoleCommand) =>
     console.log(`${channel}: User ${user} executed !${chatCommand} ("${consoleCommand}") on the desk.`));
+
+twitch2ma.onHelpExecuted(((channel, user, helpCommand) => {
+    if(helpCommand === undefined) {
+        console.log(`${channel}: User ${user} listed available commands.`);
+    } else {
+        console.log(`${channel}: User ${user} got help for !${helpCommand}.`);
+    }
+}));
+
 twitch2ma.onError(exitWithError);
 
 twitch2ma.start()

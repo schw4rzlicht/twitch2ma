@@ -1,9 +1,7 @@
-import Fs from "fs";
-
 class MaConfig {
     public host: string;
-    public user: string = "administrator";
-    public password: string = "admin";
+    public user: string;
+    public password: string;
 }
 
 class TwitchConfig {
@@ -15,8 +13,8 @@ class TwitchConfig {
 class Command {
     public chatCommand: string;
     public consoleCommand: string;
-    public message: string = null;
-    public help: string = null;
+    public message: string;
+    public help: string;
 }
 
 export default class Config {
