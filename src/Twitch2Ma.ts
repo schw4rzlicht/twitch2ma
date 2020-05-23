@@ -9,17 +9,24 @@ import SourceMapSupport from "source-map-support";
 
 SourceMapSupport.install();
 
-enum State {
-    Stopped,
-    Starting,
-    Started
+class TelnetError extends Error {
+    constructor(message: string) {
+        super(message);
+        Object.setPrototypeOf(this, TelnetError.prototype);
+    }
+}
+
+class ChannelError extends Error {
+    constructor() {
+        super("Joining channel failed. Did you type the channel name correctly?");
+        Object.setPrototypeOf(this, ChannelError.prototype);
+    }
 }
 
 export default class Twitch2Ma extends EventEmitter {
 
     private config: Config;
     private telnet: Telnet;
-    private state: State;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
 
@@ -27,11 +34,9 @@ export default class Twitch2Ma extends EventEmitter {
         super();
         this.config = config;
         this.telnet = new Telnet();
-        this.state = State.Stopped;
     }
 
-    start() {
-        this.state = State.Starting;
+    start(): Promise<void> {
         return this.telnet
             .connect({
                 host: this.config.ma.host,
@@ -40,30 +45,36 @@ export default class Twitch2Ma extends EventEmitter {
                 echoLines: 0,
                 ors: "\r\n",
             })
-            .then(() => this.telnet.exec(`Login ${this.config.ma.user} ${this.config.ma.password}`))
-            .then(() => this.initTwitch())
-            .then(() => this.state = State.Started);
+            .catch(() => {
+                throw new TelnetError("Could not connect to desk!")
+            })
+            .then(() => this.telnetLogin())
+            .then(() => this.initTwitch());
     }
 
-    stop() {
+    stop(): Promise<void> {
         if (this.chatClient) {
             return this.chatClient.quit()
-                .finally(this.telnet.end)
-                .then(() => this.state = State.Stopped);
+                .finally(this.telnet.end);
         }
-        return this.telnet.end()
-            .finally(() => this.state = State.Stopped);
+        return this.telnet.end();
     }
 
-    stopWithError(error: string) {
+    stopWithError(error: Error): Promise<void> {
         this.emit(this.onError, error);
-        this.stop();
+        return this.stop();
     }
 
-    onError = this.registerEvent<(error: string) => any>();
-    onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, consoleCommand: string) => any>();
+    telnetLogin(): Promise<void> {
+        return this.telnet.exec(`Login ${this.config.ma.user} ${this.config.ma.password}`)
+            .then(message => {
+                if(!message.match(`Logged in as User '${this.config.ma.user}'`)) {
+                    throw new TelnetError(`Could not log in as user ${this.config.ma.user}!`);
+                }
+            });
+    }
 
-    initTwitch() {
+    initTwitch(): Promise<void> {
 
         let commandMap = new Map();
         for (const command of this.config.commands) {
@@ -77,7 +88,7 @@ export default class Twitch2Ma extends EventEmitter {
 
         this.chatClient.onRegister(() => {
             this.chatClient.join(this.config.twitch.channel)
-                .catch(() => this.stopWithError("Join to channel failed. Did you type the channel name correctly?"));
+                .catch(() => this.stopWithError(new ChannelError()));
         });
 
         this.chatClient.onPrivmsg((channel, user, message, rawMessage) => {
@@ -101,7 +112,7 @@ export default class Twitch2Ma extends EventEmitter {
                                 }
                             })
                             .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
-                            .catch(() => this.stopWithError("Sending telnet command failed!"));
+                            .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
                     }
                 } else {
                     let differenceString = humanizeDuration(difference - difference % 1000);
@@ -112,4 +123,7 @@ export default class Twitch2Ma extends EventEmitter {
 
         return this.chatClient.connect();
     }
+
+    onError = this.registerEvent<(error: Error) => any>();
+    onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, consoleCommand: string) => any>();
 }
