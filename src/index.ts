@@ -14,6 +14,8 @@ try {
 
 const twitch2ma = new Twitch2Ma(JSON.parse(jsonObject));
 
+twitch2ma.onCommandExecuted((channel, user, chatCommand, consoleCommand) =>
+    console.log(`${channel}: User ${user} executed !${chatCommand} ("${consoleCommand}") on the desk.`));
 twitch2ma.onError(console.error);
 twitch2ma.start()
     .catch(exitWithError);

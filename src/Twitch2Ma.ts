@@ -61,6 +61,7 @@ export default class Twitch2Ma extends EventEmitter {
     }
 
     onError = this.registerEvent<(error: string) => any>();
+    onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, consoleCommand: string) => any>();
 
     initTwitch() {
 
@@ -99,6 +100,7 @@ export default class Twitch2Ma extends EventEmitter {
                                     this.chatClient.say(channel, command.message.replace("{user}", user));
                                 }
                             })
+                            .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
                             .catch(() => this.stopWithError("Sending telnet command failed!"));
                     }
                 } else {
