@@ -1,5 +1,6 @@
 import Twitch2Ma from "./Twitch2Ma";
 import Fs from "fs";
+import Ajv from "ajv";
 
 if(process.argv[2] === null || process.argv[2] === undefined) {
     exitWithError(new Error("No config file specified!"));
@@ -7,12 +8,23 @@ if(process.argv[2] === null || process.argv[2] === undefined) {
 
 let jsonObject;
 try {
-    jsonObject = Fs.readFileSync(process.argv[2], {encoding: "utf-8"});
+    jsonObject = JSON.parse(Fs.readFileSync(process.argv[2], {encoding: "utf-8"}));
 } catch (ignored) {
     exitWithError(new Error(`Cannot read config file ${process.argv[2]}!`));
 }
 
-const twitch2ma = new Twitch2Ma(JSON.parse(jsonObject));
+let ajv = new Ajv({
+    allErrors: true,
+    useDefaults: true
+});
+
+ajv.validate(JSON.parse(Fs.readFileSync("../resources/config.schema.json", {encoding: "utf-8"})), jsonObject);
+
+if(ajv.errors !== null) {
+    exitWithError(new Error("Config file is invalid: " + ajv.errorsText()));
+}
+
+const twitch2ma = new Twitch2Ma(jsonObject);
 
 twitch2ma.onCommandExecuted((channel, user, chatCommand, consoleCommand) =>
     console.log(`${channel}: User ${user} executed !${chatCommand} ("${consoleCommand}") on the desk.`));

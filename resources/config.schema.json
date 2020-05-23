@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Config",
+  "description": "A config for twitch2ma",
+  "type": "object",
+  "properties": {
+    "timeout": {
+      "description": "The time between commands in seconds",
+      "type": "integer",
+      "minimum": 0
+    },
+    "ma": {
+      "description": "The config for the telnet connection to the desk",
+      "type": "object",
+      "properties": {
+        "host": {
+          "description": "The IP address of the desk",
+          "type": "string",
+          "format": "ipv4"
+        },
+        "user": {
+          "description": "The user name of the user to log in to the desk",
+          "type": "string",
+          "default": "administrator"
+        },
+        "password": {
+          "description": "The password of the user on the desk",
+          "type": "string",
+          "default": "admin"
+        }
+      },
+      "required": [
+        "host"
+      ]
+    },
+    "twitch": {
+      "description": "The config for the Twitch connection",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "description": "The client ID of the Twitch app the bot runs on",
+          "type": "string"
+        },
+        "accessToken": {
+          "description": "The access token used to connect to Twitch",
+          "type": "string"
+        },
+        "channel": {
+          "description": "The Twitch channel the bot should listen to",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clientId",
+        "accessToken",
+        "channel"
+      ]
+    },
+    "commands": {
+      "description": "An array of commands the bot reacts to",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "chatCommand": {
+            "description": "The command that needs to be run in chat, without !",
+            "type": "string"
+          },
+          "consoleCommand": {
+            "description": "The command that runs on the console",
+            "type": "string"
+          },
+          "message": {
+            "description": "The message that the bot returns after successful execution",
+            "type": "string"
+          },
+          "help": {
+            "description": "The help that users can get when running !ma",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chatCommand",
+          "consoleCommand"
+        ]
+      }
+    }
+  },
+  "required": [
+    "timeout",
+    "ma",
+    "twitch",
+    "commands"
+  ]
+}
