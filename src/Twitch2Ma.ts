@@ -41,7 +41,7 @@ export default class Twitch2Ma extends EventEmitter {
             .connect({
                 host: this.config.ma.host,
                 port: 30000,
-                shellPrompt: /\[Channel]>.../,
+                shellPrompt: /\[.+]>.../,
                 echoLines: 0,
                 ors: "\r\n",
             })
