@@ -26,7 +26,8 @@ repository and ships with the npm package.
 moderators and the channel owners.
 - `ma`
   - `host`: The IP adress of your GrandMA 2 in you local network.
-  - `user`/`password`: The GrandMA user and password that should run the commands on the desk.
+  - `user`/`password`: The GrandMA user and password that should run the commands on the desk. Not mandatory, defaults 
+  to `administrator` and `admin` if not set.
 - `twitch`
   - `clientId`: Your client ID obtained by Twitch
   - `accessToken`: Your access token obtained by Twitch
