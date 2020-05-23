@@ -50,7 +50,7 @@ to get it manually with [this neat tool](https://twitchapps.com/tmi/). You will 
 ## Usage
  
 To run `twitch2ma`, just run the following command. Please be aware that you need to have a desk or onPC in your 
-network, reachable under the IP adress, you configured. You also have to have telnet turned on.
+network, reachable under the IP adress you configured. You also have to have telnet turned on.
 
 ```bash
 twitch2ma <pathToConfigFile.json>

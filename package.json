@@ -37,5 +37,11 @@
   },
   "bin": {
     "twitch2ma": "./cli.js"
-  }
+  },
+  "keywords": [
+    "grandma",
+    "lighting",
+    "twitch",
+    "telnet"
+  ]
 }
