@@ -3,6 +3,7 @@ import Fs from "fs";
 import Ajv from "ajv";
 import _ from "lodash";
 import configSchema from "./config.schema.json";
+import {Config} from "./Config";
 
 if(!_.isString(process.argv[2])) {
     exitWithError(new Error("No config file specified!"));
@@ -22,7 +23,7 @@ if(_.isArray(ajv.errors)) {
     exitWithError(new Error(`Config file is invalid: ${ajv.errorsText()}`));
 }
 
-const twitch2ma = new Twitch2Ma(jsonObject);
+const twitch2ma = new Twitch2Ma(new Config(jsonObject));
 
 twitch2ma.onCommandExecuted((channel, user, chatCommand, consoleCommand) =>
     console.log(`${channel}: User ${user} executed !${chatCommand} ("${consoleCommand}") on the desk.`));
