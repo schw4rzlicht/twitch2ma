@@ -4,7 +4,7 @@ import Ajv from "ajv";
 import _ from "lodash";
 import configSchema from "./config.schema.json";
 
-if(_.isString(process.argv[2])) {
+if(!_.isString(process.argv[2])) {
     exitWithError(new Error("No config file specified!"));
 }
 

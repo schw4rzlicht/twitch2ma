@@ -4,8 +4,9 @@ import Twitch from "twitch";
 import TwitchChat from "twitch-chat-client";
 import humanizeDuration from "humanize-duration";
 import TwitchClient from "twitch";
-import Config from "./Config";
+import {Config, Command} from "./Config";
 import SourceMapSupport from "source-map-support";
+import _ from "lodash";
 
 SourceMapSupport.install();
 
@@ -53,7 +54,7 @@ export default class Twitch2Ma extends EventEmitter {
     }
 
     stop(): Promise<void> {
-        if (this.chatClient) {
+        if (_.isObject(this.chatClient)) {
             return this.chatClient.quit()
                 .finally(this.telnet.end);
         }
@@ -76,11 +77,7 @@ export default class Twitch2Ma extends EventEmitter {
 
     initTwitch(): Promise<void> {
 
-        let commandMap = new Map();
-        for (const command of this.config.commands) {
-            commandMap.set(command.chatCommand, command);
-        }
-
+        let commands = _.zipObject(_.map(this.config.commands, command => command.chatCommand), this.config.commands);
         let lastCall: number;
 
         this.twitchClient = Twitch.withCredentials(this.config.twitch.clientId, this.config.twitch.accessToken);
@@ -96,32 +93,28 @@ export default class Twitch2Ma extends EventEmitter {
             let now = new Date().getTime();
 
             let chatCommand = message.match(/!(\w+)( !?\w+)?/);
-            if (chatCommand !== null) {
+            if (_.isArray(chatCommand)) {
 
                 if (chatCommand[1] === "lights") {
                     let message: string;
-                    if (chatCommand[2] !== undefined) {
+                    if (_.isString(chatCommand[2])) {
 
                         let helpCommand = chatCommand[2].match(/ !?(\w+)/)[1];
-                        let command = commandMap.get(helpCommand);
+                        let command = _.get(commands, helpCommand);
 
-                        if (command === undefined) {
-                            message = `Command !${helpCommand} does not exist! Type !lights for a list of available commands.`;
-                        } else {
-                            if (command.help !== undefined) {
+                        if (command instanceof Command) {
+                            if (_.isString(command.help)) {
                                 message = `Help for !${helpCommand}: ${command.help}`;
                             } else {
                                 message = `No help for !${helpCommand} available!`;
                             }
                             this.emit(this.onHelpExecuted, channel, user, command.chatCommand);
+                        } else {
+                            message = `Command !${helpCommand} does not exist! Type !lights for a list of available commands.`;
                         }
                     } else {
-                        if (this.config.commands.length > 0) {
-                            let commands: string[] = [];
-                            for (const command of this.config.commands) {
-                                commands.push(`!${command.chatCommand}`);
-                            }
-
+                        if (_.size(this.config.commands)) {
+                            let commands = _.map(this.config.commands, command => `!${command}`);
                             message = "Available commands are: " + commands.join(", ") + ". Type !lights !command for help.";
                         } else {
                             message = "There are no commands available.";
@@ -135,13 +128,13 @@ export default class Twitch2Ma extends EventEmitter {
                     let difference = lastCall === null ? -1 : lastCall + this.config.timeout * 1000 - now;
 
                     if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
-                        let command = commandMap.get(chatCommand[1]);
-                        if (command !== undefined) {
+                        let command = _.get(commands, chatCommand[1]);
+                        if (command instanceof Command) {
                             this.telnet
                                 .send(command.consoleCommand)
                                 .then(() => lastCall = now)
                                 .then(() => {
-                                    if (command.message !== undefined) {
+                                    if (_.isString(command.message)) {
                                         this.chatClient.say(channel, command.message.replace("{user}", `@${user}`));
                                     }
                                 })

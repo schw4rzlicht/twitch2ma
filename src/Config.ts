@@ -10,14 +10,14 @@ class TwitchConfig {
     public channel: string;
 }
 
-class Command {
+export class Command {
     public chatCommand: string;
     public consoleCommand: string;
     public message: string;
     public help: string;
 }
 
-export default class Config {
+export class Config {
     public timeout: number;
     public ma: MaConfig;
     public twitch: TwitchConfig;
