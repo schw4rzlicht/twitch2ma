@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "ajv compile -s src/**.schema.json",
+    "test": "ajv compile -s src/**.schema.json && jest",
     "build": "tsc",
     "prepare": "npm run build",
     "postversion": "git push && git push --tags"
@@ -34,8 +34,11 @@
   },
   "devDependencies": {
     "@types/humanize-duration": "^3.18.0",
+    "@types/jest": "^25.2.3",
     "@types/source-map-support": "^0.5.1",
     "ajv-cli": "^3.1.0",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.0.0",
     "typescript": "^3.9.3"
   },
   "bin": {

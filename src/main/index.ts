@@ -1,7 +1,7 @@
 import Twitch2Ma from "./Twitch2Ma";
 import Fs from "fs";
 import Ajv from "ajv";
-import configSchema from "./config.schema.json";
+import configSchema from "../resources/config.schema.json";
 
 if(process.argv[2] === null || process.argv[2] === undefined) {
     exitWithError(new Error("No config file specified!"));
