@@ -114,7 +114,7 @@ export default class Twitch2Ma extends EventEmitter {
                         }
                     } else {
                         if (_.size(this.config.commands)) {
-                            let commands = _.map(this.config.commands, command => `!${command}`);
+                            let commands = _.map(this.config.commands, command => `!${command.chatCommand}`);
                             message = "Available commands are: " + commands.join(", ") + ". Type !lights !command for help.";
                         } else {
                             message = "There are no commands available.";
