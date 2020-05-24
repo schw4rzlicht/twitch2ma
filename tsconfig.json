@@ -70,6 +70,7 @@
   "exclude": [
     "dist",
     "node_modules",
-    "__mocks__"
+    "__mocks__",
+    "__tests__"
   ]
 }
