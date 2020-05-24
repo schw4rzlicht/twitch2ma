@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "ajv compile -s src/resources/**.schema.json && ajv validate -s src/resources/config.schema.json -d config.json.sample && jest",
+    "test": "ajv compile -s resources/**.schema.json && ajv validate -s resources/config.schema.json -d config.json.sample && jest",
     "build": "tsc",
     "prepare": "npm run build",
     "postversion": "git push && git push --tags"
