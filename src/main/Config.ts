@@ -3,7 +3,7 @@ class MaConfig {
     public user: string;
     public password: string;
 
-    constructor(maConfig: MaConfig) {
+    constructor(maConfig: any) {
         this.host = maConfig.host;
         this.user = maConfig.user;
         this.password = maConfig.password;
@@ -15,7 +15,7 @@ class TwitchConfig {
     public accessToken: string;
     public channel: string;
 
-    constructor(twitchConfig: TwitchConfig) {
+    constructor(twitchConfig: any) {
         this.clientId = twitchConfig.clientId;
         this.accessToken = twitchConfig.accessToken;
         this.channel = twitchConfig.channel;
@@ -28,7 +28,7 @@ export class Command {
     public message: string;
     public help: string;
 
-    constructor(command: Command) {
+    constructor(command: any) {
         this.chatCommand = command.chatCommand;
         this.consoleCommand = command.consoleCommand;
         this.message = command.message;
@@ -42,7 +42,7 @@ export class Config {
     public twitch: TwitchConfig;
     public commands: Array<Command>;
 
-    constructor(config: Config) {
+    constructor(config: any) {
         this.timeout = config.timeout;
         this.ma = new MaConfig(config.ma);
         this.twitch = new TwitchConfig(config.twitch);
