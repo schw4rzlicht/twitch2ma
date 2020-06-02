@@ -132,11 +132,11 @@ export default class Twitch2Ma extends EventEmitter {
 
                 } else {
 
-                    let difference = lastCall === undefined ? -1 : lastCall + this.config.timeout * 1000 - now;
+                    let command = commandMap.get(chatCommand[1]);
+                    if (command !== undefined) {
 
-                    if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
-                        let command = commandMap.get(chatCommand[1]);
-                        if (command !== undefined) {
+                        let difference = lastCall === undefined ? -1 : lastCall + this.config.timeout * 1000 - now;
+                        if (difference < 0 || rawMessage.userInfo.isMod) {
                             this.telnet
                                 .send(command.consoleCommand)
                                 .then(() => lastCall = now)
@@ -147,10 +147,10 @@ export default class Twitch2Ma extends EventEmitter {
                                 })
                                 .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
                                 .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        } else {
+                            let differenceString = humanizeDuration(difference + (1000 - difference % 1000));
+                            this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
                         }
-                    } else {
-                        let differenceString = humanizeDuration(difference + (1000 - difference % 1000));
-                        this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
                     }
                 }
             }
