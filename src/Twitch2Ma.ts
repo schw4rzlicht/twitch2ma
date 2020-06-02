@@ -132,7 +132,7 @@ export default class Twitch2Ma extends EventEmitter {
 
                 } else {
 
-                    let difference = lastCall === null ? -1 : lastCall + this.config.timeout * 1000 - now;
+                    let difference = lastCall === undefined ? -1 : lastCall + this.config.timeout * 1000 - now;
 
                     if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
                         let command = commandMap.get(chatCommand[1]);
