@@ -136,7 +136,7 @@ export default class Twitch2Ma extends EventEmitter {
                     if (command !== undefined) {
 
                         let difference = lastCall === undefined ? -1 : lastCall + this.config.timeout * 1000 - now;
-                        if (difference < 0 || rawMessage.userInfo.isMod) {
+                        if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
                             this.telnet
                                 .send(command.consoleCommand)
                                 .then(() => lastCall = now)
