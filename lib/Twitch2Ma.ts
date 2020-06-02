@@ -1,12 +1,15 @@
 import {EventEmitter} from '@d-fischer/typed-event-emitter';
-import Telnet from "telnet-client";
 import Twitch from "twitch";
 import TwitchChat from "twitch-chat-client";
-import humanizeDuration from "humanize-duration";
 import TwitchClient from "twitch";
 import {Config, Command} from "./Config";
-import SourceMapSupport from "source-map-support";
-import _ from "lodash";
+import type Telnet from "telnet-client";
+
+import humanizeDuration = require("humanize-duration");
+import SourceMapSupport = require("source-map-support");
+import _ = require("lodash");
+
+const TelnetClient = require("telnet-client");
 
 SourceMapSupport.install();
 
@@ -34,7 +37,7 @@ export default class Twitch2Ma extends EventEmitter {
     constructor(config: Config) {
         super();
         this.config = config;
-        this.telnet = new Telnet();
+        this.telnet = new TelnetClient();
     }
 
     start(): Promise<void> {
@@ -68,7 +71,7 @@ export default class Twitch2Ma extends EventEmitter {
 
     telnetLogin(): Promise<void> {
         return this.telnet.exec(`Login ${this.config.ma.user} ${this.config.ma.password}`)
-            .then(message => {
+            .then((message: string) => {
                 if (!message.match(`Logged in as User '${this.config.ma.user}'`)) {
                     throw new TelnetError(`Could not log in as user ${this.config.ma.user}!`);
                 }

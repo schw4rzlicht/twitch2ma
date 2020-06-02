@@ -1,9 +1,10 @@
 import Twitch2Ma from "./Twitch2Ma";
-import Fs from "fs";
-import Ajv from "ajv";
-import _ from "lodash";
 import {Config} from "./Config";
-import configSchema from "../resources/config.schema.json";
+
+import Ajv = require("ajv");
+import configSchema = require("../resources/config.schema.json");
+import Fs = require("fs");
+import _ = require("lodash");
 
 if(!_.isString(process.argv[2])) {
     exitWithError(new Error("No config file specified!"));

@@ -1,6 +1,7 @@
 import Twitch2Ma from "../lib/Twitch2Ma";
 import {Config} from "../lib/Config";
-import Fs from "fs";
+
+import Fs = require("fs");
 
 jest.mock("source-map-support");
 jest.mock("telnet-client");
