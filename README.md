@@ -22,7 +22,7 @@ repository and ships with the npm package.
 
 ### Options in detail
 
-- `timeout`: The time in seconds between any command can be executed (prevents flooding/spamming). Does not apply to 
+- `timeout`: The time in seconds between the execution of any command (prevents flooding/spamming). Does not apply to 
 moderators and the channel owners.
 - `ma`
   - `host`: The IP adress of your GrandMA 2 in you local network.
