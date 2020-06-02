@@ -69,7 +69,7 @@ export default class Twitch2Ma extends EventEmitter {
         return this.telnet.exec(`Login ${this.config.ma.user} ${this.config.ma.password}`)
             .then(message => {
                 if (!message.match(`Logged in as User '${this.config.ma.user}'`)) {
-                    throw new TelnetError(`Could not log in as user ${this.config.ma.user}!`);
+                    throw new TelnetError(`Could not log in to the desk as user ${this.config.ma.user}!`);
                 }
             });
     }
