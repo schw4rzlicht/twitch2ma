@@ -107,33 +107,7 @@ export default class Twitch2Ma extends EventEmitter {
         if (_.isArray(chatCommand)) {
 
             if (chatCommand[1] === "lights") {
-                let message: string;
-                if (_.isString(chatCommand[2])) {
-
-                    let helpCommand = chatCommand[2].match(/ !?(\w+)/)[1];
-                    let command = _.get(this.commands, helpCommand);
-
-                    if (command instanceof Command) {
-                        if (_.isString(command.help)) {
-                            message = `Help for !${helpCommand}: ${command.help}`;
-                        } else {
-                            message = `No help for !${helpCommand} available!`;
-                        }
-                        this.emit(this.onHelpExecuted, channel, user, command.chatCommand);
-                    } else {
-                        message = `Command !${helpCommand} does not exist! Type !lights for a list of available commands.`;
-                    }
-                } else {
-                    if (_.size(this.config.commands)) {
-                        let commands = _.map(this.config.commands, command => `!${command.chatCommand}`);
-                        message = "Available commands are: " + commands.join(", ") + ". Type !lights !command for help.";
-                    } else {
-                        message = "There are no commands available.";
-                    }
-                    this.emit(this.onHelpExecuted, channel, user);
-                }
-                this.chatClient.say(channel, message);
-
+                this.sendHelp(channel, user, chatCommand[2]);
             } else {
 
                 let command = _.get(this.commands, chatCommand[1])
@@ -158,6 +132,35 @@ export default class Twitch2Ma extends EventEmitter {
                 }
             }
         }
+    }
+
+    sendHelp(channel: string, user: string, helpCommand: string) {
+        let message: string;
+        if (_.isString(helpCommand)) {
+
+            helpCommand = helpCommand.match(/ !?(\w+)/)[1];
+            let command = _.get(this.commands, helpCommand);
+
+            if (command instanceof Command) {
+                if (_.isString(command.help)) {
+                    message = `Help for !${helpCommand}: ${command.help}`;
+                } else {
+                    message = `No help for !${helpCommand} available!`;
+                }
+                this.emit(this.onHelpExecuted, channel, user, command.chatCommand);
+            } else {
+                message = `Command !${helpCommand} does not exist! Type !lights for a list of available commands.`;
+            }
+        } else {
+            if (_.size(this.config.commands)) {
+                let commands = _.map(this.config.commands, command => `!${command.chatCommand}`);
+                message = "Available commands are: " + commands.join(", ") + ". Type !lights !command for help.";
+            } else {
+                message = "There are no commands available.";
+            }
+            this.emit(this.onHelpExecuted, channel, user);
+        }
+        this.chatClient.say(channel, message);
     }
 
     onError = this.registerEvent<(error: Error) => any>();
