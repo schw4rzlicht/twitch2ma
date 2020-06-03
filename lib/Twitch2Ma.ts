@@ -73,7 +73,7 @@ export default class Twitch2Ma extends EventEmitter {
         return this.telnet.exec(`Login ${this.config.ma.user} ${this.config.ma.password}`)
             .then((message: string) => {
                 if (!message.match(`Logged in as User '${this.config.ma.user}'`)) {
-                    throw new TelnetError(`Could not log in as user ${this.config.ma.user}!`);
+                    throw new TelnetError(`Could not log into the desk as user ${this.config.ma.user}!`);
                 }
             });
     }
@@ -128,11 +128,11 @@ export default class Twitch2Ma extends EventEmitter {
 
                 } else {
 
-                    let difference = lastCall === null ? -1 : lastCall + this.config.timeout * 1000 - now;
+                    let command = _.get(commands, chatCommand[1])
+                    if (command instanceof Command) {
 
-                    if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
-                        let command = _.get(commands, chatCommand[1]);
-                        if (command instanceof Command) {
+                        let difference = _.isInteger(lastCall) ? lastCall + this.config.timeout * 1000 - now : -1;
+                        if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
                             this.telnet
                                 .send(command.consoleCommand)
                                 .then(() => lastCall = now)
@@ -143,10 +143,10 @@ export default class Twitch2Ma extends EventEmitter {
                                 })
                                 .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
                                 .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        } else {
+                            let differenceString = humanizeDuration(difference + (1000 - difference % 1000));
+                            this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
                         }
-                    } else {
-                        let differenceString = humanizeDuration(difference + (1000 - difference % 1000));
-                        this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
                     }
                 }
             }

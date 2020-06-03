@@ -45,7 +45,8 @@ test("Telnet connection failed", () => {
 });
 
 test("Telnet login fails", () => {
-    return expect(new Twitch2Ma(config).start()).rejects.toThrow(new TelnetError(`Could not log in as user ${config.ma.user}!`));
+    return expect(new Twitch2Ma(config).start()).rejects
+        .toThrow(new TelnetError(`Could not log into the desk as user ${config.ma.user}!`));
 });
 
 test("Twitch connection failed", () => {
