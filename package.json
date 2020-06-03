@@ -26,6 +26,7 @@
   "dependencies": {
     "@d-fischer/typed-event-emitter": "^3.0.0",
     "ajv": "^6.12.2",
+    "chalk": "^4.0.0",
     "humanize-duration": "^3.23.0",
     "lodash": "^4.17.15",
     "source-map-support": "^0.5.19",

@@ -5,6 +5,7 @@ import Ajv = require("ajv");
 import configSchema = require("../resources/config.schema.json");
 import Fs = require("fs");
 import _ = require("lodash");
+import chalk = require("chalk");
 
 if(!_.isString(process.argv[2])) {
     exitWithError(new Error("No config file specified!"));
@@ -27,20 +28,20 @@ if(_.isArray(ajv.errors)) {
 const twitch2ma = new Twitch2Ma(new Config(jsonObject));
 
 twitch2ma.onCommandExecuted((channel, user, chatCommand, consoleCommand) =>
-    console.log(`${channel}: User ${user} executed !${chatCommand} ("${consoleCommand}") on the desk.`));
+    console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} executed {bold.blue !${chatCommand}} ({magenta ${consoleCommand}}) on the desk.`));
 
 twitch2ma.onHelpExecuted(((channel, user, helpCommand) => {
     if(_.isString(helpCommand)) {
-        console.log(`${channel}: User ${user} got help for !${helpCommand}.`);
+        console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
     } else {
-        console.log(`${channel}: User ${user} listed available commands.`);
+        console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} listed available commands.`);
     }
 }));
 
 twitch2ma.onError(exitWithError);
 
 twitch2ma.start()
-    .then(() => console.log("Twitch2MA started!"))
+    .then(() => console.log(chalk.green("Twitch2MA started!")))
     .catch(exitWithError);
 
 function failOnErrorOrReturnValue(value: any, overrideError?: Error) {
@@ -52,6 +53,6 @@ function failOnErrorOrReturnValue(value: any, overrideError?: Error) {
 }
 
 function exitWithError(error: Error) {
-    console.error(error.message);
+    console.error(chalk.bold.redBright(error.message));
     process.exit(1);
 }
