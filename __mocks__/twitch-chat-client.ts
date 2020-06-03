@@ -9,6 +9,7 @@ export default class TwitchChatClient {
     onRegister = jest.fn(handler => this.onRegisterHandler = handler);
     join = jest.fn(TwitchChatClient.joinImplementation());
     quit = jest.fn().mockResolvedValue(null);
+    say = jest.fn();
 
     connect = jest.fn(() => {
         if(_.isFunction(this.onRegisterHandler)) {
