@@ -1,4 +1,4 @@
-class MaConfig {
+export class MaConfig {
     public host: string;
     public user: string;
     public password: string;
@@ -10,7 +10,7 @@ class MaConfig {
     }
 }
 
-class TwitchConfig {
+export class TwitchConfig {
     public clientId: string;
     public accessToken: string;
     public channel: string;
