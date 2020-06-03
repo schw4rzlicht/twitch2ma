@@ -3,7 +3,10 @@ import {Config} from "../lib/Config";
 
 import Fs = require("fs");
 
+// Workaround, see https://github.com/evanw/node-source-map-support/issues/279
 jest.mock("source-map-support");
+////
+
 jest.mock("telnet-client", require("./mocks/telnet-client"));
 
 let config = new Config(JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})));
@@ -14,7 +17,7 @@ test("Test connection", async () => {
     let telnetInstance = twitch2Ma["telnet"];
 
     jest.spyOn(telnetInstance, "exec")
-        .mockImplementationOnce(() => new Promise(resolve => resolve(`Logged in as User '${config.ma.user}'`)));
+        .mockReturnValueOnce(new Promise(resolve => resolve(`Logged in as User '${config.ma.user}'`)));
 
     let spyOnTelnetLogin = jest.spyOn(twitch2Ma, "telnetLogin");
 
