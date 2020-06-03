@@ -13,14 +13,14 @@ const TelnetClient = require("telnet-client");
 
 SourceMapSupport.install();
 
-class TelnetError extends Error {
+export class TelnetError extends Error {
     constructor(message: string) {
         super(message);
         Object.setPrototypeOf(this, TelnetError.prototype);
     }
 }
 
-class ChannelError extends Error {
+export class ChannelError extends Error {
     constructor() {
         super("Joining channel failed. Did you type the channel name correctly?");
         Object.setPrototypeOf(this, ChannelError.prototype);
