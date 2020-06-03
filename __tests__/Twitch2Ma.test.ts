@@ -39,9 +39,8 @@ test("Connection chain", async () => {
 test("Telnet connection failed", () => {
 
     let twitch2Ma = new Twitch2Ma(config);
-    let telnetInstance = twitch2Ma["telnet"];
 
-    jest.spyOn(telnetInstance, "connect").mockRejectedValueOnce("Fooled!");
+    jest.spyOn(twitch2Ma["telnet"], "connect").mockRejectedValueOnce("Fooled!");
 
     return expect(twitch2Ma.start()).rejects.toThrow(new TelnetError("Could not connect to desk!"));
 });
@@ -76,7 +75,6 @@ test("Twitch channel join failed", async () => {
 
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onError(errorHandler);
-
     await twitch2Ma.start();
 
     expect(twitch2Ma["chatClient"].join).toBeCalled();
@@ -86,7 +84,6 @@ test("Twitch channel join failed", async () => {
 test("Message handler set", async () => {
 
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
-
     await twitch2Ma.start();
 
     let spyOnMessageHandler = jest.spyOn(twitch2Ma, "handleMessage");
@@ -102,7 +99,6 @@ test("Send help", async () => {
 
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onHelpExecuted(helpExecutedHandler);
-
     await twitch2Ma.start();
 
     let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
@@ -137,7 +133,6 @@ test("Send help w/o commands", async () => {
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
     twitch2Ma.onHelpExecuted(helpExecutedHandler);
     twitch2Ma["config"].commands = [];
-
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
@@ -153,13 +148,15 @@ test("Cooldown calculation", () => {
 
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
 
-    expect(twitch2Ma.cooldown(new Date().getTime(), null, aliceRawMessage)).toBeLessThanOrEqual(0);
-    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), aliceRawMessage)).toBeGreaterThan(0);
-    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), bobRawMessage)).toBeLessThanOrEqual(0);
-    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), aliceRawMessage)).toBeGreaterThan(0);
-    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), ownerRawMessage)).toBeLessThanOrEqual(0);
-    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), aliceRawMessage)).toBeGreaterThan(0);
-    expect(twitch2Ma.cooldown(new Date().getTime(), 666, aliceRawMessage)).toBeLessThanOrEqual(0);
+    let now = new Date().getTime();
+
+    expect(twitch2Ma.cooldown(now, null, aliceRawMessage)).toBeLessThanOrEqual(0);
+    expect(twitch2Ma.cooldown(now, now, aliceRawMessage)).toBeGreaterThan(0);
+    expect(twitch2Ma.cooldown(now, now, bobRawMessage)).toBeLessThanOrEqual(0);
+    expect(twitch2Ma.cooldown(now, now, aliceRawMessage)).toBeGreaterThan(0);
+    expect(twitch2Ma.cooldown(now, now, ownerRawMessage)).toBeLessThanOrEqual(0);
+    expect(twitch2Ma.cooldown(now, now, aliceRawMessage)).toBeGreaterThan(0);
+    expect(twitch2Ma.cooldown(now, 666, aliceRawMessage)).toBeLessThanOrEqual(0);
 });
 
 test("Cooldown active", async () => {
@@ -167,7 +164,6 @@ test("Cooldown active", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
 
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
-
     await twitch2Ma.start();
 
     twitch2Ma["lastCall"] = new Date().getTime();
