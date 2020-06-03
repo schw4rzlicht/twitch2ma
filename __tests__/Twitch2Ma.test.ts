@@ -179,13 +179,57 @@ test("Cooldown active", async () => {
 test("Command successful", async () => {
 
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+    let commandExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
-
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
+    twitch2Ma.onCommandExecuted(commandExecutedHandler);
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
         "Alice", "!red", aliceRawMessage, "@Alice set the lights to red!");
+
+    expect(twitch2Ma["telnet"].send).toBeCalledWith("Macro 1");
+    expect(commandExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice", "red", "Macro 1");
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
+});
+
+test("Telnet command failed", async () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+
+    let commandExecutedHandler = jest.fn();
+    let errorHandler = jest.fn();
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
+    twitch2Ma.onCommandExecuted(commandExecutedHandler);
+    twitch2Ma.onError(errorHandler);
+
+    jest.spyOn(twitch2Ma["telnet"], "send").mockRejectedValueOnce(new Error());
+
+    await twitch2Ma.start();
+
+    await sendMessageToBotAndDontExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!red", aliceRawMessage);
+
+    expect(twitch2Ma["telnet"].send).toBeCalledWith("Macro 1");
+    expect(errorHandler).toBeCalledWith(new TelnetError("Sending telnet command failed!"));
+    expect(commandExecutedHandler).not.toBeCalled();
+});
+
+test("Message not involving the bot", async () => {
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+    await twitch2Ma.start();
+
+    let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
+
+    await sendMessageToBotAndDontExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter",
+        "Alice", "Hello world!", null);
+
+    await sendMessageToBotAndDontExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter",
+        "Alice", "!command", null);
 });
 
 async function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
@@ -198,6 +242,17 @@ async function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
 
     await sendMessageToBot(twitch2Ma, channel, user, message, rawMessage);
     expect(spyOnTwitchSay).toBeCalledWith(channel, expect.stringMatching(answer));
+}
+
+async function sendMessageToBotAndDontExpectAnswer(twitch2Ma: Twitch2Ma,
+                                                   spyOnTwitchSay: SpyInstance,
+                                                   channel: string,
+                                                   user: string,
+                                                   message: string,
+                                                   rawMessage: TwitchPrivateMessage) {
+
+    await sendMessageToBot(twitch2Ma, channel, user, message, rawMessage);
+    expect(spyOnTwitchSay).not.toBeCalled();
 }
 
 async function sendMessageToBot(twitch2Ma: Twitch2Ma, channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
