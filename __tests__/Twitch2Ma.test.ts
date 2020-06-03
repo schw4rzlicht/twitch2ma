@@ -1,7 +1,7 @@
 import {TelnetError, ChannelError} from "../lib/Twitch2Ma";
 import Twitch2Ma from "../lib/Twitch2Ma";
 import {Config} from "../lib/Config";
-import type TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
+import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
 
 import TwitchChatClient from "twitch-chat-client";
 import Fs = require("fs");
@@ -16,7 +16,7 @@ jest.mock("telnet-client", require("./mocks/telnet-client"));
 
 let config = new Config(JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})));
 
-test("Test connection chain", async () => {
+test("Connection chain", async () => {
 
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
 
@@ -141,6 +141,23 @@ test("Send help w/o commands", async () => {
     sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Alice", "!lights", null,
         "There are no commands available.");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice");
+});
+
+test("Cooldown calculation", () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+    let bobRawMessage = new TwitchPrivateMessage("doesNotMatter", null, new Map([["badges", "moderator"]]), {nick: "Bob"});
+    let ownerRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: config.twitch.channel});
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+
+    expect(twitch2Ma.cooldown(new Date().getTime(), null, aliceRawMessage)).toBeLessThanOrEqual(0);
+    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), aliceRawMessage)).toBeGreaterThan(0);
+    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), bobRawMessage)).toBeLessThanOrEqual(0);
+    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), aliceRawMessage)).toBeGreaterThan(0);
+    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), ownerRawMessage)).toBeLessThanOrEqual(0);
+    expect(twitch2Ma.cooldown(new Date().getTime(), new Date().getTime(), aliceRawMessage)).toBeGreaterThan(0);
+    expect(twitch2Ma.cooldown(new Date().getTime(), 666, aliceRawMessage)).toBeLessThanOrEqual(0);
 });
 
 function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
