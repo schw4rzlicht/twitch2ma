@@ -160,6 +160,22 @@ test("Cooldown calculation", () => {
     expect(twitch2Ma.cooldown(new Date().getTime(), 666, aliceRawMessage)).toBeLessThanOrEqual(0);
 });
 
+test("Cooldown active", async () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+
+    await twitch2Ma.start();
+
+    let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
+
+    twitch2Ma["lastCall"] = new Date().getTime();
+
+    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Alice", "!red",
+        aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
+})
+
 function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
                                          spyOnTwitchSay: SpyInstance,
                                          channel: string,
@@ -169,7 +185,7 @@ function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
                                          answer: string) {
 
     sendMessageToBot(twitch2Ma, channel, user, message, rawMessage);
-    expect(spyOnTwitchSay).toBeCalledWith(channel, answer);
+    expect(spyOnTwitchSay).toBeCalledWith(channel, expect.stringMatching(answer));
 }
 
 function sendMessageToBot(twitch2Ma: Twitch2Ma, channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
