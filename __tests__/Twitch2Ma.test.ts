@@ -91,7 +91,7 @@ test("Message handler set", async () => {
 
     let spyOnMessageHandler = jest.spyOn(twitch2Ma, "handleMessage");
 
-    sendMessageToBot(twitch2Ma, "#mychannel", "myUser", "myMessage", null);
+    await sendMessageToBot(twitch2Ma, "#mychannel", "myUser", "myMessage", null);
 
     expect(spyOnMessageHandler).toBeCalled();
 });
@@ -107,25 +107,25 @@ test("Send help", async () => {
 
     let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
 
-    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Alice", "!lights", null,
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Alice", "!lights", null,
         `Available commands are: ${twitch2Ma["availableCommands"]}. Type !lights !command for help.`);
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice");
 
     helpExecutedHandler.mockReset();
 
-    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Bob", "!lights !doesNotExist", null,
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Bob", "!lights !doesNotExist", null,
         "Command !doesNotExist does not exist! Type !lights for a list of available commands.");
     expect(helpExecutedHandler).not.toBeCalled();
 
-    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Celine", "!lights !red", null,
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Celine", "!lights !red", null,
         "Help for !red: Sets the lights to red");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Celine", "red");
 
-    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Celine", "!lights blue", null,
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Celine", "!lights blue", null,
         "Help for !blue: Sets the lights to blue");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Celine", "blue");
 
-    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Mary", "!lights !yellow", null,
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Mary", "!lights !yellow", null,
         "No help for !yellow available!");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Mary", "yellow");
 });
@@ -140,7 +140,7 @@ test("Send help w/o commands", async () => {
 
     await twitch2Ma.start();
 
-    sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
         "Alice", "!lights", null, "There are no commands available.");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice");
 });
@@ -172,11 +172,23 @@ test("Cooldown active", async () => {
 
     twitch2Ma["lastCall"] = new Date().getTime();
 
-    sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
         "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
 });
 
-function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
+test("Command successful", async () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+
+    await twitch2Ma.start();
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!red", aliceRawMessage, "@Alice set the lights to red!");
+});
+
+async function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
                                          spyOnTwitchSay: SpyInstance,
                                          channel: string,
                                          user: string,
@@ -184,13 +196,13 @@ function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
                                          rawMessage: TwitchPrivateMessage,
                                          answer: string) {
 
-    sendMessageToBot(twitch2Ma, channel, user, message, rawMessage);
+    await sendMessageToBot(twitch2Ma, channel, user, message, rawMessage);
     expect(spyOnTwitchSay).toBeCalledWith(channel, expect.stringMatching(answer));
 }
 
-function sendMessageToBot(twitch2Ma: Twitch2Ma, channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
+async function sendMessageToBot(twitch2Ma: Twitch2Ma, channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
     // @ts-ignore
-    twitch2Ma["chatClient"].onPrivmsgHandler(channel, user, message, rawMessage);
+    await twitch2Ma["chatClient"].onPrivmsgHandler(channel, user, message, rawMessage);
 }
 
 function getTwitch2MaInstanceAndEnableLogin(newConfig?: Config): Twitch2Ma {

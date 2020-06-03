@@ -101,7 +101,7 @@ export default class Twitch2Ma extends EventEmitter {
         return this.chatClient.connect();
     }
 
-    handleMessage(channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
+    async handleMessage(channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
 
         let now = new Date().getTime();
 
@@ -117,7 +117,7 @@ export default class Twitch2Ma extends EventEmitter {
 
                     let cooldown = this.cooldown(now, this.lastCall, rawMessage);
                     if (cooldown <= 0) {
-                        this.telnet
+                        return this.telnet
                             .send(command.consoleCommand)
                             .then(() => this.lastCall = now)
                             .then(() => {
