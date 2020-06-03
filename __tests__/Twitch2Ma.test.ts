@@ -121,6 +121,10 @@ test("Send help", async () => {
         "Help for !red: Sets the lights to red");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Celine", "red");
 
+    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Celine", "!lights blue", null,
+        "Help for !blue: Sets the lights to blue");
+    expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Celine", "blue");
+
     sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Mary", "!lights !yellow", null,
         "No help for !yellow available!");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Mary", "yellow");
@@ -136,10 +140,8 @@ test("Send help w/o commands", async () => {
 
     await twitch2Ma.start();
 
-    let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
-
-    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Alice", "!lights", null,
-        "There are no commands available.");
+    sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!lights", null, "There are no commands available.");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice");
 });
 
@@ -164,17 +166,15 @@ test("Cooldown active", async () => {
 
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
 
     await twitch2Ma.start();
 
-    let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
-
     twitch2Ma["lastCall"] = new Date().getTime();
 
-    sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Alice", "!red",
-        aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
-})
+    sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
+});
 
 function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
                                          spyOnTwitchSay: SpyInstance,
