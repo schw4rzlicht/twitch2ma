@@ -81,6 +81,20 @@ test("Twitch channel join failed", async () => {
     expect(errorHandler).toBeCalledWith(new ChannelError());
 })
 
+test("Message handler set", async () => {
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+
+    await twitch2Ma.start();
+
+    let spyOnMessageHandler = jest.spyOn(twitch2Ma, "handleMessage");
+
+    // @ts-ignore
+    twitch2Ma["chatClient"].onPrivmsgHandler("#mychannel", "myUser", "myMessage", null);
+
+    expect(spyOnMessageHandler).toBeCalled();
+});
+
 function getTwitch2MaInstanceAndEnableLogin(): Twitch2Ma {
 
     let twitch2Ma = new Twitch2Ma(config);

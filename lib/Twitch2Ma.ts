@@ -8,6 +8,7 @@ import type Telnet from "telnet-client";
 import humanizeDuration = require("humanize-duration");
 import SourceMapSupport = require("source-map-support");
 import _ = require("lodash");
+import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
 
 const TelnetClient = require("telnet-client");
 
@@ -33,6 +34,8 @@ export default class Twitch2Ma extends EventEmitter {
     private telnet: Telnet;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
+    private commands: _.Dictionary<Command>;
+    private lastCall: number;
 
     constructor(config: Config) {
         super();
@@ -80,8 +83,7 @@ export default class Twitch2Ma extends EventEmitter {
 
     initTwitch(): Promise<void> {
 
-        let commands = _.zipObject(_.map(this.config.commands, command => command.chatCommand), this.config.commands);
-        let lastCall: number;
+        this.commands = _.zipObject(_.map(this.config.commands, command => command.chatCommand), this.config.commands);
 
         this.twitchClient = Twitch.withCredentials(this.config.twitch.clientId, this.config.twitch.accessToken);
         this.chatClient = TwitchChat.forTwitchClient(this.twitchClient);
@@ -91,68 +93,71 @@ export default class Twitch2Ma extends EventEmitter {
                 .catch(() => this.stopWithError(new ChannelError()));
         });
 
-        this.chatClient.onPrivmsg((channel, user, message, rawMessage) => {
+        this.chatClient.onPrivmsg((channel, user, message, rawMessage) =>
+            this.handleMessage(channel, user, message, rawMessage));
 
-            let now = new Date().getTime();
+        return this.chatClient.connect();
+    }
 
-            let chatCommand = message.match(/!(\w+)( !?\w+)?/);
-            if (_.isArray(chatCommand)) {
+    handleMessage(channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
 
-                if (chatCommand[1] === "lights") {
-                    let message: string;
-                    if (_.isString(chatCommand[2])) {
+        let now = new Date().getTime();
 
-                        let helpCommand = chatCommand[2].match(/ !?(\w+)/)[1];
-                        let command = _.get(commands, helpCommand);
+        let chatCommand = message.match(/!(\w+)( !?\w+)?/);
+        if (_.isArray(chatCommand)) {
 
-                        if (command instanceof Command) {
-                            if (_.isString(command.help)) {
-                                message = `Help for !${helpCommand}: ${command.help}`;
-                            } else {
-                                message = `No help for !${helpCommand} available!`;
-                            }
-                            this.emit(this.onHelpExecuted, channel, user, command.chatCommand);
-                        } else {
-                            message = `Command !${helpCommand} does not exist! Type !lights for a list of available commands.`;
-                        }
-                    } else {
-                        if (_.size(this.config.commands)) {
-                            let commands = _.map(this.config.commands, command => `!${command.chatCommand}`);
-                            message = "Available commands are: " + commands.join(", ") + ". Type !lights !command for help.";
-                        } else {
-                            message = "There are no commands available.";
-                        }
-                        this.emit(this.onHelpExecuted, channel, user);
-                    }
-                    this.chatClient.say(channel, message);
+            if (chatCommand[1] === "lights") {
+                let message: string;
+                if (_.isString(chatCommand[2])) {
 
-                } else {
+                    let helpCommand = chatCommand[2].match(/ !?(\w+)/)[1];
+                    let command = _.get(this.commands, helpCommand);
 
-                    let command = _.get(commands, chatCommand[1])
                     if (command instanceof Command) {
-
-                        let difference = _.isInteger(lastCall) ? lastCall + this.config.timeout * 1000 - now : -1;
-                        if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
-                            this.telnet
-                                .send(command.consoleCommand)
-                                .then(() => lastCall = now)
-                                .then(() => {
-                                    if (_.isString(command.message)) {
-                                        this.chatClient.say(channel, command.message.replace("{user}", `@${user}`));
-                                    }
-                                })
-                                .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
-                                .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        if (_.isString(command.help)) {
+                            message = `Help for !${helpCommand}: ${command.help}`;
                         } else {
-                            let differenceString = humanizeDuration(difference + (1000 - difference % 1000));
-                            this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
+                            message = `No help for !${helpCommand} available!`;
                         }
+                        this.emit(this.onHelpExecuted, channel, user, command.chatCommand);
+                    } else {
+                        message = `Command !${helpCommand} does not exist! Type !lights for a list of available commands.`;
+                    }
+                } else {
+                    if (_.size(this.config.commands)) {
+                        let commands = _.map(this.config.commands, command => `!${command.chatCommand}`);
+                        message = "Available commands are: " + commands.join(", ") + ". Type !lights !command for help.";
+                    } else {
+                        message = "There are no commands available.";
+                    }
+                    this.emit(this.onHelpExecuted, channel, user);
+                }
+                this.chatClient.say(channel, message);
+
+            } else {
+
+                let command = _.get(this.commands, chatCommand[1])
+                if (command instanceof Command) {
+
+                    let difference = _.isInteger(this.lastCall) ? this.lastCall + this.config.timeout * 1000 - now : -1;
+                    if (difference < 0 || rawMessage.userInfo.isMod || user === this.config.twitch.channel) {
+                        this.telnet
+                            .send(command.consoleCommand)
+                            .then(() => this.lastCall = now)
+                            .then(() => {
+                                if (_.isString(command.message)) {
+                                    this.chatClient.say(channel, command.message.replace("{user}", `@${user}`));
+                                }
+                            })
+                            .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
+                            .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                    } else {
+                        let differenceString = humanizeDuration(difference + (1000 - difference % 1000));
+                        this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
                     }
                 }
             }
-        });
-
-        return this.chatClient.connect();
+        }
     }
 
     onError = this.registerEvent<(error: Error) => any>();
