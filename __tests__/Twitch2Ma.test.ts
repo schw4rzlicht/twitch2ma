@@ -14,7 +14,7 @@ jest.mock("source-map-support");
 jest.mock("twitch-chat-client");
 jest.mock("telnet-client", require("./mocks/telnet-client"));
 
-let config = new Config(JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})));
+let config = loadConfig();
 
 test("Connection chain", async () => {
 
@@ -130,7 +130,7 @@ test("Send help w/o commands", async () => {
 
     let helpExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
     twitch2Ma.onHelpExecuted(helpExecutedHandler);
     twitch2Ma["config"].commands = [];
 
@@ -193,12 +193,16 @@ function sendMessageToBot(twitch2Ma: Twitch2Ma, channel: string, user: string, m
     twitch2Ma["chatClient"].onPrivmsgHandler(channel, user, message, rawMessage);
 }
 
-function getTwitch2MaInstanceAndEnableLogin(): Twitch2Ma {
+function getTwitch2MaInstanceAndEnableLogin(newConfig?: Config): Twitch2Ma {
 
-    let twitch2Ma = new Twitch2Ma(config);
+    let twitch2Ma = newConfig ? new Twitch2Ma(newConfig) : new Twitch2Ma(config);
 
     jest.spyOn(twitch2Ma["telnet"], "exec")
         .mockResolvedValueOnce(`Logged in as User '${config.ma.user}'`);
 
     return twitch2Ma;
+}
+
+function loadConfig(): Config {
+    return new Config(JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})));
 }
