@@ -7,6 +7,7 @@ import Fs = require("fs");
 jest.mock("source-map-support");
 ////
 
+jest.mock("twitch-chat-client");
 jest.mock("telnet-client", require("./mocks/telnet-client"));
 
 let config = new Config(JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})));
@@ -20,12 +21,14 @@ test("Test connection", async () => {
         .mockReturnValueOnce(new Promise(resolve => resolve(`Logged in as User '${config.ma.user}'`)));
 
     let spyOnTelnetLogin = jest.spyOn(twitch2Ma, "telnetLogin");
+    let spyOnInitTwitch = jest.spyOn(twitch2Ma, "initTwitch");
+    let spyOnOnError = jest.spyOn(twitch2Ma, "onError");
 
-    await expect(twitch2Ma.start()).resolves.toBeTruthy();
+    await expect(twitch2Ma.start()).resolves.toBeUndefined();
 
     expect(twitch2Ma["telnet"].connect).toBeCalled();
     expect(spyOnTelnetLogin).toBeCalled();
-    expect(twitch2Ma.initTwitch).toBeCalled();
+    expect(spyOnInitTwitch).toBeCalled();
 
-    expect(twitch2Ma.onError).not.toBeCalled();
+    expect(spyOnOnError).not.toBeCalled();
 });
