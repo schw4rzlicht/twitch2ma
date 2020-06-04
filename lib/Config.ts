@@ -60,11 +60,31 @@ export class Command {
     public consoleCommand: string;
     public message: string;
     public help: string;
+    public parameters: Array<Parameter>;
 
     constructor(command: any) {
         this.chatCommand = command.chatCommand;
         this.consoleCommand = command.consoleCommand;
         this.message = command.message;
         this.help = command.help;
+        this.parameters = new Array<Parameter>();
+
+        if(_.isArray(command.parameters)) {
+            for (const parameter of command.parameters) {
+                this.parameters.push(new Parameter(parameter));
+            }
+        }
+    }
+}
+
+export class Parameter {
+    public parameter: string;
+    public consoleCommand: string;
+    public message: string;
+
+    constructor(parameter: any) {
+        this.parameter = parameter.parameter;
+        this.consoleCommand = parameter.consoleCommand;
+        this.message = parameter.message;
     }
 }

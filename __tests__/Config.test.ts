@@ -29,10 +29,20 @@ test("Constructor", () => {
         expect(command.chatCommand).toBeTruthy();
         expect(command.chatCommand).toBe(rawConfig.commands[index].chatCommand);
 
-        expect(command.consoleCommand).toBeTruthy();
         expect(command.consoleCommand).toBe(rawConfig.commands[index].consoleCommand);
         
         expect(command.message).toBe(rawConfig.commands[index].message);
         expect(command.help).toBe(rawConfig.commands[index].help);
+
+        command.parameters.forEach((parameter, pIndex) => {
+
+            expect(parameter.parameter).toBeTruthy();
+            expect(parameter.parameter).toBe(rawConfig.commands[index].parameters[pIndex].parameter);
+
+            expect(parameter.consoleCommand).toBeTruthy();
+            expect(parameter.consoleCommand).toBe(rawConfig.commands[index].parameters[pIndex].consoleCommand);
+
+            expect(parameter.message).toBe(rawConfig.commands[index].parameters[pIndex].message);
+        });
     });
 });
