@@ -34,7 +34,6 @@ export default class Twitch2Ma extends EventEmitter {
     private telnet: Telnet;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
-    private commands: _.Dictionary<Command>;
     private availableCommands: string;
     private lastCall: number;
 
@@ -84,7 +83,6 @@ export default class Twitch2Ma extends EventEmitter {
 
     initTwitch(): Promise<void> {
 
-        this.commands = _.zipObject(_.map(this.config.commands, command => command.chatCommand), this.config.commands);
         this.availableCommands = _.map(this.config.commands, command => `!${command.chatCommand}`).join(", ");
 
         this.twitchClient = Twitch.withCredentials(this.config.twitch.clientId, this.config.twitch.accessToken);
@@ -112,7 +110,7 @@ export default class Twitch2Ma extends EventEmitter {
                 this.sendHelp(channel, user, chatCommand[2]);
             } else {
 
-                let command = _.get(this.commands, chatCommand[1])
+                let command = this.config.getCommand(chatCommand[1]);
                 if (command instanceof Command) {
 
                     let cooldown = this.cooldown(now, this.lastCall, rawMessage);
@@ -150,7 +148,7 @@ export default class Twitch2Ma extends EventEmitter {
         if (_.isString(helpCommand)) {
 
             helpCommand = helpCommand.match(/ !?(\w+)/)[1];
-            let command = _.get(this.commands, helpCommand);
+            let command = this.config.getCommand(helpCommand);
 
             if (command instanceof Command) {
                 if (_.isString(command.help)) {

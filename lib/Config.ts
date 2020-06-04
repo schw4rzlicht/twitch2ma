@@ -3,10 +3,12 @@ import configSchema = require("../resources/config.schema.json");
 import _ = require("lodash");
 
 export class Config {
-    public timeout: number;
-    public ma: MaConfig;
-    public twitch: TwitchConfig;
-    public commands: Array<Command>;
+    public readonly timeout: number;
+    public readonly ma: MaConfig;
+    public readonly twitch: TwitchConfig;
+    public readonly commands: Array<Command>;
+
+    private readonly commandMap: _.Dictionary<Command>;
 
     constructor(config: any) {
 
@@ -28,13 +30,19 @@ export class Config {
         for (const command of config.commands) {
             this.commands.push(new Command(command));
         }
+
+        this.commandMap = _.zipObject(_.map(this.commands, command => command.chatCommand), this.commands); // TODO debug
+    }
+
+    getCommand(chatCommand: string): Command {
+        return _.get(this.commandMap, chatCommand);
     }
 }
 
 export class MaConfig {
-    public host: string;
-    public user: string;
-    public password: string;
+    public readonly host: string;
+    public readonly user: string;
+    public readonly password: string;
 
     constructor(maConfig: any) {
         this.host = maConfig.host;
@@ -44,9 +52,9 @@ export class MaConfig {
 }
 
 export class TwitchConfig {
-    public clientId: string;
-    public accessToken: string;
-    public channel: string;
+    public readonly clientId: string;
+    public readonly accessToken: string;
+    public readonly channel: string;
 
     constructor(twitchConfig: any) {
         this.clientId = twitchConfig.clientId;
@@ -56,11 +64,13 @@ export class TwitchConfig {
 }
 
 export class Command {
-    public chatCommand: string;
-    public consoleCommand: string;
-    public message: string;
-    public help: string;
-    public parameters: Array<Parameter>;
+    public readonly chatCommand: string;
+    public readonly consoleCommand: string;
+    public readonly message: string;
+    public readonly help: string;
+    public readonly parameters: Array<Parameter>;
+
+    private readonly parameterMap: _.Dictionary<Parameter>;
 
     constructor(command: any) {
         this.chatCommand = command.chatCommand;
@@ -73,14 +83,21 @@ export class Command {
             for (const parameter of command.parameters) {
                 this.parameters.push(new Parameter(parameter));
             }
+            this.parameterMap = _.zipObject(_.map(this.parameters, parameter => parameter.parameter), this.parameters); // TODO debug
+        } else {
+            this.parameterMap = {};
         }
+    }
+
+    getParameter(parameter: string): Parameter {
+        return _.get(this.parameterMap, parameter);
     }
 }
 
 export class Parameter {
-    public parameter: string;
-    public consoleCommand: string;
-    public message: string;
+    public readonly parameter: string;
+    public readonly consoleCommand: string;
+    public readonly message: string;
 
     constructor(parameter: any) {
         this.parameter = parameter.parameter;

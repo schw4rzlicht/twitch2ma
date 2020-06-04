@@ -1,4 +1,4 @@
-import {Config, MaConfig, TwitchConfig, Command} from "../lib/Config";
+import {Config, MaConfig, TwitchConfig, Command, Parameter} from "../lib/Config";
 
 import Fs = require("fs");
 
@@ -23,8 +23,10 @@ test("Constructor", () => {
     expect(config.commands.length).toBeGreaterThan(0);
 
     config.commands.forEach((command, index) => {
-        
+
         expect(command).toBeInstanceOf(Command);
+
+        expect(config.getCommand(command.chatCommand)).toBe(command);
         
         expect(command.chatCommand).toBeTruthy();
         expect(command.chatCommand).toBe(rawConfig.commands[index].chatCommand);
@@ -35,6 +37,10 @@ test("Constructor", () => {
         expect(command.help).toBe(rawConfig.commands[index].help);
 
         command.parameters.forEach((parameter, pIndex) => {
+
+            expect(parameter).toBeInstanceOf(Parameter);
+
+            expect(command.getParameter(parameter.parameter)).toBe(parameter);
 
             expect(parameter.parameter).toBeTruthy();
             expect(parameter.parameter).toBe(rawConfig.commands[index].parameters[pIndex].parameter);
