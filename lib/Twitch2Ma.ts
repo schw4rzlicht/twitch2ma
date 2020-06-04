@@ -100,7 +100,7 @@ export default class Twitch2Ma extends EventEmitter {
 
         let now = new Date().getTime();
 
-        let chatCommand = message.match(/!(\w+)( !?\w+)?/);
+        let chatCommand = message.match(/!([a-zA-Z0-9]+)( !?[a-zA-Z0-9]+)?/);
         if (_.isArray(chatCommand)) {
 
             if (chatCommand[1] === "lights") {
@@ -144,7 +144,7 @@ export default class Twitch2Ma extends EventEmitter {
         let message: string;
         if (_.isString(helpCommand)) {
 
-            helpCommand = helpCommand.match(/ !?(\w+)/)[1];
+            helpCommand = helpCommand.match(/([a-zA-Z0-9]+)/)[1];
             let command = this.config.getCommand(helpCommand);
 
             if (command instanceof Command) {
