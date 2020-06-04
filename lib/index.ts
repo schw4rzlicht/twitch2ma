@@ -16,9 +16,11 @@ const config = failOnErrorOrReturnValue(_.attempt(() => new Config(jsonObject)))
 const twitch2ma = new Twitch2Ma(config);
 
 twitch2ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
+
     parameterName = _.isString(parameterName) ? ` ${parameterName}` : "";
-    console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}} `
-        + chalk`({magenta ${consoleCommand}}) on the desk.`);
+
+    console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
+        + (_.isString(consoleCommand) ? chalk` ({magenta ${consoleCommand}}) on the desk.` : '.'));
 });
 
 twitch2ma.onHelpExecuted(((channel, user, helpCommand) => {

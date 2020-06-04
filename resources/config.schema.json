@@ -118,12 +118,7 @@
         "additionalProperties": false,
         "required": [
           "chatCommand"
-        ],
-        "dependencies": {
-          "message": [
-            "consoleCommand"
-          ]
-        }
+        ]
       }
     }
   },

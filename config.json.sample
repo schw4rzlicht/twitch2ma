@@ -28,6 +28,10 @@
       "consoleCommand": "Macro 3"
     },
     {
+      "chatCommand": "textOnly",
+      "message": "Heyyy {user}!"
+    },
+    {
       "chatCommand": "gobo",
       "help": "Gobo commands. {parameterList}",
       "parameters": [

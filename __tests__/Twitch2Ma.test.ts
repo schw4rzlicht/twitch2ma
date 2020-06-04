@@ -180,7 +180,7 @@ test("Command successful", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let commandExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onCommandExecuted(commandExecutedHandler);
     await twitch2Ma.start();
 
@@ -192,6 +192,22 @@ test("Command successful", async () => {
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
         "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
+});
+
+test("Text only command successful", async () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+    let commandExecutedHandler = jest.fn();
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+    twitch2Ma.onCommandExecuted(commandExecutedHandler);
+    await twitch2Ma.start();
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!textOnly", aliceRawMessage, "Heyyy @Alice!");
+
+    expect(twitch2Ma["telnet"].send).not.toBeCalled();
+    expect(commandExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice", "textOnly", undefined, undefined);
 });
 
 test("Parameter successful", async () => {

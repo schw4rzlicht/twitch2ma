@@ -114,9 +114,9 @@ export default class Twitch2Ma extends EventEmitter {
                 if (command instanceof Command) {
 
                     let instructions: any = command;
-                    if(_.isString(parameterName)) {
+                    if (_.isString(parameterName)) {
                         let parameter = command.getParameter(parameterName);
-                        if(parameter instanceof Parameter) {
+                        if (parameter instanceof Parameter) {
                             instructions = parameter
                         } else {
                             this.chatClient.say(channel, `Parameter ${parameterName} does not exist! Type !lights !${chatCommand} for help!`);
@@ -126,8 +126,9 @@ export default class Twitch2Ma extends EventEmitter {
 
                     let cooldown = this.cooldown(now, this.lastCall, rawMessage);
                     if (cooldown <= 0) {
-                        return this.telnet
-                            .send(instructions.consoleCommand)
+                        return (_.isString(instructions.consoleCommand)
+                            ? this.telnet.send(instructions.consoleCommand)
+                            : new Promise(resolve => resolve()))
                             .then(() => this.lastCall = now)
                             .then(() => {
                                 if (_.isString(instructions.message)) {
@@ -147,7 +148,7 @@ export default class Twitch2Ma extends EventEmitter {
 
     cooldown(now: number, lastCall: number, rawMessage: TwitchPrivateMessage): number {
 
-        if(rawMessage.userInfo.isMod || rawMessage.userInfo.userName === this.config.twitch.channel.toLowerCase()) {
+        if (rawMessage.userInfo.isMod || rawMessage.userInfo.userName === this.config.twitch.channel.toLowerCase()) {
             return 0;
         }
 
@@ -183,6 +184,6 @@ export default class Twitch2Ma extends EventEmitter {
     }
 
     onError = this.registerEvent<(error: Error) => any>();
-    onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, parameter:string, consoleCommand: string) => any>();
+    onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, parameter: string, consoleCommand: string) => any>();
     onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
 }
