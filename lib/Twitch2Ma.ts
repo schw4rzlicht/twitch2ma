@@ -138,7 +138,7 @@ export default class Twitch2Ma extends EventEmitter {
 
     cooldown(now: number, lastCall: number, rawMessage: TwitchPrivateMessage): number {
 
-        if(rawMessage.userInfo.isMod || rawMessage.userInfo.userName === this.config.twitch.channel) {
+        if(rawMessage.userInfo.isMod || rawMessage.userInfo.userName === this.config.twitch.channel.toLowerCase()) {
             return 0;
         }
 
