@@ -1,8 +1,6 @@
 import Twitch2Ma from "./Twitch2Ma";
 import {Config} from "./Config";
 
-import Ajv = require("ajv");
-import configSchema = require("../resources/config.schema.json");
 import Fs = require("fs");
 import _ = require("lodash");
 import chalk = require("chalk");
@@ -14,18 +12,7 @@ if(!_.isString(process.argv[2])) {
 let jsonObject = failOnErrorOrReturnValue(_.attempt(() => JSON.parse(Fs.readFileSync(process.argv[2], {encoding: "utf-8"}))),
     new Error(`Cannot read config file ${process.argv[2]}!`));
 
-let ajv = new Ajv({
-    allErrors: true,
-    useDefaults: true
-});
-
-ajv.validate(configSchema, jsonObject);
-
-if(_.isArray(ajv.errors)) {
-    exitWithError(new Error(`Config file is invalid: ${ajv.errorsText()}`));
-}
-
-const config = new Config(jsonObject);
+const config = failOnErrorOrReturnValue(_.attempt(() => new Config(jsonObject)));
 const twitch2ma = new Twitch2Ma(config);
 
 twitch2ma.onCommandExecuted((channel, user, chatCommand, consoleCommand) =>

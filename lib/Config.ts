@@ -1,3 +1,36 @@
+import Ajv = require("ajv");
+import configSchema = require("../resources/config.schema.json");
+import _ = require("lodash");
+
+export class Config {
+    public timeout: number;
+    public ma: MaConfig;
+    public twitch: TwitchConfig;
+    public commands: Array<Command>;
+
+    constructor(config: any) {
+
+        let ajv = new Ajv({
+            allErrors: true,
+            useDefaults: true
+        });
+        ajv.validate(configSchema, config);
+
+        if(_.isArray(ajv.errors)) {
+            throw new Error(`Config file is invalid: ${ajv.errorsText(ajv.errors, {dataVar: "config"})}!`);
+        }
+
+        this.timeout = config.timeout;
+        this.ma = new MaConfig(config.ma);
+        this.twitch = new TwitchConfig(config.twitch);
+        this.commands = new Array<Command>();
+
+        for (const command of config.commands) {
+            this.commands.push(new Command(command));
+        }
+    }
+}
+
 export class MaConfig {
     public host: string;
     public user: string;
@@ -33,23 +66,5 @@ export class Command {
         this.consoleCommand = command.consoleCommand;
         this.message = command.message;
         this.help = command.help;
-    }
-}
-
-export class Config {
-    public timeout: number;
-    public ma: MaConfig;
-    public twitch: TwitchConfig;
-    public commands: Array<Command>;
-
-    constructor(config: any) {
-        this.timeout = config.timeout;
-        this.ma = new MaConfig(config.ma);
-        this.twitch = new TwitchConfig(config.twitch);
-        this.commands = new Array<Command>();
-
-        for (const command of config.commands) {
-            this.commands.push(new Command(command));
-        }
     }
 }
