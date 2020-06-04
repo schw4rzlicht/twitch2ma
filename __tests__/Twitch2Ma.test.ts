@@ -301,5 +301,5 @@ function getTwitch2MaInstanceAndEnableLogin(newConfig?: Config): Twitch2Ma {
 }
 
 function loadConfig(overrideConfigValues?: any): Config {
-    return new Config(_.merge(JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})), overrideConfigValues));
+    return new Config(_.assign({}, JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})), overrideConfigValues));
 }
