@@ -2,7 +2,7 @@ import {EventEmitter} from '@d-fischer/typed-event-emitter';
 import Twitch from "twitch";
 import TwitchChat from "twitch-chat-client";
 import TwitchClient from "twitch";
-import {Config, Command} from "./Config";
+import {Config, Command, Parameter} from "./Config";
 import type Telnet from "telnet-client";
 
 import humanizeDuration = require("humanize-duration");
@@ -104,26 +104,37 @@ export default class Twitch2Ma extends EventEmitter {
         if (_.isArray(raw)) {
 
             let chatCommand = raw[1];
-            let parameter = raw[3];
+            let parameterName = raw[3];
 
             if (chatCommand === "lights") {
-                this.sendHelp(channel, user, parameter);
+                this.sendHelp(channel, user, parameterName);
             } else {
 
                 let command = this.config.getCommand(chatCommand);
                 if (command instanceof Command) {
 
+                    let instructions: any = command;
+                    if(_.isString(parameterName)) {
+                        let parameter = command.getParameter(parameterName);
+                        if(parameter instanceof Parameter) {
+                            instructions = parameter
+                        } else {
+                            this.chatClient.say(channel, `Parameter ${parameterName} does not exist! Type !lights !${chatCommand} for help!`);
+                            return;
+                        }
+                    }
+
                     let cooldown = this.cooldown(now, this.lastCall, rawMessage);
                     if (cooldown <= 0) {
                         return this.telnet
-                            .send(command.consoleCommand)
+                            .send(instructions.consoleCommand)
                             .then(() => this.lastCall = now)
                             .then(() => {
-                                if (_.isString(command.message)) {
-                                    this.chatClient.say(channel, command.message.replace("{user}", `@${user}`));
+                                if (_.isString(instructions.message)) {
+                                    this.chatClient.say(channel, instructions.message.replace("{user}", `@${user}`));
                                 }
                             })
-                            .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, command.consoleCommand))
+                            .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
                             .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
                     } else {
                         let differenceString = humanizeDuration(cooldown + (1000 - cooldown % 1000));
@@ -172,6 +183,6 @@ export default class Twitch2Ma extends EventEmitter {
     }
 
     onError = this.registerEvent<(error: Error) => any>();
-    onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, consoleCommand: string) => any>();
+    onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, parameter:string, consoleCommand: string) => any>();
     onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
 }

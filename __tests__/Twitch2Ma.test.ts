@@ -188,7 +188,7 @@ test("Command successful", async () => {
         "Alice", "!red", aliceRawMessage, "@Alice set the lights to red!");
 
     expect(twitch2Ma["telnet"].send).toBeCalledWith("Macro 1");
-    expect(commandExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice", "red", "Macro 1");
+    expect(commandExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice", "red", undefined, "Macro 1");
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
         "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
@@ -199,15 +199,15 @@ test("Parameter successful", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let commandExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onCommandExecuted(commandExecutedHandler);
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
-        "Alice", "!gobo evenNicerGobo", aliceRawMessage, "@Alice wished the 'evenNicerGobo'!");
+        "Alice", "!gobo evenNicerGobo", aliceRawMessage, "@Alice wishes the 'evenNicerGobo'!");
 
     expect(twitch2Ma["telnet"].send).toBeCalledWith("Macro 5");
-    expect(commandExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice", "gobo evenNicerGobo", "Macro 5");
+    expect(commandExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice", "gobo", "evenNicerGobo", "Macro 5");
 });
 
 test("Parameter does not exist", async () => {
@@ -215,7 +215,7 @@ test("Parameter does not exist", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let commandExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onCommandExecuted(commandExecutedHandler);
     await twitch2Ma.start();
 
