@@ -5,7 +5,7 @@ import Fs = require("fs");
 import _ = require("lodash");
 import chalk = require("chalk");
 
-if(!_.isString(process.argv[2])) {
+if (!_.isString(process.argv[2])) {
     exitWithError(new Error("No config file specified!"));
 }
 
@@ -15,11 +15,14 @@ let jsonObject = failOnErrorOrReturnValue(_.attempt(() => JSON.parse(Fs.readFile
 const config = failOnErrorOrReturnValue(_.attempt(() => new Config(jsonObject)));
 const twitch2ma = new Twitch2Ma(config);
 
-twitch2ma.onCommandExecuted((channel, user, chatCommand, consoleCommand) =>
-    console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} executed {bold.blue !${chatCommand}} ({magenta ${consoleCommand}}) on the desk.`));
+twitch2ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
+    parameterName = _.isString(parameterName) ? ` ${parameterName}` : "";
+    console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}} `
+        + chalk`({magenta ${consoleCommand}}) on the desk.`);
+});
 
 twitch2ma.onHelpExecuted(((channel, user, helpCommand) => {
-    if(_.isString(helpCommand)) {
+    if (_.isString(helpCommand)) {
         console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
     } else {
         console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} listed available commands.`);
@@ -38,7 +41,7 @@ twitch2ma.start()
     .catch(exitWithError);
 
 function failOnErrorOrReturnValue(value: any, overrideError?: Error) {
-    if(_.isError(value)) {
+    if (_.isError(value)) {
         exitWithError(_.isError(overrideError) ? overrideError : value);
     } else {
         return value;
