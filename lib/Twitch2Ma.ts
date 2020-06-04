@@ -100,14 +100,17 @@ export default class Twitch2Ma extends EventEmitter {
 
         let now = new Date().getTime();
 
-        let chatCommand = message.match(/!([a-zA-Z0-9]+)( !?[a-zA-Z0-9]+)?/);
-        if (_.isArray(chatCommand)) {
+        let raw = message.match(/!([a-zA-Z0-9]+)( !?([a-zA-Z0-9]+))?/);
+        if (_.isArray(raw)) {
 
-            if (chatCommand[1] === "lights") {
-                this.sendHelp(channel, user, chatCommand[2]);
+            let chatCommand = raw[1];
+            let parameter = raw[3];
+
+            if (chatCommand === "lights") {
+                this.sendHelp(channel, user, parameter);
             } else {
 
-                let command = this.config.getCommand(chatCommand[1]);
+                let command = this.config.getCommand(chatCommand);
                 if (command instanceof Command) {
 
                     let cooldown = this.cooldown(now, this.lastCall, rawMessage);
@@ -120,7 +123,7 @@ export default class Twitch2Ma extends EventEmitter {
                                     this.chatClient.say(channel, command.message.replace("{user}", `@${user}`));
                                 }
                             })
-                            .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand[1], command.consoleCommand))
+                            .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, command.consoleCommand))
                             .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
                     } else {
                         let differenceString = humanizeDuration(cooldown + (1000 - cooldown % 1000));
@@ -144,7 +147,6 @@ export default class Twitch2Ma extends EventEmitter {
         let message: string;
         if (_.isString(helpCommand)) {
 
-            helpCommand = helpCommand.match(/([a-zA-Z0-9]+)/)[1];
             let command = this.config.getCommand(helpCommand);
 
             if (command instanceof Command) {
