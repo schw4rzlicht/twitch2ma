@@ -34,7 +34,6 @@ export default class Twitch2Ma extends EventEmitter {
     private telnet: Telnet;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
-    private availableCommands: string;
     private lastCall: number;
 
     constructor(config: Config) {
@@ -82,8 +81,6 @@ export default class Twitch2Ma extends EventEmitter {
     }
 
     initTwitch(): Promise<void> {
-
-        this.availableCommands = _.map(this.config.commands, command => `!${command.chatCommand}`).join(", ");
 
         this.twitchClient = Twitch.withCredentials(this.config.twitch.clientId, this.config.twitch.accessToken);
         this.chatClient = TwitchChat.forTwitchClient(this.twitchClient);
@@ -162,7 +159,7 @@ export default class Twitch2Ma extends EventEmitter {
             }
         } else {
             if (_.size(this.config.commands)) {
-                message = "Available commands are: " + this.availableCommands + ". Type !lights !command for help.";
+                message = "Available commands are: " + this.config.availableCommands + ". Type !lights !command for help.";
             } else {
                 message = "There are no commands available.";
             }

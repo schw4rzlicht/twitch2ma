@@ -36,6 +36,8 @@ test("Constructor", () => {
         expect(command.message).toBe(rawConfig.commands[index].message);
         expect(command.help).toBe(rawConfig.commands[index].help);
 
+        expect(config.availableCommands).toMatch(new RegExp(command.chatCommand));
+
         command.parameters.forEach((parameter, pIndex) => {
 
             expect(parameter).toBeInstanceOf(Parameter);
@@ -49,6 +51,8 @@ test("Constructor", () => {
             expect(parameter.consoleCommand).toBe(rawConfig.commands[index].parameters[pIndex].consoleCommand);
 
             expect(parameter.message).toBe(rawConfig.commands[index].parameters[pIndex].message);
+
+            expect(command.availableParameters).toMatch(new RegExp(parameter.parameter));
         });
     });
 });

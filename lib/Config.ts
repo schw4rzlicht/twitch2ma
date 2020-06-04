@@ -7,6 +7,7 @@ export class Config {
     public readonly ma: MaConfig;
     public readonly twitch: TwitchConfig;
     public readonly commands: Array<Command>;
+    public readonly availableCommands: string;
 
     private readonly commandMap: _.Dictionary<Command>;
 
@@ -31,6 +32,7 @@ export class Config {
             this.commands.push(new Command(command));
         }
 
+        this.availableCommands = _.map(this.commands, command => `!${command.chatCommand}`).join(", ");
         this.commandMap = _.zipObject(_.map(this.commands, command => command.chatCommand), this.commands); // TODO debug
     }
 
@@ -69,6 +71,7 @@ export class Command {
     public readonly message: string;
     public readonly help: string;
     public readonly parameters: Array<Parameter>;
+    public readonly availableParameters: string;
 
     private readonly parameterMap: _.Dictionary<Parameter>;
 
@@ -84,6 +87,7 @@ export class Command {
                 this.parameters.push(new Parameter(parameter));
             }
             this.parameterMap = _.zipObject(_.map(this.parameters, parameter => parameter.parameter), this.parameters); // TODO debug
+            this.availableParameters = _.map(this.parameters, parameter => parameter.parameter).join(", ");
         } else {
             this.parameterMap = {};
         }

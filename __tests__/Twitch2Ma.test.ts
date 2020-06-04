@@ -5,7 +5,7 @@ import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/Twitch
 
 import TwitchChatClient from "twitch-chat-client";
 import Fs = require("fs");
-import SpyInstance = jest.SpyInstance;
+import _ = require("lodash");
 
 // Workaround, see https://github.com/evanw/node-source-map-support/issues/279
 jest.mock("source-map-support");
@@ -104,7 +104,7 @@ test("Send help", async () => {
     let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Alice", "!lights", null,
-        `Available commands are: ${twitch2Ma["availableCommands"]}. Type !lights !command for help.`);
+        `Available commands are: ${config.availableCommands}. Type !lights !command for help.`);
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice");
 
     helpExecutedHandler.mockReset();
@@ -134,9 +134,8 @@ test("Send help w/o commands", async () => {
 
     let helpExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig({commands: []}));
     twitch2Ma.onHelpExecuted(helpExecutedHandler);
-    twitch2Ma["config"].commands = [];
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
@@ -264,7 +263,7 @@ test("Message not involving the bot", async () => {
 });
 
 async function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
-                                         spyOnTwitchSay: SpyInstance,
+                                         spyOnTwitchSay: jest.SpyInstance,
                                          channel: string,
                                          user: string,
                                          message: string,
@@ -276,7 +275,7 @@ async function sendMessageToBotAndExpectAnswer(twitch2Ma: Twitch2Ma,
 }
 
 async function sendMessageToBotAndDontExpectAnswer(twitch2Ma: Twitch2Ma,
-                                                   spyOnTwitchSay: SpyInstance,
+                                                   spyOnTwitchSay: jest.SpyInstance,
                                                    channel: string,
                                                    user: string,
                                                    message: string,
@@ -301,6 +300,6 @@ function getTwitch2MaInstanceAndEnableLogin(newConfig?: Config): Twitch2Ma {
     return twitch2Ma;
 }
 
-function loadConfig(): Config {
-    return new Config(JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})));
+function loadConfig(overrideConfigValues?: any): Config {
+    return new Config(_.merge(JSON.parse(Fs.readFileSync("config.json.sample", {encoding: "utf-8"})), overrideConfigValues));
 }
