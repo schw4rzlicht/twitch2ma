@@ -124,6 +124,10 @@ test("Send help", async () => {
     await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Mary", "!lights !yellow", null,
         "No help for !yellow available!");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Mary", "yellow");
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Noely", "!lights !gobo", null,
+        "Gobo commands. Available parameters: niceGobo, evenNicerGobo");
+    expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Noely", "gobo");
 });
 
 test("Send help w/o commands", async () => {
@@ -189,6 +193,37 @@ test("Command successful", async () => {
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
         "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
+});
+
+test("Parameter successful", async () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+    let commandExecutedHandler = jest.fn();
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
+    twitch2Ma.onCommandExecuted(commandExecutedHandler);
+    await twitch2Ma.start();
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!gobo evenNicerGobo", aliceRawMessage, "@Alice wished the 'evenNicerGobo'!");
+
+    expect(twitch2Ma["telnet"].send).toBeCalledWith("Macro 5");
+    expect(commandExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice", "gobo evenNicerGobo", "Macro 5");
+});
+
+test("Parameter does not exist", async () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+    let commandExecutedHandler = jest.fn();
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
+    twitch2Ma.onCommandExecuted(commandExecutedHandler);
+    await twitch2Ma.start();
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!gobo doesNotExist", aliceRawMessage, "Parameter doesNotExist does not exist! Type !lights !gobo for help!");
+
+    expect(twitch2Ma["telnet"].send).not.toBeCalled();
 });
 
 test("Telnet command failed", async () => {
