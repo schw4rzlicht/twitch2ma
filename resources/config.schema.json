@@ -1,55 +1,62 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Config",
-  "description": "A config for twitch2ma",
+  "description": "The schema for the config JSON used by twitch2ma",
   "type": "object",
   "properties": {
     "timeout": {
-      "description": "The time between commands in seconds",
+      "description": "The cooldown time in seconds between the execution of any command (prevents flooding/spamming). Does not apply to moderators and channel owners.",
       "type": "integer",
       "minimum": 0
     },
     "ma": {
-      "description": "The config for the telnet connection to the desk",
+      "description": "GrandMA 2 telnet configuration",
       "type": "object",
       "properties": {
         "host": {
-          "description": "The IP address of the desk",
+          "description": "The IP address of the desk to connect to.",
           "type": "string",
           "format": "ipv4"
         },
         "user": {
-          "description": "The user name of the user to log in to the desk",
+          "description": "The GrandMA 2 user to log in with.",
           "type": "string",
-          "default": "administrator"
+          "default": "administrator",
+          "pattern": "^[a-zA-Z0-9]+$"
         },
         "password": {
-          "description": "The password of the user on the desk",
+          "description": "The password for the user defined in 'ma.user'.",
           "type": "string",
-          "default": "admin"
+          "default": "admin",
+          "pattern": "^[a-zA-Z0-9]+$"
         }
       },
+      "additionalProperties": false,
       "required": [
         "host"
       ]
     },
     "twitch": {
-      "description": "The config for the Twitch connection",
+      "description": "The config for the Twitch connection.",
       "type": "object",
       "properties": {
         "clientId": {
-          "description": "The client ID of the Twitch app the bot runs on",
-          "type": "string"
+          "description": "The client ID obtained by Twitch.",
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9]+$"
         },
         "accessToken": {
-          "description": "The access token used to connect to Twitch",
-          "type": "string"
+          "description": "The access token obtained by Twitch.",
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9]+$"
         },
         "channel": {
-          "description": "The Twitch channel the bot should listen to",
-          "type": "string"
+          "description": "The Twitch channel the bot connects to.",
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9]+$"
         }
       },
+      "additionalProperties": false,
       "required": [
         "clientId",
         "accessToken",
@@ -57,35 +64,70 @@
       ]
     },
     "commands": {
-      "description": "An array of commands the bot reacts to",
+      "description": "An array of commands the bot reacts to.",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "chatCommand": {
-            "description": "The command that needs to be run in chat, without !",
-            "type": "string"
+            "description": "The command viewers need to use in chat without '!'. The command 'lights' is reserved for viewer help. ",
+            "type": "string",
+            "pattern": "^((?!\\b[lL][iI][gG][hH][tT][sS]\\b)[a-z0-9])+$"
           },
           "consoleCommand": {
-            "description": "The command that runs on the console",
+            "description": "The command that gets executed on the desk.",
             "type": "string"
           },
           "message": {
-            "description": "The message that the bot returns after successful execution",
+            "description": "A message that is sent to Twitch chat when the command was executed on the desk. '{user}' is replaced by the user who issued the command.",
             "type": "string"
           },
           "help": {
-            "description": "The help that users can get when running !ma",
+            "description": "A help message that is sent to Twitch when viewers run the command '!lights !<command>'. '{parameterList}' is replaced by a list of available parameters if any.",
             "type": "string"
+          },
+          "parameters": {
+            "description": "An array of parameters for each command so viewers can call '!<command> <parameter>'.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "parameter": {
+                  "description": "The parameter to append to the command.",
+                  "type": "string",
+                  "pattern": "^[a-zA-Z0-9]+$"
+                },
+                "consoleCommand": {
+                  "description": "The command that gets executed on the desk when using the parameter.",
+                  "type": "string"
+                },
+                "message": {
+                  "description": "A message that is sent to Twitch chat when the parameter was executed on the desk. '{user}' gets replaced by the user who issued the command.",
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "parameter",
+                "consoleCommand"
+              ]
+            },
+            "minItems": 1
           }
         },
+        "additionalProperties": false,
         "required": [
-          "chatCommand",
-          "consoleCommand"
-        ]
+          "chatCommand"
+        ],
+        "dependencies": {
+          "message": [
+            "consoleCommand"
+          ]
+        }
       }
     }
   },
+  "additionalProperties": false,
   "required": [
     "timeout",
     "ma",

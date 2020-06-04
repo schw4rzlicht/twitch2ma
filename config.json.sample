@@ -6,9 +6,9 @@
     "password": "admin"
   },
   "twitch": {
-    "clientId": "your-client-id",
-    "accessToken": "your-access-token",
-    "channel": "your-twitch-channel"
+    "clientId": "yourClientID",
+    "accessToken": "yourAccessToken",
+    "channel": "yourTwitchChannel"
   },
   "commands": [
     {
@@ -25,7 +25,22 @@
     },
     {
       "chatCommand": "yellow",
-      "consoleCommand": "Macro 2"
+      "consoleCommand": "Macro 3"
+    },
+    {
+      "chatCommand": "gobo",
+      "help": "Gobo commands. {parameterList}",
+      "parameters": [
+        {
+          "parameter": "niceGobo",
+          "consoleCommand": "Macro 4"
+        },
+        {
+          "parameter": "evenNicerGobo",
+          "consoleCommand": "Macro 5",
+          "message": "{user} wishes the 'evenNicerGobo'!"
+        }
+      ]
     }
   ]
 }

@@ -20,28 +20,7 @@ Before you can run `twitch2ma` you need a config file in JSON format. A sample f
 [located in the root directory](https://github.com/schw4rzlicht/twitch2ma/blob/master/config.json.sample) of the 
 repository and ships with the npm package.
 
-### Options in detail
-
-- `timeout`: The time in seconds between the execution of any command (prevents flooding/spamming). Does not apply to 
-moderators and the channel owners.
-- `ma`
-  - `host`: The IP adress of your GrandMA 2 in you local network.
-  - `user`/`password`: The GrandMA user and password that should run the commands on the desk. Not mandatory, defaults 
-  to `administrator` and `admin` if not set.
-- `twitch`
-  - `clientId`: Your client ID obtained by Twitch
-  - `accessToken`: Your access token obtained by Twitch
-  - `channel`: The channel you want the bot to listen to
-- `commands`: A definition of your commands. You can define as many commands as you want to. Commands always start with
-`!`. So when `chatCommand` is `red` for example, viewers have to put `!red` into the chat to trigger it.
-  - `chatCommand`: The command viewers need to use to trigger the action. Pleasae be aware that the command `lights` is
-  reserved to display help for the viewers.
-  - `consoleCommand`: The command that gets executed on the desk. Could be anything you could use in the command line of
-  the desk.
-  - `message`: A message that is sent to Twitch chat by the bot when the command was executed on the desk. `{user}` gets
-  replaced by the user who issued the command in the chat. Not mandatory.
-  - `help`: The message to be displayed when viewers run the command `!lights !chatCommand` so they know what the 
-  corresponding command does. Not mandatory.
+Find a detailed description of every option [here](docs/config.json.md).
 
 ### Twitch authentication
 
