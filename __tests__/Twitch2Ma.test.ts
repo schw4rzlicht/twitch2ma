@@ -126,7 +126,7 @@ test("Send help", async () => {
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Mary", "yellow");
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, spyOnTwitchSay, "#doesNotMatter", "Noely", "!lights !gobo", null,
-        "Gobo commands. Available parameters: niceGobo, evenNicerGobo");
+        "Help for !gobo: Gobo commands. Available parameters: niceGobo, evenNicerGobo");
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Noely", "gobo");
 });
 

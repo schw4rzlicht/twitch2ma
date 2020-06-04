@@ -149,7 +149,8 @@ export default class Twitch2Ma extends EventEmitter {
 
             if (command instanceof Command) {
                 if (_.isString(command.help)) {
-                    message = `Help for !${helpCommand}: ${command.help}`;
+                    let parametersHelp = _.isString(command.availableParameters) ? `Available parameters: ${command.availableParameters}` : "";
+                    message = `Help for !${helpCommand}: ${command.help.replace("{parameterList}", parametersHelp).trim()}`;
                 } else {
                     message = `No help for !${helpCommand} available!`;
                 }
