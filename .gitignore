@@ -1,4 +1,5 @@
 config.json
+config.yml
 .idea
 dist
 node_modules
