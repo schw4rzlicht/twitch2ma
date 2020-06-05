@@ -8,7 +8,6 @@
     "test": "npm run validateConfig && jest",
     "build": "tsc",
     "prepare": "npm run build",
-    "postversion": "git push && git push --tags",
     "validateConfig": "npm run validateConfigSchema && ajv validate -s resources/config.schema.json -d config.json.sample",
     "validateConfigSchema": "ajv compile -s resources/**.schema.json"
   },
