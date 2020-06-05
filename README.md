@@ -39,8 +39,10 @@ To run `twitch2ma`, just run the following command. Please be aware that you nee
 network, reachable under the IP adress you configured. You also have to have telnet turned on.
 
 ```bash
-twitch2ma <pathToConfigFile.json>
+twitch2ma [configFile]
 ```
+
+`configFile` is optional and defaults to `config.json`.
 
 ## Contribution
 

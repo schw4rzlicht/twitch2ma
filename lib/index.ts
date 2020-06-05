@@ -19,8 +19,10 @@ program
 
 function main(configFile: string) {
 
-    if (!_.isString(configFile)) {
-        exitWithError(new Error("No config file specified!"));
+    let configFileIsDefault = !_.isString(configFile);
+
+    if (configFileIsDefault) {
+        configFile = "config.json";
     }
 
     let jsonObject = failOnErrorOrReturnValue(_.attempt(() => JSON.parse(Fs.readFileSync(configFile, {encoding: "utf-8"}))),
