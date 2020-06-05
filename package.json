@@ -61,11 +61,7 @@
       "master",
       "next",
       {
-        "name": "dev",
-        "prerelease": true
-      },
-      {
-        "name": "semantic-release",
+        "name": "rc",
         "prerelease": true
       }
     ],
