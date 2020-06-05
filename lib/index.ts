@@ -6,7 +6,7 @@ import Fs = require("fs");
 import _ = require("lodash");
 import chalk = require("chalk");
 
-const packageInformation = require("../package.json");
+const packageInformation = require("../../package.json");
 
 const program = new Command();
 
