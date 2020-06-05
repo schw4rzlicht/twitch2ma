@@ -63,7 +63,12 @@
       {
         "name": "dev",
         "prerelease": true
+      },
+      {
+        "name": "semantic-release",
+        "prerelease": true
       }
-    ]
+    ],
+    "dryRun": true
   }
 }
