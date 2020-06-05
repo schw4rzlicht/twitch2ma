@@ -16,11 +16,11 @@ npm install -g twitch2ma
 
 ## Configuration
 
-Before you can run `twitch2ma` you need a config file in JSON format. A sample file is 
+Before you can run `twitch2ma` you need a config file in JSON or YAML format. A sample JSON file is
 [located in the root directory](https://github.com/schw4rzlicht/twitch2ma/blob/master/config.json.sample) of the 
 repository and ships with the npm package.
 
-Find a detailed description of every option [here](docs/config.json.md).
+Find a detailed description of every option [here](docs/config.md).
 
 ### Twitch authentication
 

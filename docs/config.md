@@ -1,6 +1,6 @@
-# Config.json details
+# Config details
 
-Find an example config [here](../config.json.sample) .
+Find an example `config.json` [here](../config.json.sample).
 
 | Property                           | Type   | Required | Description                                                                                                                                                                                                       | Default       |
 |:-----------------------------------|:-------|:---------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------|
