@@ -1,3 +1,11 @@
+## [1.8.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.8.0...v1.8.1) (2020-06-05)
+
+
+### Bug Fixes
+
+* Automated releases ([574c37e](https://github.com/schw4rzlicht/twitch2ma/commit/574c37ed03ecc796d715088439ce0a7f81429c1e))
+* Fix broken dependency ([d6fc66a](https://github.com/schw4rzlicht/twitch2ma/commit/d6fc66abaa3bcb1c4b061e1af63b5e5651c32c6e))
+
 ## [1.8.1-rc.4](https://github.com/schw4rzlicht/twitch2ma/compare/v1.8.1-rc.3...v1.8.1-rc.4) (2020-06-05)
 
 
