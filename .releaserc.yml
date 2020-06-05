@@ -11,6 +11,7 @@ plugins:
         commitsSort:
           - subject
           - scope
+  - "@semantic-release/github"
   - - "@semantic-release/changelog"
     - changelogFile: docs/CHANGELOG.md
   - "@semantic-release/npm"
