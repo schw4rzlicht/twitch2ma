@@ -1,3 +1,15 @@
+# [1.9.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.8.1...v1.9.0) (2020-06-05)
+
+
+### Bug Fixes
+
+* docs ([05fd88e](https://github.com/schw4rzlicht/twitch2ma/commit/05fd88e8e291bb5e1783144265b697ecdc43a189))
+
+
+### Features
+
+* Add YAML support ([0d1f9cd](https://github.com/schw4rzlicht/twitch2ma/commit/0d1f9cd6a0b90233a556138748cd3b9f11971ea3))
+
 ## [1.8.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.8.0...v1.8.1) (2020-06-05)
 
 
