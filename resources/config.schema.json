@@ -79,7 +79,7 @@
             "type": "string"
           },
           "message": {
-            "description": "A message that is sent to Twitch chat when the command was executed on the desk. '{user}' is replaced by the user who issued the command.",
+            "description": "A message that is sent to Twitch chat when the command was executed on the desk. '{user}' is replaced by the user who issued the command, '{parameterList}' is replaced by a list of available parameters if any.",
             "type": "string"
           },
           "help": {

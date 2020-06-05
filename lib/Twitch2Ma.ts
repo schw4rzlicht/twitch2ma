@@ -132,7 +132,10 @@ export default class Twitch2Ma extends EventEmitter {
                             .then(() => this.lastCall = now)
                             .then(() => {
                                 if (_.isString(instructions.message)) {
-                                    this.chatClient.say(channel, instructions.message.replace("{user}", `@${user}`));
+                                    this.chatClient.say(channel, instructions.message
+                                        .replace("{user}", `@${user}`)
+                                        .replace("{parameterList}", this.getParametersHelp(command))
+                                        .trim());
                                 }
                             })
                             .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
@@ -163,8 +166,7 @@ export default class Twitch2Ma extends EventEmitter {
 
             if (command instanceof Command) {
                 if (_.isString(command.help)) {
-                    let parametersHelp = _.isString(command.availableParameters) ? `Available parameters: ${command.availableParameters}` : "";
-                    message = `Help for !${helpCommand}: ${command.help.replace("{parameterList}", parametersHelp).trim()}`;
+                    message = `Help for !${helpCommand}: ${command.help.replace("{parameterList}", this.getParametersHelp(command)).trim()}`;
                 } else {
                     message = `No help for !${helpCommand} available!`;
                 }
@@ -181,6 +183,10 @@ export default class Twitch2Ma extends EventEmitter {
             this.emit(this.onHelpExecuted, channel, user);
         }
         this.chatClient.say(channel, message);
+    }
+
+    getParametersHelp(command: Command) {
+        return _.isString(command.availableParameters) ? `Available parameters: ${command.availableParameters}` : "";
     }
 
     onError = this.registerEvent<(error: Error) => any>();
