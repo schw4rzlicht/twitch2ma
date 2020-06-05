@@ -1,0 +1,21 @@
+branches:
+  - master
+  - next
+  - name: rc
+    prerelease: true
+
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - - "@semantic-release/release-notes-generator"
+    - writerOpts:
+        commitsSort:
+          - subject
+          - scope
+  - - "@semantic-release/changelog"
+    - changelogFile: docs/CHANGELOG.md
+  - "@semantic-release/npm"
+  - - "@semantic-release/git"
+    - assets:
+        - package.json
+        - package-lock.json
+        - docs/CHANGELOG.md
