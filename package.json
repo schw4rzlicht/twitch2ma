@@ -65,10 +65,6 @@
       {
         "name": "rc",
         "prerelease": true
-      },
-      {
-        "name": "semantic-release",
-        "prerelease": true
       }
     ],
     "plugins": [
