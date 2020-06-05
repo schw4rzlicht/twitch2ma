@@ -72,12 +72,32 @@
       }
     ],
     "plugins": [
-      ["@semantic-release/changelog", {
-        "changelogFile": "docs/CHANGELOG.md"
-      }],
-      ["@semantic-release/git", {
-        "assets": ["docs/CHANGELOG.md"]
-      }]
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "angular",
+          "writerOpts": {
+            "commitsSort": [
+              "subject",
+              "scope"
+            ]
+          }
+        }
+      ],
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogFile": "docs/CHANGELOG.md"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "docs/CHANGELOG.md"
+          ]
+        }
+      ]
     ],
     "dryRun": true
   }
