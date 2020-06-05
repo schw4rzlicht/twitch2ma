@@ -1,7 +1,7 @@
 {
   "name": "twitch2ma",
   "version": "1.7.0",
-  "description": "Twitch chat bot that runs commands on the MA GrandMA2 using Telnet",
+  "description": "Twitch chat bot that runs commands on the MA GrandMA2 using Telnet.",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
@@ -29,6 +29,7 @@
     "@d-fischer/typed-event-emitter": "^3.0.0",
     "ajv": "^6.12.2",
     "chalk": "^4.0.0",
+    "commander": "^5.1.0",
     "humanize-duration": "^3.23.0",
     "lodash": "^4.17.15",
     "source-map-support": "^0.5.19",
