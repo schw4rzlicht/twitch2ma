@@ -2,21 +2,10 @@ language: node_js
 node_js:
   - "14"
 
-deploy:
-  - provider: npm
-    email: mail@julianrabe.com
-    api_key:
-      secure: X+hGJfsBTz92og0U4Hs9fJUVTovKJedH50Cxr0tUk6RGTgXP9LAy6uUP95ho9qjA5b25QwJSEjO1lPXXnbchCHFDZdmnFlPrF5lKttQpSwCVm7q99wgCfjibMK6NVPXkAjzl/mJedepHjOmFsTgkG7rNWjzTADkrdxqaG7i6jdq66u/y5sSbIj8nCivE5GRxXFTukKGtU4dswOpMuz/ruE+5OGEn0pOEotJf4fN6CkeCtrI+wwXII5RE7PqZm/PV6p+tgZb98Q5ckHvYYMNtIkc9n907oTo36XiHD0lY9orGT6LLuPLw3zvuLo6ibYr7iHuRp1F+fGuhoTrDZvywlB/3DRGajdiU5K8Dk1EUICbhaXIUmy8akDWw/r7XPQn8DQCaUCyaGN+o11giu6U7NR5I3y0L/wUN9OdHA8GjSYXQZMA1isPHDj1GBIzdPg7LHMml+ZT41EBIb8aRZfIQRhusfSopndAzOQpfU0qmkh5eXPjARFEd+0J1YM9H2Rb8Wget517cxBHm3qG9onn/Vw+tgt2fZl9tVqY4M9dshcPZbZBu4Xeey+SXgmVkfHGH5JkolqbuzZraJFfhDTAK8Hv0w7toNIMuRAsVTIabKqP1BMmBXJeaVk+hNnOczPLA16nC7ossg881ptpNzEI3hoxDhEsP4BxaPaFAdzd3870=
-    on:
-      tags: true
-      branch: master
-    skip_cleanup: true
-  - provider: npm
-    email: mail@julianrabe.com
-    api_key:
-      secure: X+hGJfsBTz92og0U4Hs9fJUVTovKJedH50Cxr0tUk6RGTgXP9LAy6uUP95ho9qjA5b25QwJSEjO1lPXXnbchCHFDZdmnFlPrF5lKttQpSwCVm7q99wgCfjibMK6NVPXkAjzl/mJedepHjOmFsTgkG7rNWjzTADkrdxqaG7i6jdq66u/y5sSbIj8nCivE5GRxXFTukKGtU4dswOpMuz/ruE+5OGEn0pOEotJf4fN6CkeCtrI+wwXII5RE7PqZm/PV6p+tgZb98Q5ckHvYYMNtIkc9n907oTo36XiHD0lY9orGT6LLuPLw3zvuLo6ibYr7iHuRp1F+fGuhoTrDZvywlB/3DRGajdiU5K8Dk1EUICbhaXIUmy8akDWw/r7XPQn8DQCaUCyaGN+o11giu6U7NR5I3y0L/wUN9OdHA8GjSYXQZMA1isPHDj1GBIzdPg7LHMml+ZT41EBIb8aRZfIQRhusfSopndAzOQpfU0qmkh5eXPjARFEd+0J1YM9H2Rb8Wget517cxBHm3qG9onn/Vw+tgt2fZl9tVqY4M9dshcPZbZBu4Xeey+SXgmVkfHGH5JkolqbuzZraJFfhDTAK8Hv0w7toNIMuRAsVTIabKqP1BMmBXJeaVk+hNnOczPLA16nC7ossg881ptpNzEI3hoxDhEsP4BxaPaFAdzd3870=
-    on:
-      tags: true
-      branch: /rc-*/
-    skip_cleanup: true
-    tag: next
+jobs:
+  include:
+    - stage: release
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script: npx semantic-release

@@ -9,7 +9,8 @@
     "build": "tsc",
     "prepare": "npm run build",
     "validateConfig": "npm run validateConfigSchema && ajv validate -s resources/config.schema.json -d config.json.sample",
-    "validateConfigSchema": "ajv compile -s resources/**.schema.json"
+    "validateConfigSchema": "ajv compile -s resources/**.schema.json",
+    "semantic-release": "semantic-release"
   },
   "author": {
     "name": "Julian Rabe",
@@ -42,6 +43,7 @@
     "@types/source-map-support": "^0.5.1",
     "ajv-cli": "^3.1.0",
     "jest": "^26.0.1",
+    "semantic-release": "^17.0.8",
     "ts-jest": "^26.0.0",
     "typescript": "^3.9.3"
   },
@@ -53,5 +55,15 @@
     "lighting",
     "twitch",
     "telnet"
-  ]
+  ],
+  "release": {
+    "branches": [
+      "master",
+      "next",
+      {
+        "name": "dev",
+        "prerelease": true
+      }
+    ]
+  }
 }
