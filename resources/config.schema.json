@@ -53,7 +53,7 @@
         "channel": {
           "description": "The Twitch channel the bot connects to.",
           "type": "string",
-          "pattern": "^[a-zA-Z0-9]+$"
+          "pattern": "^\\w+$"
         }
       },
       "additionalProperties": false,
