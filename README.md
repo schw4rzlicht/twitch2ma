@@ -44,6 +44,10 @@ twitch2ma [configFile]
 
 `configFile` is optional and defaults to `config.json`.
 
+## Changelog
+
+Find the changelog [here](docs/CHANGELOG.md) .
+
 ## Contribution
 
 If you have any issues, bugs, questions or want to contribute in any way, feel free to open an issue or a pull request. 
