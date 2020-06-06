@@ -1,4 +1,4 @@
-import {Config, MaConfig, TwitchConfig, Command, Parameter} from "../lib/Config";
+import {Config, MaConfig, TwitchConfig, Command, Parameter} from "../src/lib/Config";
 
 import Fs = require("fs");
 

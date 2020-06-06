@@ -10,10 +10,12 @@ import chalk = require("chalk");
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
-require("libnpm")
-    .manifest(packageInformation.name)
-    .then(notifyUpdate)
-    .then(init);
+export function main(): void {
+    require("libnpm")
+        .manifest(packageInformation.name)
+        .then(notifyUpdate)
+        .then(init);
+}
 
 function init(): void {
     new Command()
@@ -31,7 +33,7 @@ function init(): void {
         .parse(process.argv);
 }
 
-function notifyUpdate(manifest: any) {
+export function notifyUpdate(manifest: any) {
     if(semverGt(manifest.version, packageInformation.version)) {
         console.log(chalk`🔔 {blue A new version of ${packageInformation.name} is available!} ` +
             chalk`{blue (current: {bold ${packageInformation.version}}, new: {bold ${manifest.version}})}`);

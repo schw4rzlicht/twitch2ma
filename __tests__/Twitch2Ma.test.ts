@@ -1,6 +1,6 @@
-import {TelnetError, ChannelError} from "../lib/Twitch2Ma";
-import Twitch2Ma from "../lib/Twitch2Ma";
-import {Config} from "../lib/Config";
+import {TelnetError, ChannelError} from "../src/lib/Twitch2Ma";
+import Twitch2Ma from "../src/lib/Twitch2Ma";
+import {Config} from "../src/lib/Config";
 import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
 
 import TwitchChatClient from "twitch-chat-client";
