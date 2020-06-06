@@ -40,7 +40,7 @@ export function notifyUpdate(manifest: any) {
     }
 }
 
-async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2Ma> {
+export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2Ma> {
 
     twitch2Ma.onTelnetConnected((host, user) => confirm(`Telnet connected to {bold ${user}:***@${host}:30000}.`));
     twitch2Ma.onTwitchConnected(channel => confirm(`Twitch connected to {bold #${channel}}.`));

@@ -61,7 +61,7 @@ test("Telnet connection failed", async () => {
     expect(spyOnOnTwitchConnected).not.toBeCalled();
 });
 
-test("Telnet login fails", async () => {
+test("Telnet login failed", async () => {
 
     let twitch2Ma = new Twitch2Ma(config);
 
