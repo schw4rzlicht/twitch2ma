@@ -66,7 +66,7 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     return twitch2Ma;
 }
 
-async function loadConfig(configFile: string): Promise<Config> {
+export async function loadConfig(configFile: string): Promise<Config> {
 
     let configFileIsDefault = !_.isString(configFile);
 
@@ -88,7 +88,7 @@ async function loadConfig(configFile: string): Promise<Config> {
     return new Config(rawConfigObject);
 }
 
-function exitWithError(err: Error) {
+export function exitWithError(err: Error) {
     error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
     process.exit(1);
 }
