@@ -7,21 +7,36 @@ import YAML = require("yaml");
 import _ = require("lodash");
 import chalk = require("chalk");
 
+const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
-new Command()
-    .name("twitch2ma")
-    .description(packageInformation.description)
-    .version(packageInformation.version, "-v, --version", "output the current version")
-    .arguments("[configFile]")
-    .action(configFile => {
-        loadConfig(configFile)
-            .then(config => new Twitch2Ma(config))
-            .then(attachEventHandlers)
-            .then(twitch2Ma => twitch2Ma.start())
-            .catch(exitWithError);
-    })
-    .parse(process.argv);
+require("libnpm")
+    .manifest(packageInformation.name)
+    .then(notifyUpdate)
+    .then(init);
+
+function init(): void {
+    new Command()
+        .name(packageInformation.name)
+        .description(packageInformation.description)
+        .version(packageInformation.version, "-v, --version", "output the current version")
+        .arguments("[configFile]")
+        .action(configFile => {
+            loadConfig(configFile)
+                .then(config => new Twitch2Ma(config))
+                .then(attachEventHandlers)
+                .then(twitch2Ma => twitch2Ma.start())
+                .catch(exitWithError);
+        })
+        .parse(process.argv);
+}
+
+function notifyUpdate(manifest: any) {
+    if(semverGt(manifest.version, packageInformation.version)) {
+        console.log(chalk`🔔 {blue A new version of ${packageInformation.name} is available!} ` +
+            chalk`{blue (current: {bold ${packageInformation.version}}, new: {bold ${manifest.version}})}`);
+    }
+}
 
 async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2Ma> {
 
