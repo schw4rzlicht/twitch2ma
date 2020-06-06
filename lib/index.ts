@@ -25,8 +25,8 @@ new Command()
 
 async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2Ma> {
 
-    twitch2Ma.onTelnetConnected((host, user) => confirm(`Telnet connected to {bold ${user}:***@${host}:30000}`));
-    twitch2Ma.onTwitchConnected(channel => confirm(`Twitch connected to {bold #${channel}}`));
+    twitch2Ma.onTelnetConnected((host, user) => confirm(`Telnet connected to {bold ${user}:***@${host}:30000}.`));
+    twitch2Ma.onTwitchConnected(channel => confirm(`Twitch connected to {bold #${channel}}.`));
 
     twitch2Ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
 
@@ -59,7 +59,7 @@ async function loadConfig(configFile: string): Promise<Config> {
 
     let rawConfigFile = Fs.readFileSync(configFile, {encoding: "utf-8"});
 
-    let rawConfigObject = _.attempt(() => YAML.parse(rawConfigFile));
+    let rawConfigObject = _.attempt(() => YAML.parse(rawConfigFile, {mapAsMap: true}));
 
     if (rawConfigObject instanceof Error) {
         try {
@@ -72,16 +72,8 @@ async function loadConfig(configFile: string): Promise<Config> {
     return new Config(rawConfigObject);
 }
 
-function failOnErrorOrReturnValue(value: any, overrideError?: Error) {
-    if (_.isError(value)) {
-        exitWithError(_.isError(overrideError) ? overrideError : value);
-    } else {
-        return value;
-    }
-}
-
 function exitWithError(err: Error) {
-    error(`${err.message}! Exiting...`);
+    error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
     process.exit(1);
 }
 
