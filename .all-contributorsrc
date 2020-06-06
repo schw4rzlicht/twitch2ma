@@ -26,6 +26,16 @@
         "platform",
         "test"
       ]
+    },
+    {
+      "login": "kevyn-ma",
+      "name": "kevyn-ma",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/65712477?v=4",
+      "profile": "https://github.com/kevyn-ma",
+      "contributions": [
+        "ideas",
+        "userTesting"
+      ]
     }
   ],
   "contributorsPerLine": 7
