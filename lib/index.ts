@@ -19,7 +19,39 @@ program
     .action(main)
     .parse(process.argv);
 
-function main(configFile: string) {
+async function main(configFile: string) {
+
+    const config = await loadConfig(configFile);
+    const twitch2ma = new Twitch2Ma(config);
+
+    twitch2ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
+
+        parameterName = _.isString(parameterName) ? ` ${parameterName}` : "";
+
+        channelMessage(channel, `User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
+            + (_.isString(consoleCommand) ? ` ({magenta ${consoleCommand}}) on the desk.` : '.'));
+    });
+
+    twitch2ma.onHelpExecuted(((channel, user, helpCommand) => {
+        if (_.isString(helpCommand)) {
+            channelMessage(channel, `User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
+        } else {
+            channelMessage(channel, `User {bold ${user}} listed available commands.`);
+        }
+    }));
+
+    twitch2ma.onError(exitWithError);
+
+    twitch2ma.start()
+        .then(() => {
+            confirm(`Telnet connected to {bold ${config.ma.user}:***@${config.ma.host}:30000}`);
+            confirm(`Twitch connected to {bold #${config.twitch.channel}}`);
+            console.log();
+        })
+        .catch(exitWithError);
+}
+
+async function loadConfig(configFile: string): Promise<Config> {
 
     let configFileIsDefault = !_.isString(configFile);
 
@@ -37,35 +69,7 @@ function main(configFile: string) {
             new Error(`Config file ${configFile} is not a valid JSON or YAML file!`)));
     }
 
-    const config = failOnErrorOrReturnValue(_.attempt(() => new Config(rawConfigObject)));
-    const twitch2ma = new Twitch2Ma(config);
-
-    twitch2ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
-
-        parameterName = _.isString(parameterName) ? ` ${parameterName}` : "";
-
-        console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
-            + (_.isString(consoleCommand) ? chalk` ({magenta ${consoleCommand}}) on the desk.` : '.'));
-    });
-
-    twitch2ma.onHelpExecuted(((channel, user, helpCommand) => {
-        if (_.isString(helpCommand)) {
-            console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
-        } else {
-            console.log(chalk`{bgGreen.black  ${channel} }: User {bold ${user}} listed available commands.`);
-        }
-    }));
-
-    twitch2ma.onError(exitWithError);
-
-    twitch2ma.start()
-        .then(() => {
-            console.log(chalk`{green Twitch2MA started!}`);
-            console.log(chalk`{green Telnet connected to {bold ${config.ma.user}:***@${config.ma.host}:30000}}`);
-            console.log(chalk`{green Twitch connected to {bold #${config.twitch.channel}}}`);
-            console.log();
-        })
-        .catch(exitWithError);
+    return failOnErrorOrReturnValue(_.attempt(() => new Config(rawConfigObject)));
 }
 
 function failOnErrorOrReturnValue(value: any, overrideError?: Error) {
@@ -76,7 +80,19 @@ function failOnErrorOrReturnValue(value: any, overrideError?: Error) {
     }
 }
 
-function exitWithError(error: Error) {
-    console.error(chalk`{bold.red ${error.message} Exiting...}`);
+function exitWithError(err: Error) {
+    error(`${err.message} Exiting...}`);
     process.exit(1);
+}
+
+function channelMessage(channel: string, message: string): void {
+    console.log(chalk`{bgGreen.black  ${channel} }: ${message}`);
+}
+
+function confirm(message: string): void {
+    console.log(chalk`✅ {green ${message}}`);
+}
+
+function error(message: string): void {
+    console.error(chalk`❌ {bold.red ${message}}`);
 }
