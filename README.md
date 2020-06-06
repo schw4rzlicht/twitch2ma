@@ -48,6 +48,21 @@ twitch2ma [configFile]
 
 Find the changelog [here](docs/CHANGELOG.md) .
 
-## Contribution
+## Contributors ✨
 
-If you have any issues, bugs, questions or want to contribute in any way, feel free to open an issue or a pull request. 
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://deltaeight.de"><img src="https://avatars1.githubusercontent.com/u/19175262?v=4" width="100px;" alt=""/><br /><sub><b>Julian Rabe</b></sub></a><br /><a href="#question-schw4rzlicht" title="Answering Questions">💬</a> <a href="https://github.com/schw4rzlicht/twitch2ma/commits?author=schw4rzlicht" title="Code">💻</a> <a href="https://github.com/schw4rzlicht/twitch2ma/commits?author=schw4rzlicht" title="Documentation">📖</a> <a href="#example-schw4rzlicht" title="Examples">💡</a> <a href="#ideas-schw4rzlicht" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-schw4rzlicht" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-schw4rzlicht" title="Maintenance">🚧</a> <a href="#platform-schw4rzlicht" title="Packaging/porting to new platform">📦</a> <a href="https://github.com/schw4rzlicht/twitch2ma/commits?author=schw4rzlicht" title="Tests">⚠️</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

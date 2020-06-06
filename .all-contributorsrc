@@ -1,0 +1,32 @@
+{
+  "projectName": "twitch2ma",
+  "projectOwner": "schw4rzlicht",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "schw4rzlicht",
+      "name": "Julian Rabe",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/19175262?v=4",
+      "profile": "https://deltaeight.de",
+      "contributions": [
+        "question",
+        "code",
+        "doc",
+        "example",
+        "ideas",
+        "infra",
+        "maintenance",
+        "platform",
+        "test"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}
