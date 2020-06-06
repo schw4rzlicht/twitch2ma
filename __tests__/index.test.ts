@@ -12,7 +12,7 @@ test("Update notification", () => {
     const packageInformation = require("../package.json");
     const higherVersion = require("semver/functions/inc")(packageInformation.version, "major");
 
-    let consoleSpy = jest.spyOn(console, "log");
+    let consoleSpy = jest.spyOn(console, "log").mockImplementationOnce(() => {});
 
     index.notifyUpdate({version: higherVersion});
 
