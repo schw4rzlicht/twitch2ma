@@ -10,10 +10,11 @@ import chalk = require("chalk");
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
-export function main(): void {
-    require("libnpm")
-        .manifest(packageInformation.name)
+export async function main() {
+    return require("libnpm")
+        .manifest(`${packageInformation.name}@latest`)
         .then(notifyUpdate)
+        .catch(() => warning("Could not get update information!"))
         .then(init);
 }
 
@@ -99,6 +100,10 @@ function channelMessage(channel: string, message: string): void {
 
 function confirm(message: string): void {
     console.log(chalk`✅ {green ${message}}`);
+}
+
+function warning(message: string): void {
+    console.warn(chalk`⚠️ {yellow ${message}}`)
 }
 
 function error(message: string): void {
