@@ -9,22 +9,26 @@ import chalk = require("chalk");
 
 const packageInformation = require("../../package.json");
 
-const program = new Command();
-
-program
+new Command()
     .name("twitch2ma")
     .description(packageInformation.description)
     .version(packageInformation.version, "-v, --version", "output the current version")
     .arguments("[configFile]")
-    .action(main)
+    .action(configFile => {
+        loadConfig(configFile)
+            .then(config => new Twitch2Ma(config))
+            .then(attachEventHandlers)
+            .then(twitch2Ma => twitch2Ma.start())
+            .catch(exitWithError);
+    })
     .parse(process.argv);
 
-async function main(configFile: string) {
+async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2Ma> {
 
-    const config = await loadConfig(configFile);
-    const twitch2ma = new Twitch2Ma(config);
+    twitch2Ma.onTelnetConnected((host, user) => confirm(`Telnet connected to {bold ${user}:***@${host}:30000}`));
+    twitch2Ma.onTwitchConnected(channel => confirm(`Twitch connected to {bold #${channel}}`));
 
-    twitch2ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
+    twitch2Ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
 
         parameterName = _.isString(parameterName) ? ` ${parameterName}` : "";
 
@@ -32,7 +36,7 @@ async function main(configFile: string) {
             + (_.isString(consoleCommand) ? ` ({magenta ${consoleCommand}}) on the desk.` : '.'));
     });
 
-    twitch2ma.onHelpExecuted(((channel, user, helpCommand) => {
+    twitch2Ma.onHelpExecuted(((channel, user, helpCommand) => {
         if (_.isString(helpCommand)) {
             channelMessage(channel, `User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
         } else {
@@ -40,15 +44,9 @@ async function main(configFile: string) {
         }
     }));
 
-    twitch2ma.onError(exitWithError);
+    twitch2Ma.onError(exitWithError);
 
-    twitch2ma.start()
-        .then(() => {
-            confirm(`Telnet connected to {bold ${config.ma.user}:***@${config.ma.host}:30000}`);
-            confirm(`Twitch connected to {bold #${config.twitch.channel}}`);
-            console.log();
-        })
-        .catch(exitWithError);
+    return twitch2Ma;
 }
 
 async function loadConfig(configFile: string): Promise<Config> {
