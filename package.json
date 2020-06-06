@@ -8,6 +8,7 @@
     "test": "npm run validateConfig && jest",
     "build": "tsc",
     "prepare": "npm run build",
+    "buildYamlConfigSample": "json2yaml ./config.json.sample > ./config.yml.sample",
     "validateConfig": "npm run validateConfigSchema && ajv validate -s src/resources/config.schema.json -d config.json.sample",
     "validateConfigSchema": "ajv compile -s src/resources/**.schema.json"
   },
@@ -49,6 +50,7 @@
     "@types/source-map-support": "^0.5.1",
     "ajv-cli": "~3.1.0",
     "jest": "^26.0.1",
+    "json2yaml": "^1.1.0",
     "ts-jest": "^26.0.0",
     "typescript": "^3.9.3"
   },

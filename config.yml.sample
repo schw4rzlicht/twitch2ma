@@ -1,0 +1,39 @@
+---
+  timeout: 20
+  ma: 
+    host: "192.168.0.20"
+    user: "administrator"
+    password: "admin"
+  twitch: 
+    clientId: "yourClientID"
+    accessToken: "yourAccessToken"
+    channel: "yourTwitchChannel"
+  commands: 
+    - 
+      chatCommand: "red"
+      consoleCommand: "Macro 1"
+      message: "{user} set the lights to red!"
+      help: "Sets the lights to red"
+    - 
+      chatCommand: "blue"
+      consoleCommand: "Macro 2"
+      message: "{user} set the lights to blue!"
+      help: "Sets the lights to blue"
+    - 
+      chatCommand: "yellow"
+      consoleCommand: "Macro 3"
+    - 
+      chatCommand: "textOnly"
+      message: "Heyyy {user}!"
+    - 
+      chatCommand: "gobo"
+      help: "Gobo commands. {parameterList}"
+      parameters: 
+        - 
+          parameter: "niceGobo"
+          consoleCommand: "Macro 4"
+        - 
+          parameter: "evenNicerGobo"
+          consoleCommand: "Macro 5"
+          message: "{user} wishes the 'evenNicerGobo'!"
+
