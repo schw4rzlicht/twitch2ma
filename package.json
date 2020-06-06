@@ -8,8 +8,8 @@
     "test": "npm run validateConfig && jest",
     "build": "tsc",
     "prepare": "npm run build",
-    "validateConfig": "npm run validateConfigSchema && ajv validate -s resources/config.schema.json -d config.json.sample",
-    "validateConfigSchema": "ajv compile -s resources/**.schema.json"
+    "validateConfig": "npm run validateConfigSchema && ajv validate -s src/resources/config.schema.json -d config.json.sample",
+    "validateConfigSchema": "ajv compile -s src/resources/**.schema.json"
   },
   "author": {
     "name": "Julian Rabe",
