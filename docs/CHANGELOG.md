@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.9.0...v1.10.0) (2020-06-06)
+
+
+### Features
+
+* Add update notification ([23d57b5](https://github.com/schw4rzlicht/twitch2ma/commit/23d57b5a0dd4d72c4d3cc79df683e90efa8c07cd))
+
 # [1.9.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.8.1...v1.9.0) (2020-06-05)
 
 
