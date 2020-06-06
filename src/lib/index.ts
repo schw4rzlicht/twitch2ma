@@ -43,22 +43,22 @@ export function notifyUpdate(manifest: any) {
 
 export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2Ma> {
 
-    twitch2Ma.onTelnetConnected((host, user) => confirm(`Telnet connected to {bold ${user}:***@${host}:30000}.`));
-    twitch2Ma.onTwitchConnected(channel => confirm(`Twitch connected to {bold #${channel}}.`));
+    twitch2Ma.onTelnetConnected((host, user) => confirm(chalk`Telnet connected to {bold ${user}:***@${host}:30000}.`));
+    twitch2Ma.onTwitchConnected(channel => confirm(chalk`Twitch connected to {bold #${channel}}.`));
 
     twitch2Ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
 
         parameterName = _.isString(parameterName) ? ` ${parameterName}` : "";
 
-        channelMessage(channel, `User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
-            + (_.isString(consoleCommand) ? ` ({magenta ${consoleCommand}}) on the desk.` : '.'));
+        channelMessage(channel, chalk`User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
+            + (_.isString(consoleCommand) ? chalk` ({magenta ${consoleCommand}}) on the desk.` : '.'));
     });
 
     twitch2Ma.onHelpExecuted(((channel, user, helpCommand) => {
         if (_.isString(helpCommand)) {
-            channelMessage(channel, `User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
+            channelMessage(channel, chalk`User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
         } else {
-            channelMessage(channel, `User {bold ${user}} listed available commands.`);
+            channelMessage(channel, chalk`User {bold ${user}} listed available commands.`);
         }
     }));
 
