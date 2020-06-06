@@ -75,12 +75,11 @@ async function loadConfig(configFile: string): Promise<Config> {
     }
 
     let rawConfigFile = Fs.readFileSync(configFile, {encoding: "utf-8"});
-
-    let rawConfigObject = _.attempt(() => YAML.parse(rawConfigFile, {mapAsMap: true}));
+    let rawConfigObject = _.attempt(() => JSON.parse(rawConfigFile));
 
     if (rawConfigObject instanceof Error) {
         try {
-            rawConfigObject = JSON.parse(rawConfigFile);
+            rawConfigObject = YAML.parse(rawConfigFile);
         } catch (ignored) {
             throw new Error(`Config file ${configFile} is not a valid JSON or YAML file!`);
         }
