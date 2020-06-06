@@ -24,7 +24,11 @@ test("Connection chain", async () => {
     let spyOnInitTwitch = jest.spyOn(twitch2Ma, "initTwitch");
     let spyOnOnError = jest.spyOn(twitch2Ma, "onError");
 
-    expect.assertions(6);
+    let spyOnOnTelnetConnected = jest.fn();
+    let spyOnOnTwitchConnected = jest.fn();
+
+    twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
+    twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
 
     await expect(twitch2Ma.start()).resolves.toBeUndefined();
 
@@ -33,33 +37,66 @@ test("Connection chain", async () => {
     expect(spyOnInitTwitch).toBeCalled();
     expect(twitch2Ma["chatClient"].join).toBeCalled();
 
+    expect(spyOnOnTelnetConnected).toBeCalledWith(config.ma.host, config.ma.user);
+    expect(spyOnOnTwitchConnected).toBeCalledWith(config.twitch.channel);
+
     expect(spyOnOnError).not.toBeCalled();
 });
 
-test("Telnet connection failed", () => {
+test("Telnet connection failed", async () => {
 
     let twitch2Ma = new Twitch2Ma(config);
 
     jest.spyOn(twitch2Ma["telnet"], "connect").mockRejectedValueOnce("Fooled!");
 
-    return expect(twitch2Ma.start()).rejects.toThrow(new TelnetError("Could not connect to desk!"));
+    let spyOnOnTelnetConnected = jest.fn();
+    let spyOnOnTwitchConnected = jest.fn();
+
+    twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
+    twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
+
+    await expect(twitch2Ma.start()).rejects.toThrow(new TelnetError("Could not connect to desk!"));
+
+    expect(spyOnOnTelnetConnected).not.toBeCalled();
+    expect(spyOnOnTwitchConnected).not.toBeCalled();
 });
 
-test("Telnet login fails", () => {
-    return expect(new Twitch2Ma(config).start()).rejects
+test("Telnet login fails", async () => {
+
+    let twitch2Ma = new Twitch2Ma(config);
+
+    let spyOnOnTelnetConnected = jest.fn();
+    let spyOnOnTwitchConnected = jest.fn();
+
+    twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
+    twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
+
+    await expect(twitch2Ma.start()).rejects
         .toThrow(new TelnetError(`Could not log into the desk as user ${config.ma.user}!`));
+
+    expect(spyOnOnTelnetConnected).not.toBeCalled();
+    expect(spyOnOnTwitchConnected).not.toBeCalled();
 });
 
-test("Twitch connection failed", () => {
+test("Twitch connection failed", async () => {
 
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+
+    let spyOnOnTelnetConnected = jest.fn();
+    let spyOnOnTwitchConnected = jest.fn();
+
+    twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
+    twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
 
     jest.spyOn(TwitchChatClient, "forTwitchClient")
         .mockImplementationOnce(() => {
             throw Error("Not this time!");
         });
 
-    return expect(twitch2Ma.start()).rejects.toThrow(new Error("Not this time!"));
+    await expect(twitch2Ma.start()).rejects.toThrow(new Error("Not this time!"));
+
+    expect(spyOnOnTelnetConnected).toBeCalledWith(config.ma.host, config.ma.user);
+    expect(spyOnOnTwitchConnected).not.toBeCalled();
 });
 
 test("Twitch channel join failed", async () => {
@@ -74,11 +111,21 @@ test("Twitch channel join failed", async () => {
     let errorHandler = jest.fn();
 
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+
+    let spyOnOnTelnetConnected = jest.fn();
+    let spyOnOnTwitchConnected = jest.fn();
+
+    twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
+    twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
+
     twitch2Ma.onError(errorHandler);
     await twitch2Ma.start();
 
     expect(twitch2Ma["chatClient"].join).toBeCalled();
     expect(errorHandler).toBeCalledWith(new ChannelError());
+
+    expect(spyOnOnTelnetConnected).toBeCalledWith(config.ma.host, config.ma.user);
+    expect(spyOnOnTwitchConnected).not.toBeCalled();
 })
 
 test("Message handler set", async () => {

@@ -74,7 +74,9 @@ export default class Twitch2Ma extends EventEmitter {
     telnetLogin(): Promise<void> {
         return this.telnet.exec(`Login ${this.config.ma.user} ${this.config.ma.password}`)
             .then((message: string) => {
-                if (!message.match(`Logged in as User '${this.config.ma.user}'`)) {
+                if (message.match(`Logged in as User '${this.config.ma.user}'`)) {
+                    this.emit(this.onTelnetConnected, this.config.ma.host, this.config.ma.user);
+                } else {
                     throw new TelnetError(`Could not log into the desk as user ${this.config.ma.user}!`);
                 }
             });
@@ -87,6 +89,7 @@ export default class Twitch2Ma extends EventEmitter {
 
         this.chatClient.onRegister(() => {
             this.chatClient.join(this.config.twitch.channel)
+                .then(() => this.emit(this.onTwitchConnected, this.config.twitch.channel))
                 .catch(() => this.stopWithError(new ChannelError()));
         });
 
@@ -189,6 +192,8 @@ export default class Twitch2Ma extends EventEmitter {
         return _.isString(command.availableParameters) ? `Available parameters: ${command.availableParameters}` : "";
     }
 
+    onTelnetConnected = this.registerEvent<(host: string, user: string) => any>();
+    onTwitchConnected = this.registerEvent<(channel: string) => any>();
     onError = this.registerEvent<(error: Error) => any>();
     onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, parameter: string, consoleCommand: string) => any>();
     onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
