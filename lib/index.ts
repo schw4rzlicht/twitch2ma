@@ -57,17 +57,19 @@ async function loadConfig(configFile: string): Promise<Config> {
         configFile = "config.json";
     }
 
-    let rawConfigFile = failOnErrorOrReturnValue(_.attempt(() => Fs.readFileSync(configFile, {encoding: "utf-8"})),
-        new Error(`Cannot open config file ${configFile}!`));
+    let rawConfigFile = Fs.readFileSync(configFile, {encoding: "utf-8"});
 
     let rawConfigObject = _.attempt(() => YAML.parse(rawConfigFile));
 
-    if(rawConfigObject instanceof Error) {
-        rawConfigObject = failOnErrorOrReturnValue(_.attempt(() => JSON.parse(rawConfigFile),
-            new Error(`Config file ${configFile} is not a valid JSON or YAML file!`)));
+    if (rawConfigObject instanceof Error) {
+        try {
+            rawConfigObject = JSON.parse(rawConfigFile);
+        } catch (ignored) {
+            throw new Error(`Config file ${configFile} is not a valid JSON or YAML file!`);
+        }
     }
 
-    return failOnErrorOrReturnValue(_.attempt(() => new Config(rawConfigObject)));
+    return new Config(rawConfigObject);
 }
 
 function failOnErrorOrReturnValue(value: any, overrideError?: Error) {
@@ -79,7 +81,7 @@ function failOnErrorOrReturnValue(value: any, overrideError?: Error) {
 }
 
 function exitWithError(err: Error) {
-    error(`${err.message} Exiting...}`);
+    error(`${err.message}! Exiting...`);
     process.exit(1);
 }
 

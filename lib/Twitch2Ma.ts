@@ -18,6 +18,7 @@ export class TelnetError extends Error {
     constructor(message: string) {
         super(message);
         Object.setPrototypeOf(this, TelnetError.prototype);
+        this.name = TelnetError.name;
     }
 }
 
@@ -25,6 +26,7 @@ export class ChannelError extends Error {
     constructor() {
         super("Joining channel failed. Did you type the channel name correctly?");
         Object.setPrototypeOf(this, ChannelError.prototype);
+        this.name = ChannelError.name;
     }
 }
 
