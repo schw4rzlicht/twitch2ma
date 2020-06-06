@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-require("./dist/lib/index");
+require("./dist/lib/index").main();

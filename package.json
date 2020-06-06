@@ -8,8 +8,9 @@
     "test": "npm run validateConfig && jest",
     "build": "tsc",
     "prepare": "npm run build",
-    "validateConfig": "npm run validateConfigSchema && ajv validate -s resources/config.schema.json -d config.json.sample",
-    "validateConfigSchema": "ajv compile -s resources/**.schema.json"
+    "buildYamlConfigSample": "json2yaml ./config.json.sample > ./config.yml.sample",
+    "validateConfig": "npm run validateConfigSchema && ajv validate -s src/resources/config.schema.json -d config.json.sample",
+    "validateConfigSchema": "ajv compile -s src/resources/**.schema.json"
   },
   "author": {
     "name": "Julian Rabe",
@@ -30,7 +31,9 @@
     "chalk": "^4.0.0",
     "commander": "^5.1.0",
     "humanize-duration": "^3.23.0",
+    "libnpm": "^3.0.1",
     "lodash": "^4.17.15",
+    "semver": "^7.3.2",
     "source-map-support": "^0.5.19",
     "telnet-client": "^1.4.2",
     "twitch": "^4.0.10",
@@ -43,9 +46,11 @@
     "@types/humanize-duration": "^3.18.0",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.152",
+    "@types/semver": "^7.2.0",
     "@types/source-map-support": "^0.5.1",
     "ajv-cli": "~3.1.0",
     "jest": "^26.0.1",
+    "json2yaml": "^1.1.0",
     "ts-jest": "^26.0.0",
     "typescript": "^3.9.3"
   },
