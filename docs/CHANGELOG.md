@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.10.0...v1.11.0) (2020-06-07)
+
+
+### Features
+
+* Add console logs for permissions ([3928982](https://github.com/schw4rzlicht/twitch2ma/commit/3928982b29ba20783c29f0e6b0b2e97e80366252))
+
 # [1.10.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.9.0...v1.10.0) (2020-06-06)
 
 

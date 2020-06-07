@@ -11,6 +11,12 @@ const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
 export async function main() {
+
+    process.on("SIGINT", () => {
+        console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
+        process.exit(0);
+    });
+
     return require("libnpm")
         .manifest(`${packageInformation.name}@latest`)
         .then(notifyUpdate)
@@ -50,17 +56,23 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
 
         parameterName = _.isString(parameterName) ? ` ${parameterName}` : "";
 
-        channelMessage(channel, chalk`User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
+        channelMessage(channel, chalk`💡 User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
             + (_.isString(consoleCommand) ? chalk` ({magenta ${consoleCommand}}) on the desk.` : '.'));
     });
 
-    twitch2Ma.onHelpExecuted(((channel, user, helpCommand) => {
+    twitch2Ma.onHelpExecuted((channel, user, helpCommand) => {
         if (_.isString(helpCommand)) {
-            channelMessage(channel, chalk`User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
+            channelMessage(channel, chalk`🤨 User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
         } else {
-            channelMessage(channel, chalk`User {bold ${user}} listed available commands.`);
+            channelMessage(channel, chalk`📖 User {bold ${user}} listed available commands.`);
         }
-    }));
+    });
+
+    twitch2Ma.onGodMode((channel, user, reason) => channelMessage(channel,
+        chalk`💪 User {bold ${user}} activated {bold.inverse  god mode } because: ${reason}.`));
+
+    twitch2Ma.onPermissionDenied((channel, user, reason) => channelMessage(channel,
+        chalk`✋ User {bold ${user}} tried to run a command but permissions were denied because of ${reason}.`))
 
     twitch2Ma.onError(exitWithError);
 

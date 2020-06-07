@@ -1,14 +1,23 @@
 import {EventEmitter} from '@d-fischer/typed-event-emitter';
+import {EventBinder} from "@d-fischer/typed-event-emitter/lib/EventEmitter";
+
 import Twitch from "twitch";
 import TwitchChat from "twitch-chat-client";
 import TwitchClient from "twitch";
+import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
+
 import {Config, Command, Parameter} from "./Config";
+import {RuntimeInformation} from "./RuntimeInformation";
+
+import {PermissionCollector, PermissionController, PermissionError} from "./PermissionController";
+import CooldownPermission from "./permissions/CooldownPermission";
+import OwnerPermission from "./permissions/OwnerPermission";
+import ModeratorPermission from "./permissions/ModeratorPermission";
+
 import type Telnet from "telnet-client";
 
-import humanizeDuration = require("humanize-duration");
 import SourceMapSupport = require("source-map-support");
 import _ = require("lodash");
-import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
 
 const TelnetClient = require("telnet-client");
 
@@ -34,14 +43,19 @@ export default class Twitch2Ma extends EventEmitter {
 
     private config: Config;
     private telnet: Telnet;
+    private permissionController: PermissionController;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
-    private lastCall: number;
 
     constructor(config: Config) {
         super();
         this.config = config;
         this.telnet = new TelnetClient();
+
+        this.permissionController = new PermissionController()
+            .withPermissionInstance(new CooldownPermission())
+            .withPermissionInstance(new OwnerPermission())
+            .withPermissionInstance(new ModeratorPermission());
     }
 
     start(): Promise<void> {
@@ -103,8 +117,6 @@ export default class Twitch2Ma extends EventEmitter {
 
     async handleMessage(channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
 
-        let now = new Date().getTime();
-
         let raw = message.match(/!([a-zA-Z0-9]+)( !?([a-zA-Z0-9]+))?/);
         if (_.isArray(raw)) {
 
@@ -118,49 +130,51 @@ export default class Twitch2Ma extends EventEmitter {
                 let command = this.config.getCommand(chatCommand);
                 if (command instanceof Command) {
 
-                    let instructions: any = command;
+                    let instructions: Command | Parameter = command;
                     if (_.isString(parameterName)) {
                         let parameter = command.getParameter(parameterName);
                         if (parameter instanceof Parameter) {
-                            instructions = parameter
+                            instructions = parameter;
                         } else {
                             this.chatClient.say(channel, `Parameter ${parameterName} does not exist! Type !lights !${chatCommand} for help!`);
                             return;
                         }
                     }
 
-                    let cooldown = this.cooldown(now, this.lastCall, rawMessage);
-                    if (cooldown <= 0) {
-                        return (_.isString(instructions.consoleCommand)
-                            ? this.telnet.send(instructions.consoleCommand)
-                            : new Promise(resolve => resolve()))
-                            .then(() => this.lastCall = now)
-                            .then(() => {
-                                if (_.isString(instructions.message)) {
-                                    this.chatClient.say(channel, instructions.message
-                                        .replace("{user}", `@${user}`)
-                                        .replace("{parameterList}", this.getParametersHelp(command))
-                                        .trim());
-                                }
-                            })
-                            .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
-                            .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
-                    } else {
-                        let differenceString = humanizeDuration(cooldown + (1000 - cooldown % 1000));
-                        this.chatClient.say(channel, `@${user}, please wait ${differenceString} and try again!`);
-                    }
+                    return this.sendCommand(instructions, channel, user, rawMessage)
+                        .then(() => {
+                            if (_.isString(instructions.message)) {
+                                this.chatClient.say(channel, instructions.message
+                                    .replace("{user}", `@${user}`)
+                                    .replace("{parameterList}", this.getParametersHelp(command))
+                                    .trim());
+                            }
+                        })
+                        .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
+                        .catch((error: PermissionError) => {
+                            let reason = error.permissionCollector.permissionDeniedReasons.shift();
+                            this.chatClient.say(channel, reason.viewerMessage);
+                            this.emit(this.onPermissionDenied, channel, user, reason.name);
+                        })
+                        .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
                 }
             }
         }
     }
 
-    cooldown(now: number, lastCall: number, rawMessage: TwitchPrivateMessage): number {
-
-        if (rawMessage.userInfo.isMod || rawMessage.userInfo.userName === this.config.twitch.channel.toLowerCase()) {
-            return 0;
-        }
-
-        return _.isInteger(lastCall) ? lastCall + this.config.timeout * 1000 - now : 0;
+    async sendCommand(instructions: any, channel: string, user: string, rawMessage: TwitchPrivateMessage) {
+        return this.permissionController.checkPermissions(new RuntimeInformation(this.config, user, rawMessage))
+            .then((permissionCollector: PermissionCollector) => {
+                if (permissionCollector.permissionDeniedReasons.length > 0 && permissionCollector.godMode) {
+                    this.emit(this.onGodMode, channel, user, permissionCollector.godModeReasons.shift());
+                }
+            })
+            .then(() => {
+                if (_.isString(instructions.consoleCommand)) {
+                    return this.telnet.send(instructions.consoleCommand)
+                        .then(() => this.permissionController.setAdditionalRuntimeInformation("lastCall", new Date().getTime()));
+                }
+            });
     }
 
     sendHelp(channel: string, user: string, helpCommand: string) {
@@ -194,9 +208,19 @@ export default class Twitch2Ma extends EventEmitter {
         return _.isString(command.availableParameters) ? `Available parameters: ${command.availableParameters}` : "";
     }
 
+    protected emit<Args extends any[]>(event: EventBinder<Args>, ...args: Args) {
+        try {
+            super.emit(event, ...args);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     onTelnetConnected = this.registerEvent<(host: string, user: string) => any>();
     onTwitchConnected = this.registerEvent<(channel: string) => any>();
     onError = this.registerEvent<(error: Error) => any>();
     onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, parameter: string, consoleCommand: string) => any>();
     onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
+    onPermissionDenied = this.registerEvent<(channel: string, user: string, reason: string) => any>();
+    onGodMode = this.registerEvent<(channel: string, user: string, reason: string) => any>();
 }
