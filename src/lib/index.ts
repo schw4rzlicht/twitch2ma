@@ -11,6 +11,12 @@ const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
 export async function main() {
+
+    process.on("SIGINT", () => {
+        console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
+        process.exit(0);
+    });
+
     return require("libnpm")
         .manifest(`${packageInformation.name}@latest`)
         .then(notifyUpdate)
