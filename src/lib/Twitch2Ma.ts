@@ -56,7 +56,7 @@ export default class Twitch2Ma extends EventEmitter {
         this.permissionController = new PermissionController()
             .withPermissionInstance(new SACNPermission(config))
             .withPermissionInstance(new CooldownPermission())
-            // .withPermissionInstance(new OwnerPermission())
+            .withPermissionInstance(new OwnerPermission())
             .withPermissionInstance(new ModeratorPermission());
     }
 
