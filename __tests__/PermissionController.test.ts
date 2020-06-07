@@ -73,7 +73,7 @@ test("Permission denied b/c of active cooldown", () => {
     let rawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
 
     return expect(permissionController.checkPermissions(new RuntimeInformation(config, "Alice",
-        rawMessage))).rejects.toBeInstanceOf(PermissionError);
+        rawMessage, null))).rejects.toBeInstanceOf(PermissionError);
 });
 
 test("Permission granted b/c user is moderator", async () => {
@@ -81,7 +81,7 @@ test("Permission granted b/c user is moderator", async () => {
     permissionController.setAdditionalRuntimeInformation("lastCall", new Date().getTime() - 10000);
 
     let rawMessage = new TwitchPrivateMessage("doesNotMatter", null, new Map([["badges", "moderator"]]), {nick: "Alice"});
-    let permissionCollector = await permissionController.checkPermissions(new RuntimeInformation(config, "Alice", rawMessage));
+    let permissionCollector = await permissionController.checkPermissions(new RuntimeInformation(config, "Alice", rawMessage, null));
 
     expect(permissionCollector.godModeReasons).toContain("user is moderator");
 });
@@ -93,7 +93,7 @@ test("Permission granted b/c user is owner", async () => {
     let rawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let permissionCollector = await permissionController.checkPermissions(new RuntimeInformation(
         loadConfig({twitch: {channel: "Alice", clientId: "clientId", accessToken: "accessToken"}}),
-        "Alice", rawMessage))
+        "Alice", rawMessage, null))
 
     expect(permissionCollector.godModeReasons).toContain("user is channel owner");
 });

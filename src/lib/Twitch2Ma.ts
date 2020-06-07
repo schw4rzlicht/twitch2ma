@@ -18,6 +18,7 @@ import type Telnet from "telnet-client";
 
 import SourceMapSupport = require("source-map-support");
 import _ = require("lodash");
+import SACNPermission from "./permissions/SACNPermission";
 
 const TelnetClient = require("telnet-client");
 
@@ -53,6 +54,7 @@ export default class Twitch2Ma extends EventEmitter {
         this.telnet = new TelnetClient();
 
         this.permissionController = new PermissionController()
+            .withPermissionInstance(new SACNPermission(config))
             .withPermissionInstance(new CooldownPermission())
             .withPermissionInstance(new OwnerPermission())
             .withPermissionInstance(new ModeratorPermission());
@@ -152,8 +154,9 @@ export default class Twitch2Ma extends EventEmitter {
                         })
                         .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
                         .catch((error: PermissionError) => {
+                            let command = _.isString(parameterName) ? `!${chatCommand} ${parameterName}` : `${chatCommand}`;
                             let reason = error.permissionCollector.permissionDeniedReasons.shift();
-                            this.chatClient.say(channel, reason.viewerMessage);
+                            this.chatClient.say(channel, reason.viewerMessage.replace("{command}", command));
                             this.emit(this.onPermissionDenied, channel, user, reason.name);
                         })
                         .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
@@ -163,7 +166,7 @@ export default class Twitch2Ma extends EventEmitter {
     }
 
     async sendCommand(instructions: any, channel: string, user: string, rawMessage: TwitchPrivateMessage) {
-        return this.permissionController.checkPermissions(new RuntimeInformation(this.config, user, rawMessage))
+        return this.permissionController.checkPermissions(new RuntimeInformation(this.config, user, rawMessage, instructions))
             .then((permissionCollector: PermissionCollector) => {
                 if (permissionCollector.permissionDeniedReasons.length > 0 && permissionCollector.godMode) {
                     this.emit(this.onGodMode, channel, user, permissionCollector.godModeReasons.shift());
