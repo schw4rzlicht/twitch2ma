@@ -2,12 +2,42 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Config",
   "description": "The schema for the config JSON used by twitch2ma",
+  "definitions": {
+    "sacn": {
+      "description": "The sACN configuration for blocking commands and parameters.",
+      "type": "object",
+      "properties": {
+        "universe": {
+          "description": "The sACN universe to listen to.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64000
+        },
+        "channel": {
+          "description": "The sACN channel to listen to.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "universe",
+        "channel"
+      ]
+    }
+  },
   "type": "object",
   "properties": {
     "timeout": {
       "description": "The cooldown time in seconds between the execution of any command (prevents flooding/spamming). Does not apply to moderators and channel owners.",
       "type": "integer",
       "minimum": 0
+    },
+    "blockMessage": {
+      "description": "The message to be sent when viewers try to execute a command that is currently blocked. '{command}' is replaced by the attempted command and parameter.",
+      "type": "string",
+      "default": "{command} is currently blocked! Please wait!"
     },
     "ma": {
       "description": "GrandMA 2 telnet configuration",
@@ -86,6 +116,9 @@
             "description": "A help message that is sent to Twitch when viewers run the command '!lights !<command>'. '{parameterList}' is replaced by a list of available parameters if any.",
             "type": "string"
           },
+          "sacn": {
+            "$ref": "#/definitions/sacn"
+          },
           "parameters": {
             "description": "An array of parameters for each command so viewers can call '!<command> <parameter>'.",
             "type": "array",
@@ -104,6 +137,9 @@
                 "message": {
                   "description": "A message that is sent to Twitch chat when the parameter was executed on the desk. '{user}' gets replaced by the user who issued the command.",
                   "type": "string"
+                },
+                "sacn": {
+                  "$ref": "#/definitions/sacn"
                 }
               },
               "additionalProperties": false,

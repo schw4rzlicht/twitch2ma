@@ -1,5 +1,6 @@
 {
   "timeout": 20,
+  "blockMessage": "{command} is currently blocked! Please wait!",
   "ma": {
     "host": "192.168.0.20",
     "user": "administrator",
@@ -43,6 +44,23 @@
           "parameter": "evenNicerGobo",
           "consoleCommand": "Macro 5",
           "message": "{user} wishes the 'evenNicerGobo'!"
+        }
+      ]
+    },
+    {
+      "chatCommand": "blockableCommand",
+      "sacn": {
+        "universe": 1,
+        "channel": 1
+      },
+      "parameters": [
+        {
+          "parameter": "param",
+          "consoleCommand": "Macro 6",
+          "sacn": {
+            "universe": 1,
+            "channel": 2
+          }
         }
       ]
     }
