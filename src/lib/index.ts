@@ -71,8 +71,8 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onGodMode((channel, user, reason) => channelMessage(channel,
         chalk`💪 User {bold ${user}} activated {bold.inverse  god mode } because: ${reason}.`));
 
-    twitch2Ma.onPermissionDenied((channel, user, reason) => channelMessage(channel,
-        chalk`✋ User {bold ${user}} tried to run a command but permissions were denied because of ${reason}.`))
+    twitch2Ma.onPermissionDenied((channel, user, command, reason) => channelMessage(channel,
+        chalk`✋ User {bold ${user}} tried to run {bold.blue ${command}} but permissions were denied by ${reason}.`))
 
     twitch2Ma.onError(exitWithError);
 

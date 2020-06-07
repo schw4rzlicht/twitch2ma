@@ -56,7 +56,7 @@ export default class Twitch2Ma extends EventEmitter {
         this.permissionController = new PermissionController()
             .withPermissionInstance(new SACNPermission(config))
             .withPermissionInstance(new CooldownPermission())
-            .withPermissionInstance(new OwnerPermission())
+            // .withPermissionInstance(new OwnerPermission())
             .withPermissionInstance(new ModeratorPermission());
     }
 
@@ -154,10 +154,10 @@ export default class Twitch2Ma extends EventEmitter {
                         })
                         .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
                         .catch((error: PermissionError) => {
-                            let command = _.isString(parameterName) ? `!${chatCommand} ${parameterName}` : `${chatCommand}`;
+                            let command = _.isString(parameterName) ? `!${chatCommand} ${parameterName}` : `!${chatCommand}`;
                             let reason = error.permissionCollector.permissionDeniedReasons.shift();
                             this.chatClient.say(channel, reason.viewerMessage.replace("{command}", command));
-                            this.emit(this.onPermissionDenied, channel, user, reason.name);
+                            this.emit(this.onPermissionDenied, channel, user, command, reason.name);
                         })
                         .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
                 }
@@ -224,6 +224,6 @@ export default class Twitch2Ma extends EventEmitter {
     onError = this.registerEvent<(error: Error) => any>();
     onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, parameter: string, consoleCommand: string) => any>();
     onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
-    onPermissionDenied = this.registerEvent<(channel: string, user: string, reason: string) => any>();
+    onPermissionDenied = this.registerEvent<(channel: string, user: string, command: string, reason: string) => any>();
     onGodMode = this.registerEvent<(channel: string, user: string, reason: string) => any>();
 }

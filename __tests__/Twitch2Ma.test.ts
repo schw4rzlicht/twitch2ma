@@ -294,7 +294,7 @@ test("Command permissions denied", async () => {
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
         "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
 
-    return expect(permissionDeniedHandler).toBeCalledWith("#doesNotMatter", "Alice", "cooldown");
+    return expect(permissionDeniedHandler).toBeCalledWith("#doesNotMatter", "Alice", "!red", "cooldown");
 });
 
 test("Command permissions denied but godMode enabled", async () => {
