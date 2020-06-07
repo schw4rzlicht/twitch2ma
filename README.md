@@ -36,7 +36,7 @@ to get it manually with [this neat tool](https://twitchapps.com/tmi/). You will 
 ### Locking commands and parameters
 
 `twitch2ma` can receive sACN to temporarily lock commands. This is done by the `sacn` configuration options. If configured,
-`twitch2ma` listens to the respective universe/channel combination and locks configured command or parameter when the
+`twitch2ma` listens to the respective universe/channel combination and locks configured commands and parameters when the
 channel value drops below 100%. This allows for a more flexible way of allowing or denying viewers' input.
 
 Additionally a `lockMessage` can be configured which is sent to Twitch chat when viewers try to execute a locked command/parameters.
