@@ -26,4 +26,4 @@ Find an example `config.json` [here](../config.json.sample) and an example `conf
 | `command.parameter.message`        | string | no       | A message that is sent to Twitch chat when the parameter was executed on the desk. `{user}` gets replaced by the user who issued the command.                                                                     |                                                |
 | `command.parameter.sacn`           | object | no       | See `command.sacn`.                                                                                                                                                                                               |                                                |
 
-(*) Required as property of `command.sacn`.
+(*) Required as property of `command.sacn`
