@@ -3,7 +3,9 @@ import configSchema = require("../resources/config.schema.json");
 import _ = require("lodash");
 
 export class Config {
+
     public readonly timeout: number;
+    public readonly lockMessage: string;
     public readonly ma: MaConfig;
     public readonly twitch: TwitchConfig;
     public readonly commands: Array<Command>;
@@ -24,6 +26,7 @@ export class Config {
         }
 
         this.timeout = config.timeout;
+        this.lockMessage = config.lockMessage;
         this.ma = new MaConfig(config.ma);
         this.twitch = new TwitchConfig(config.twitch);
         this.commands = new Array<Command>();
@@ -42,6 +45,7 @@ export class Config {
 }
 
 export class MaConfig {
+
     public readonly host: string;
     public readonly user: string;
     public readonly password: string;
@@ -54,6 +58,7 @@ export class MaConfig {
 }
 
 export class TwitchConfig {
+
     public readonly clientId: string;
     public readonly accessToken: string;
     public readonly channel: string;
@@ -66,10 +71,12 @@ export class TwitchConfig {
 }
 
 export class Command {
+
     public readonly chatCommand: string;
     public readonly consoleCommand: string;
     public readonly message: string;
     public readonly help: string;
+    public readonly sacn: SACNConfig;
     public readonly parameters: Array<Parameter>;
     public readonly availableParameters: string;
 
@@ -80,6 +87,11 @@ export class Command {
         this.consoleCommand = command.consoleCommand;
         this.message = command.message;
         this.help = command.help;
+
+        if(command.sacn) {
+            this.sacn = new SACNConfig(command.sacn);
+        }
+
         this.parameters = new Array<Parameter>();
 
         if(_.isArray(command.parameters)) {
@@ -99,13 +111,30 @@ export class Command {
 }
 
 export class Parameter {
+
     public readonly parameter: string;
     public readonly consoleCommand: string;
     public readonly message: string;
+    public readonly sacn: SACNConfig;
 
     constructor(parameter: any) {
         this.parameter = parameter.parameter;
         this.consoleCommand = parameter.consoleCommand;
         this.message = parameter.message;
+
+        if(parameter.sacn) {
+            this.sacn = new SACNConfig(parameter.sacn);
+        }
+    }
+}
+
+export class SACNConfig {
+
+    public readonly universe: number;
+    public readonly channel: number;
+
+    constructor(sacn: any) {
+        this.universe = sacn.universe;
+        this.channel = sacn.channel;
     }
 }
