@@ -1,9 +1,12 @@
 import {RuntimeInformation} from "./RuntimeInformation";
 
 export interface PermissionInstance {
+
     check(permissionCollector: PermissionCollector,
           runtimeInformation: RuntimeInformation,
           additionalRuntimeInformation: Map<String, any>): void;
+
+    stop(): void;
 }
 
 export class PermissionError extends Error {
@@ -59,6 +62,12 @@ export class PermissionController {
 
     setAdditionalRuntimeInformation(name: string, value: any) {
         this.additionalRuntimeInformation.set(name, value);
+    }
+
+    stop() {
+        for (const permissionInstance of this.permissionInstances) {
+            permissionInstance.stop();
+        }
     }
 }
 

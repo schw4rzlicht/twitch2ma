@@ -6,6 +6,7 @@ import {Receiver, Packet} from "sacn";
 export default class SACNPermission implements PermissionInstance {
 
     private readonly universeData: Map<number, Array<number>>;
+    private readonly sACNReceiver: Receiver;
 
     constructor(config: Config) {
         this.universeData = new Map();
@@ -22,12 +23,12 @@ export default class SACNPermission implements PermissionInstance {
         }
 
         if(this.universeData.size > 0) {
-            let receiver = new Receiver({
+            this.sACNReceiver = new Receiver({
                 universes: Array.from(this.universeData.keys()),
                 reuseAddr: true
             });
 
-            receiver.on("packet", (packet: Packet) => {
+            this.sACNReceiver.on("packet", (packet: Packet) => {
                 let i = 0;
                 // this.universeData.set(packet.universe, packet.slotsData)
             });
@@ -47,6 +48,12 @@ export default class SACNPermission implements PermissionInstance {
                 permissionCollector.denyPermission("sacn",
                     `@${runtimeInformation.userName}, ${runtimeInformation.config.lockMessage}`);
             }
+        }
+    }
+
+    stop(): void {
+        if(this.sACNReceiver) {
+            this.sACNReceiver.close();
         }
     }
 }

@@ -10,10 +10,20 @@ import chalk = require("chalk");
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
+let twitch2Ma: Twitch2Ma;
+
 export async function main() {
 
     process.on("SIGINT", () => {
         console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
+        if(twitch2Ma) {
+            twitch2Ma.stop()
+                .catch((err: Error) => {
+                    error(err.message);
+                    process.exit(1);
+                })
+                .then(process.exit(0))
+        }
         process.exit(0);
     });
 
@@ -32,7 +42,10 @@ function init(): void {
         .arguments("[configFile]")
         .action(configFile => {
             loadConfig(configFile)
-                .then(config => new Twitch2Ma(config))
+                .then(config => {
+                    twitch2Ma = new Twitch2Ma(config);
+                    return twitch2Ma;
+                })
                 .then(attachEventHandlers)
                 .then(twitch2Ma => twitch2Ma.start())
                 .catch(exitWithError);

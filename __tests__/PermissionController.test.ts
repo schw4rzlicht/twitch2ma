@@ -12,13 +12,17 @@ const _ = require("lodash");
 let config: Config;
 let permissionController: PermissionController;
 
-beforeAll(() => {
+beforeEach(() => {
     config = loadConfig();
     permissionController = new PermissionController()
         .withPermissionInstance(new CooldownPermission())
         .withPermissionInstance(new ModeratorPermission())
         .withPermissionInstance(new OwnerPermission());
-})
+});
+
+afterEach(() => {
+    permissionController.stop();
+});
 
 test("Permission collector denies permission", () => {
 

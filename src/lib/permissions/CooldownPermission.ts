@@ -20,4 +20,7 @@ export default class CooldownPermission implements PermissionInstance {
             }
         }
     }
+
+    stop(): void {
+    }
 }

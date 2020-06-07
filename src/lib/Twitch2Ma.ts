@@ -81,6 +81,7 @@ export default class Twitch2Ma extends EventEmitter {
             return this.chatClient.quit()
                 .finally(this.telnet.end);
         }
+        this.permissionController.stop();
         return this.telnet.end();
     }
 
