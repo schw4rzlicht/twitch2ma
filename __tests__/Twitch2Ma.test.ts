@@ -190,38 +190,6 @@ test("Send help w/o commands", async () => {
     expect(helpExecutedHandler).toBeCalledWith("#doesNotMatter", "Alice");
 });
 
-test("Cooldown calculation", () => {
-
-    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
-    let bobRawMessage = new TwitchPrivateMessage("doesNotMatter", null, new Map([["badges", "moderator"]]), {nick: "Bob"});
-    let ownerRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: config.twitch.channel});
-
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
-
-    let now = new Date().getTime();
-
-    expect(twitch2Ma.cooldown(now, null, aliceRawMessage)).toBeLessThanOrEqual(0);
-    expect(twitch2Ma.cooldown(now, now, aliceRawMessage)).toBeGreaterThan(0);
-    expect(twitch2Ma.cooldown(now, now, bobRawMessage)).toBeLessThanOrEqual(0);
-    expect(twitch2Ma.cooldown(now, now, aliceRawMessage)).toBeGreaterThan(0);
-    expect(twitch2Ma.cooldown(now, now, ownerRawMessage)).toBeLessThanOrEqual(0);
-    expect(twitch2Ma.cooldown(now, now, aliceRawMessage)).toBeGreaterThan(0);
-    expect(twitch2Ma.cooldown(now, 666, aliceRawMessage)).toBeLessThanOrEqual(0);
-});
-
-test("Cooldown active", async () => {
-
-    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
-
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
-    await twitch2Ma.start();
-
-    twitch2Ma["lastCall"] = new Date().getTime();
-
-    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
-        "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
-});
-
 test("Command successful", async () => {
 
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
@@ -310,6 +278,42 @@ test("Telnet command failed", async () => {
     expect(errorHandler).toBeCalledWith(new TelnetError("Sending telnet command failed!"));
     expect(commandExecutedHandler).not.toBeCalled();
 });
+
+test("Command permissions denied", async () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
+    let permissionDeniedHandler = jest.fn();
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+    twitch2Ma.onPermissionDenied(permissionDeniedHandler);
+    await twitch2Ma.start();
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!red", aliceRawMessage, "@Alice set the lights to red!");
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
+
+    return expect(permissionDeniedHandler).toBeCalledWith("#doesNotMatter", "Alice", "cooldown");
+});
+
+test("Command permissions denied but godMode enabled", async () => {
+
+    let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, new Map([["badges", "moderator"]]), {nick: "Alice"});
+    let godModeHandler = jest.fn();
+
+    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+    twitch2Ma.onGodMode(godModeHandler);
+    await twitch2Ma.start();
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!red", aliceRawMessage, "@Alice set the lights to red!");
+
+    await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
+        "Alice", "!red", aliceRawMessage, "@Alice set the lights to red!");
+
+    return expect(godModeHandler).toBeCalledWith("#doesNotMatter", "Alice", "user is moderator");
+})
 
 test("Message not involving the bot", async () => {
 
