@@ -1,6 +1,6 @@
 {
   "timeout": 20,
-  "blockMessage": "{command} is currently blocked! Please wait!",
+  "lockMessage": "{command} is currently locked! Please wait!",
   "ma": {
     "host": "192.168.0.20",
     "user": "administrator",
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "chatCommand": "blockableCommand",
+      "chatCommand": "lockableCommand",
       "sacn": {
         "universe": 1,
         "channel": 1

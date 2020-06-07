@@ -4,7 +4,7 @@
   "description": "The schema for the config JSON used by twitch2ma",
   "definitions": {
     "sacn": {
-      "description": "The sACN configuration for blocking commands and parameters.",
+      "description": "The sACN configuration for locking commands and parameters.",
       "type": "object",
       "properties": {
         "universe": {
@@ -34,10 +34,10 @@
       "type": "integer",
       "minimum": 0
     },
-    "blockMessage": {
-      "description": "The message to be sent when viewers try to execute a command that is currently blocked. '{command}' is replaced by the attempted command and parameter.",
+    "lockMessage": {
+      "description": "The message to be sent when viewers try to execute a command that is currently locked. '{command}' is replaced by the attempted command and parameter.",
       "type": "string",
-      "default": "{command} is currently blocked! Please wait!"
+      "default": "{command} is currently locked! Please wait!"
     },
     "ma": {
       "description": "GrandMA 2 telnet configuration",
