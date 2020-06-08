@@ -5,6 +5,10 @@ import Twitch2Ma from "../src/lib/Twitch2Ma";
 import Fs = require("fs");
 import _ = require("lodash");
 
+// Workaround, see https://github.com/evanw/node-source-map-support/issues/279
+jest.mock("source-map-support");
+////
+
 jest.mock("../src/lib/Twitch2Ma");
 
 test("Update notification", () => {
