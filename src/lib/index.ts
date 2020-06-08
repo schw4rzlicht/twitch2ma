@@ -16,15 +16,7 @@ export async function main() {
 
     process.on("SIGINT", () => {
         console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
-        if(twitch2Ma) {
-            twitch2Ma.stop()
-                .then(() => process.exit(0))
-                .catch((err: Error) => {
-                    error(err.message);
-                    process.exit(1);
-                })
-        }
-        process.exit(0);
+        exit(0);
     });
 
     return require("libnpm")
@@ -114,9 +106,22 @@ export async function loadConfig(configFile: string): Promise<Config> {
     return new Config(rawConfigObject);
 }
 
-export function exitWithError(err: Error) {
+async function exit(statusCode: number) {
+    let stopPromise = Promise.resolve();
+    if(twitch2Ma) {
+        stopPromise
+            .then(() => twitch2Ma.stop())
+            .catch((err: Error) => {
+                error(err.message);
+                process.exit(1);
+            })
+    }
+    return stopPromise.then(() => process.exit(statusCode));
+}
+
+export async function exitWithError(err: Error) {
     error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
-    process.exit(1);
+    return exit(1);
 }
 
 function channelMessage(channel: string, message: string): void {

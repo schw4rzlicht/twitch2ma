@@ -94,14 +94,14 @@ test("Invalid config", async () => {
     restoreConfigFile(configTmp);
 });
 
-test("Exit with error", () => {
+test("Exit with error", async () => {
 
     let consoleSpy = jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
     // @ts-ignore
     let exitSpy = jest.spyOn(process, "exit").mockImplementationOnce(() => {});
 
-    index.exitWithError(new Error("Fuck dat!"));
+    await expect(index.exitWithError(new Error("Fuck dat!"))).resolves.toBeUndefined();
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching("Fuck dat! Exiting..."));
     expect(exitSpy).toHaveBeenCalledWith(1);
