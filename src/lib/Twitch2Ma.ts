@@ -42,9 +42,9 @@ export class ChannelError extends Error {
 
 export default class Twitch2Ma extends EventEmitter {
 
-    private config: Config;
-    private telnet: Telnet;
-    private permissionController: PermissionController;
+    private readonly config: Config;
+    private readonly telnet: Telnet;
+    private readonly permissionController: PermissionController;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
 
@@ -76,16 +76,24 @@ export default class Twitch2Ma extends EventEmitter {
             .then(() => this.initTwitch());
     }
 
-    stop(): Promise<void> {
-        if (_.isObject(this.chatClient)) {
-            return this.chatClient.quit()
-                .finally(this.telnet.end);
+    async stop() {
+
+        let promises: Array<Promise<any>> = [];
+
+        if (this.chatClient) {
+            promises.push(this.chatClient.quit());
         }
+
+        if (this.telnet) {
+            promises.push(this.telnet.end());
+        }
+
         this.permissionController.stop();
-        return this.telnet.end();
+
+        return Promise.all(promises);
     }
 
-    stopWithError(error: Error): Promise<void> {
+    stopWithError(error: Error): Promise<any> {
         this.emit(this.onError, error);
         return this.stop();
     }

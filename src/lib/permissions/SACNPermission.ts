@@ -53,7 +53,10 @@ export default class SACNPermission implements PermissionInstance {
 
     stop(): void {
         if(this.sACNReceiver) {
-            this.sACNReceiver.close();
+            try {
+                this.sACNReceiver.close();
+            } catch(ignored) {
+            }
         }
     }
 }

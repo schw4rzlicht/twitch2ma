@@ -18,11 +18,11 @@ export async function main() {
         console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
         if(twitch2Ma) {
             twitch2Ma.stop()
+                .then(() => process.exit(0))
                 .catch((err: Error) => {
                     error(err.message);
                     process.exit(1);
                 })
-                .then(process.exit(0))
         }
         process.exit(0);
     });

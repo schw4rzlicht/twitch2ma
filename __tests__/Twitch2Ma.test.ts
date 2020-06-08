@@ -51,8 +51,6 @@ test("Connection chain", async () => {
 
 test("Telnet connection failed", async () => {
 
-    twitch2Ma = new Twitch2Ma(config);
-
     jest.spyOn(twitch2Ma["telnet"], "connect").mockRejectedValueOnce("Fooled!");
 
     let spyOnOnTelnetConnected = jest.fn();
@@ -68,6 +66,8 @@ test("Telnet connection failed", async () => {
 });
 
 test("Telnet login failed", async () => {
+
+    await twitch2Ma.stop();
 
     twitch2Ma = new Twitch2Ma(config);
 
@@ -181,6 +181,8 @@ test("Send help", async () => {
 test("Send help w/o commands", async () => {
 
     let helpExecutedHandler = jest.fn();
+
+    await twitch2Ma.stop();
 
     twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig({commands: []}));
     twitch2Ma.onHelpExecuted(helpExecutedHandler);
