@@ -120,7 +120,7 @@ export function exitWithError(err: Error) {
 }
 
 function channelMessage(channel: string, message: string): void {
-    console.log(chalk`{bgGreen.black  ${channel} }: ${message}`);
+    console.log(chalk`{bgGreen.black  ${channel} } ${message}`);
 }
 
 function confirm(message: string): void {
