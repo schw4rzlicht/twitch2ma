@@ -72,7 +72,7 @@
           "chatCommand": {
             "description": "The command viewers need to use in chat without '!'. The command 'lights' is reserved for viewer help. ",
             "type": "string",
-            "pattern": "^((?!\\b[lL][iI][gG][hH][tT][sS]\\b)[a-zA-Z0-9])+$"
+            "pattern": "^((?!\\b[lL][iI][gG][hH][tT][sS]\\b)[a-zA-Z0-9-])+$"
           },
           "consoleCommand": {
             "description": "The command that gets executed on the desk.",
@@ -95,7 +95,7 @@
                 "parameter": {
                   "description": "The parameter to append to the command.",
                   "type": "string",
-                  "pattern": "^[a-zA-Z0-9]+$"
+                  "pattern": "^[a-zA-Z0-9-]+$"
                 },
                 "consoleCommand": {
                   "description": "The command that gets executed on the desk when using the parameter.",
