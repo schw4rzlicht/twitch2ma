@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.11.0...v1.12.0) (2020-06-09)
+
+
+### Features
+
+* Use dashes in commands and parameters ([#6](https://github.com/schw4rzlicht/twitch2ma/issues/6)) ([a570c1d](https://github.com/schw4rzlicht/twitch2ma/commit/a570c1d2f2e4fdb7f2192b7a64f1cc0eca1de2b2))
+
 # [1.11.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.10.0...v1.11.0) (2020-06-07)
 
 
