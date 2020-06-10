@@ -46,13 +46,16 @@ export default class SACNPermission implements PermissionInstance {
           runtimeInformation: RuntimeInformation,
           additionalRuntimeInformation: Map<String, any>): void {
 
-        let sacn = runtimeInformation.instructions.sacn;
+        if(runtimeInformation.instructions) {
 
-        if (sacn) {
-            let universeData = this.universeData.get(sacn.universe);
-            if(_.isInteger(universeData[sacn.channel - 1]) && universeData[sacn.channel - 1] < 255) {
-                permissionCollector.denyPermission("sacn",
-                    `@${runtimeInformation.userName}, ${runtimeInformation.config.lockMessage}`);
+            let sacn = runtimeInformation.instructions.sacn;
+
+            if (sacn) {
+                let universeData = this.universeData.get(sacn.universe);
+                if (_.isInteger(universeData[sacn.channel - 1]) && universeData[sacn.channel - 1] < 255) {
+                    permissionCollector.denyPermission("sacn",
+                        `@${runtimeInformation.userName}, ${runtimeInformation.config.lockMessage}`);
+                }
             }
         }
     }
