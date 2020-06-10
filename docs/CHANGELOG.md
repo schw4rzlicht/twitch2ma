@@ -1,3 +1,19 @@
+# [1.13.0-rc.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.12.0...v1.13.0-rc.1) (2020-06-10)
+
+
+### Bug Fixes
+
+* Enable graceful shutdown ([24272bd](https://github.com/schw4rzlicht/twitch2ma/commit/24272bd573d25c232d7b245f854fd6f30bc6e247))
+* Fix line numbers being wrong in index tests (see https://github.com/evanw/node-source-map-support/issues/279) ([56fd884](https://github.com/schw4rzlicht/twitch2ma/commit/56fd884de80b20ff87fab071604701685c8a36ec))
+* Graceful closing connections ([9b2ceb7](https://github.com/schw4rzlicht/twitch2ma/commit/9b2ceb75ef02a6acd0279f659db1e250d13b6c42))
+* Improve graceful shutdown ([626430d](https://github.com/schw4rzlicht/twitch2ma/commit/626430d16e8ec9eda9ce27aaa8f0a8a909ef47b0))
+
+
+### Features
+
+* Add command to log when permissions are denied ([40bdf94](https://github.com/schw4rzlicht/twitch2ma/commit/40bdf94b2742394993b91963729e4e9d6c8cb24e))
+* Add sACN lock ([c3a08c5](https://github.com/schw4rzlicht/twitch2ma/commit/c3a08c544bcaa5b7d080fc8dcc6dc9a3b824422c)), closes [#2](https://github.com/schw4rzlicht/twitch2ma/issues/2)
+
 # [1.12.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.11.0...v1.12.0) (2020-06-09)
 
 
