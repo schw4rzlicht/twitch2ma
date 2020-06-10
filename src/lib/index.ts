@@ -1,21 +1,22 @@
 import {Command} from "commander";
 import Twitch2Ma from "./Twitch2Ma";
 import {Config} from "./Config";
+import {CommandSocket} from "./CommandSocket";
 
 import Fs = require("fs");
 import YAML = require("yaml");
 import _ = require("lodash");
 import chalk = require("chalk");
+import ipc = require("node-ipc");
 
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
+let commandSocket: CommandSocket;
+
 export async function main() {
 
-    process.on("SIGINT", () => {
-        console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
-        process.exit(0);
-    });
+    process.on("SIGINT", exit);
 
     return require("libnpm")
         .manifest(`${packageInformation.name}@latest`)
@@ -25,19 +26,54 @@ export async function main() {
 }
 
 function init(): void {
-    new Command()
+    let program = new Command()
         .name(packageInformation.name)
         .description(packageInformation.description)
-        .version(packageInformation.version, "-v, --version", "output the current version")
+        .version(packageInformation.version, "-v, --version", "output the current version");
+
+    program.command("start", {isDefault: true})
+        .description("starts twitch2ma bot")
         .arguments("[configFile]")
         .action(configFile => {
             loadConfig(configFile)
                 .then(config => new Twitch2Ma(config))
                 .then(attachEventHandlers)
                 .then(twitch2Ma => twitch2Ma.start())
+                .then(openCommandSocket)
                 .catch(exitWithError);
-        })
-        .parse(process.argv);
+        });
+
+    program.command("stop")
+        .description("stops twitch2ma bot")
+        .action(() => emitSocketEvent("exit"));
+
+    program.parse(process.argv);
+}
+
+function exit() {
+    console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
+    process.exit(0);
+}
+
+function emitSocketEvent(event: string) {
+
+    ipc.config.appspace = "twitch2ma.";
+    ipc.config.silent = true;
+
+    ipc.connectTo("main", () => {
+        ipc.of.main.on("connect", () => {
+            ipc.of.main.emit(event);
+            ipc.disconnect("main");
+        });
+    })
+}
+
+function openCommandSocket() {
+    commandSocket = new CommandSocket();
+    commandSocket.onExitCommand(() => {
+        socket("Exit command received!");
+        exit();
+    });
 }
 
 export function notifyUpdate(manifest: any) {
@@ -104,6 +140,10 @@ export async function loadConfig(configFile: string): Promise<Config> {
 export function exitWithError(err: Error) {
     error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
     process.exit(1);
+}
+
+function socket(message: string) {
+    console.log(chalk`{inverse ${message}}`);
 }
 
 function channelMessage(channel: string, message: string): void {
