@@ -33,6 +33,14 @@ After you have done that, you will need an access token. Unfortunately, this is 
 to get it manually with [this neat tool](https://twitchapps.com/tmi/). You will get an OAuth token like 
 `oauth:9ouvuuiv3mwvdd3rx5obks823jdp20dj`. Remove the `oauth:` and that is your access token for the configuration file.
 
+### Locking commands and parameters
+
+`twitch2ma` can receive sACN to temporarily lock commands. This is done by the `sacn` configuration options. If configured,
+`twitch2ma` listens to the respective universe/channel combination and locks configured commands and parameters when the
+channel value drops below 100%. This allows for a more flexible way of allowing or denying viewers' input.
+
+Additionally a `lockMessage` can be configured which is sent to Twitch chat when viewers try to execute a locked command/parameters.
+
 ## Usage
  
 To run `twitch2ma`, just run the following command. Please be aware that you need to have a desk or onPC in your 

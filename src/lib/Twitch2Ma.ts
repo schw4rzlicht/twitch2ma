@@ -18,6 +18,7 @@ import type Telnet from "telnet-client";
 
 import SourceMapSupport = require("source-map-support");
 import _ = require("lodash");
+import SACNPermission from "./permissions/SACNPermission";
 
 const TelnetClient = require("telnet-client");
 
@@ -41,9 +42,9 @@ export class ChannelError extends Error {
 
 export default class Twitch2Ma extends EventEmitter {
 
-    private config: Config;
-    private telnet: Telnet;
-    private permissionController: PermissionController;
+    private readonly config: Config;
+    private readonly telnet: Telnet;
+    private readonly permissionController: PermissionController;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
 
@@ -53,6 +54,7 @@ export default class Twitch2Ma extends EventEmitter {
         this.telnet = new TelnetClient();
 
         this.permissionController = new PermissionController()
+            .withPermissionInstance(new SACNPermission(config))
             .withPermissionInstance(new CooldownPermission())
             .withPermissionInstance(new OwnerPermission())
             .withPermissionInstance(new ModeratorPermission());
@@ -74,15 +76,24 @@ export default class Twitch2Ma extends EventEmitter {
             .then(() => this.initTwitch());
     }
 
-    stop(): Promise<void> {
-        if (_.isObject(this.chatClient)) {
-            return this.chatClient.quit()
-                .finally(this.telnet.end);
+    async stop() {
+
+        let promises: Array<Promise<any>> = [];
+
+        if (this.chatClient) {
+            promises.push(this.chatClient.quit());
         }
-        return this.telnet.end();
+
+        if (this.telnet) {
+            promises.push(this.telnet.end());
+        }
+
+        this.permissionController.stop();
+
+        return Promise.all(promises);
     }
 
-    stopWithError(error: Error): Promise<void> {
+    stopWithError(error: Error): Promise<any> {
         this.emit(this.onError, error);
         return this.stop();
     }
@@ -152,9 +163,10 @@ export default class Twitch2Ma extends EventEmitter {
                         })
                         .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
                         .catch((error: PermissionError) => {
+                            let command = _.isString(parameterName) ? `!${chatCommand} ${parameterName}` : `!${chatCommand}`;
                             let reason = error.permissionCollector.permissionDeniedReasons.shift();
-                            this.chatClient.say(channel, reason.viewerMessage);
-                            this.emit(this.onPermissionDenied, channel, user, reason.name);
+                            this.chatClient.say(channel, reason.viewerMessage.replace("{command}", command));
+                            this.emit(this.onPermissionDenied, channel, user, command, reason.name);
                         })
                         .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
                 }
@@ -163,7 +175,7 @@ export default class Twitch2Ma extends EventEmitter {
     }
 
     async sendCommand(instructions: any, channel: string, user: string, rawMessage: TwitchPrivateMessage) {
-        return this.permissionController.checkPermissions(new RuntimeInformation(this.config, user, rawMessage))
+        return this.permissionController.checkPermissions(new RuntimeInformation(this.config, user, rawMessage, instructions))
             .then((permissionCollector: PermissionCollector) => {
                 if (permissionCollector.permissionDeniedReasons.length > 0 && permissionCollector.godMode) {
                     this.emit(this.onGodMode, channel, user, permissionCollector.godModeReasons.shift());
@@ -221,6 +233,6 @@ export default class Twitch2Ma extends EventEmitter {
     onError = this.registerEvent<(error: Error) => any>();
     onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, parameter: string, consoleCommand: string) => any>();
     onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
-    onPermissionDenied = this.registerEvent<(channel: string, user: string, reason: string) => any>();
+    onPermissionDenied = this.registerEvent<(channel: string, user: string, command: string, reason: string) => any>();
     onGodMode = this.registerEvent<(channel: string, user: string, reason: string) => any>();
 }

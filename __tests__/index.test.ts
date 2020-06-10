@@ -5,6 +5,10 @@ import Twitch2Ma from "../src/lib/Twitch2Ma";
 import Fs = require("fs");
 import _ = require("lodash");
 
+// Workaround, see https://github.com/evanw/node-source-map-support/issues/279
+jest.mock("source-map-support");
+////
+
 jest.mock("../src/lib/Twitch2Ma");
 
 test("Update notification", () => {
@@ -90,14 +94,14 @@ test("Invalid config", async () => {
     restoreConfigFile(configTmp);
 });
 
-test("Exit with error", () => {
+test("Exit with error", async () => {
 
     let consoleSpy = jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
     // @ts-ignore
     let exitSpy = jest.spyOn(process, "exit").mockImplementationOnce(() => {});
 
-    index.exitWithError(new Error("Fuck dat!"));
+    await expect(index.exitWithError(new Error("Fuck dat!"))).resolves.toBeUndefined();
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching("Fuck dat! Exiting..."));
     expect(exitSpy).toHaveBeenCalledWith(1);

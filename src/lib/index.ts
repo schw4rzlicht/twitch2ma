@@ -10,11 +10,13 @@ import chalk = require("chalk");
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
+let twitch2Ma: Twitch2Ma;
+
 export async function main() {
 
     process.on("SIGINT", () => {
         console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
-        process.exit(0);
+        exit(0);
     });
 
     return require("libnpm")
@@ -32,7 +34,10 @@ function init(): void {
         .arguments("[configFile]")
         .action(configFile => {
             loadConfig(configFile)
-                .then(config => new Twitch2Ma(config))
+                .then(config => {
+                    twitch2Ma = new Twitch2Ma(config);
+                    return twitch2Ma;
+                })
                 .then(attachEventHandlers)
                 .then(twitch2Ma => twitch2Ma.start())
                 .catch(exitWithError);
@@ -71,8 +76,8 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onGodMode((channel, user, reason) => channelMessage(channel,
         chalk`💪 User {bold ${user}} activated {bold.inverse  god mode } because: ${reason}.`));
 
-    twitch2Ma.onPermissionDenied((channel, user, reason) => channelMessage(channel,
-        chalk`✋ User {bold ${user}} tried to run a command but permissions were denied because of ${reason}.`))
+    twitch2Ma.onPermissionDenied((channel, user, command, reason) => channelMessage(channel,
+        chalk`✋ User {bold ${user}} tried to run {bold.blue ${command}} but permissions were denied by ${reason}.`))
 
     twitch2Ma.onError(exitWithError);
 
@@ -101,13 +106,26 @@ export async function loadConfig(configFile: string): Promise<Config> {
     return new Config(rawConfigObject);
 }
 
-export function exitWithError(err: Error) {
+async function exit(statusCode: number) {
+    let stopPromise = Promise.resolve();
+    if(twitch2Ma) {
+        stopPromise
+            .then(() => twitch2Ma.stop())
+            .catch((err: Error) => {
+                error(err.message);
+                process.exit(1);
+            })
+    }
+    return stopPromise.then(() => process.exit(statusCode));
+}
+
+export async function exitWithError(err: Error) {
     error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
-    process.exit(1);
+    return exit(1);
 }
 
 function channelMessage(channel: string, message: string): void {
-    console.log(chalk`{bgGreen.black  ${channel} }: ${message}`);
+    console.log(chalk`{bgGreen.black  ${channel} } ${message}`);
 }
 
 function confirm(message: string): void {

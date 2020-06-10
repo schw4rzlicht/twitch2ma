@@ -1,4 +1,4 @@
-import {Config, MaConfig, TwitchConfig, Command, Parameter} from "../src/lib/Config";
+import {Config, MaConfig, TwitchConfig, Command, Parameter, SACNConfig} from "../src/lib/Config";
 
 import Fs = require("fs");
 
@@ -8,6 +8,7 @@ test("Constructor", () => {
     let config = new Config(rawConfig);
 
     expect(config.timeout).toBe(rawConfig.timeout);
+    expect(config.lockMessage).toBe(rawConfig.lockMessage);
 
     expect(config.ma).toBeInstanceOf(MaConfig);
     expect(config.ma.host).toBe(rawConfig.ma.host);
@@ -36,6 +37,12 @@ test("Constructor", () => {
         expect(command.message).toBe(rawConfig.commands[index].message);
         expect(command.help).toBe(rawConfig.commands[index].help);
 
+        if(command.sacn) {
+            expect(command.sacn).toBeInstanceOf(SACNConfig);
+            expect(command.sacn.universe).toBe(rawConfig.commands[index].sacn.universe);
+            expect(command.sacn.channel).toBe(rawConfig.commands[index].sacn.channel);
+        }
+
         expect(config.availableCommands).toMatch(new RegExp(command.chatCommand));
 
         command.parameters.forEach((parameter, pIndex) => {
@@ -51,6 +58,12 @@ test("Constructor", () => {
             expect(parameter.consoleCommand).toBe(rawConfig.commands[index].parameters[pIndex].consoleCommand);
 
             expect(parameter.message).toBe(rawConfig.commands[index].parameters[pIndex].message);
+
+            if(parameter.sacn) {
+                expect(parameter.sacn).toBeInstanceOf(SACNConfig);
+                expect(parameter.sacn.universe).toBe(rawConfig.commands[index].parameters[pIndex].sacn.universe);
+                expect(parameter.sacn.channel).toBe(rawConfig.commands[index].parameters[pIndex].sacn.channel);
+            }
 
             expect(command.availableParameters).toMatch(new RegExp(parameter.parameter));
         });
