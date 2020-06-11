@@ -20,11 +20,11 @@ let commandSocket: CommandSocket = new CommandSocket();
 let globalTwitch2Ma: Twitch2Ma;
 let globalConfigFile: string;
 
-export async function main() {
+export function main() {
 
     process.on("SIGINT", exit);
 
-    return require("libnpm")
+    require("libnpm")
         .manifest(`${packageInformation.name}@latest`)
         .then(notifyUpdate)
         .catch(() => logger.warning("Could not get update information!"))
