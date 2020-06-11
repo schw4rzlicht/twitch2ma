@@ -8,6 +8,7 @@ import YAML = require("yaml");
 import _ = require("lodash");
 import chalk = require("chalk");
 import ipc = require("node-ipc");
+import childProcess = require("child_process");
 
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
@@ -34,12 +35,20 @@ function init(): void {
     program.command("start", {isDefault: true})
         .description("starts twitch2ma bot")
         .arguments("[configFile]")
-        .action(configFile => {
+        .option("-d, --detach", "detach the bot from the terminal and run as daemon")
+        .action((configFile, cmd) => {
+
             loadConfig(configFile)
                 .then(config => new Twitch2Ma(config))
-                .then(attachEventHandlers)
-                .then(twitch2Ma => twitch2Ma.start())
-                .then(openCommandSocket)
+                .then(twitch2Ma => {
+                    if (cmd.detach) {
+                        startChildProcess();
+                    } else {
+                        return attachEventHandlers(twitch2Ma)
+                            .then(twitch2Ma => twitch2Ma.start())
+                            .then(openCommandSocket);
+                    }
+                })
                 .catch(exitWithError);
         });
 
@@ -48,6 +57,36 @@ function init(): void {
         .action(() => emitSocketEvent("exit"));
 
     program.parse(process.argv);
+}
+
+function startChildProcess() {
+
+    for (let i = 0; i < process.argv.length; i++) {
+
+        if (process.argv[i] === "-d" || process.argv[i] === "--detach") {
+            process.argv[i] = "";
+        }
+    }
+
+    process.argv[0] = "";
+
+    let subProcess = childProcess.spawn(process.argv0, process.argv, {
+        stdio: "ignore",
+        shell: true,
+        detached: true,
+        windowsHide: true
+    });
+
+    subProcess.on("error", error => {
+        console.error(error);
+    })
+
+    if (subProcess) {
+        subProcess.unref();
+        confirm("twitch2ma starting detached!");
+    } else {
+        throw new Error("twitch2ma could not start detached!");
+    }
 }
 
 function exit() {
@@ -61,11 +100,18 @@ function emitSocketEvent(event: string) {
     ipc.config.silent = true;
 
     ipc.connectTo("main", () => {
+
         ipc.of.main.on("connect", () => {
             ipc.of.main.emit(event);
             ipc.disconnect("main");
         });
-    })
+
+        ipc.of.main.on("error", () => {
+            ipc.disconnect("main");
+            error("Could not connect to socket: Is twitch2ma running?");
+            process.exit(1);
+        });
+    });
 }
 
 function openCommandSocket() {
@@ -77,7 +123,7 @@ function openCommandSocket() {
 }
 
 export function notifyUpdate(manifest: any) {
-    if(semverGt(manifest.version, packageInformation.version)) {
+    if (semverGt(manifest.version, packageInformation.version)) {
         console.log(chalk`🔔 {blue A new version of ${packageInformation.name} is available!} ` +
             chalk`{blue (current: {bold ${packageInformation.version}}, new: {bold ${manifest.version}})}`);
     }
