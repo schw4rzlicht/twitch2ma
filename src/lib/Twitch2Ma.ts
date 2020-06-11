@@ -179,11 +179,6 @@ export default class Twitch2Ma extends EventEmitter {
 
     async handleMessage(channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
 
-        if (this.initializing) {
-            this.emit(this.onNotice, "Message ignored: still initializing!");
-            return;
-        }
-
         let raw = message.match(/!([a-zA-Z0-9-]+)( !?([a-zA-Z0-9-]+))?/);
         if (_.isArray(raw)) {
 
