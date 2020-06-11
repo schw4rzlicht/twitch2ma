@@ -86,7 +86,7 @@ export class Command {
             for (const parameter of command.parameters) {
                 this.parameters.push(new Parameter(parameter));
             }
-            this.parameterMap = _.zipObject(_.map(this.parameters, parameter => parameter.parameter), this.parameters); // TODO debug
+            this.parameterMap = _.zipObject(_.map(this.parameters, parameter => parameter.parameter), this.parameters);
             this.availableParameters = _.map(this.parameters, parameter => parameter.parameter).join(", ");
         } else {
             this.parameterMap = {};

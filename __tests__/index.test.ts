@@ -35,6 +35,7 @@ test("Event handlers attached", () => {
     twitch2Ma.onHelpExecuted = jest.fn();
     twitch2Ma.onPermissionDenied = jest.fn();
     twitch2Ma.onGodMode = jest.fn();
+    twitch2Ma.onNotice = jest.fn();
     twitch2Ma.onError = jest.fn();
 
     index.attachEventHandlers(twitch2Ma);
@@ -45,6 +46,7 @@ test("Event handlers attached", () => {
     expect(twitch2Ma.onHelpExecuted).toBeCalled();
     expect(twitch2Ma.onPermissionDenied).toBeCalled();
     expect(twitch2Ma.onGodMode).toBeCalled();
+    expect(twitch2Ma.onNotice).toBeCalled();
     expect(twitch2Ma.onError).toBeCalled();
 });
 

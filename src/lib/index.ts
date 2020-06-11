@@ -16,6 +16,7 @@ const packageInformation = require("../../package.json");
 
 let logger = new Logger();
 let commandSocket: CommandSocket = new CommandSocket();
+let globalTwitch2Ma: Twitch2Ma;
 
 export async function main() {
 
@@ -53,9 +54,11 @@ function init(): void {
                             logger.setLogfile(cmd.logfile);
                         }
 
+                        globalTwitch2Ma = twitch2Ma;
+
                         return attachEventHandlers(twitch2Ma)
                             .then(twitch2Ma => twitch2Ma.start())
-                            .then(openCommandSocket);
+                            .then(() => openCommandSocket(configFile));
                     }
                 })
                 .catch(exitWithError);
@@ -64,6 +67,10 @@ function init(): void {
     program.command("stop")
         .description("stop twitch2ma bot")
         .action(() => emitSocketEvent("exit"));
+
+    program.command("reloadConfig [configFile]")
+        .description("reload running twitch2ma instance with a new config")
+        .action(configFile => emitSocketEvent("reloadConfig", configFile));
 
     program.parse(process.argv);
 }
@@ -106,7 +113,7 @@ function exit() {
     process.exit(0);
 }
 
-function emitSocketEvent(event: string) {
+function emitSocketEvent(event: string, payload?: any) {
 
     ipc.config.appspace = "twitch2ma.";
     ipc.config.silent = true;
@@ -114,7 +121,7 @@ function emitSocketEvent(event: string) {
     ipc.connectTo("main", () => {
 
         ipc.of.main.on("connect", () => {
-            ipc.of.main.emit(event);
+            ipc.of.main.emit(event, payload);
             ipc.disconnect("main");
         });
 
@@ -126,11 +133,24 @@ function emitSocketEvent(event: string) {
     });
 }
 
-function openCommandSocket() {
+function openCommandSocket(configFile: string) {
+
     commandSocket.onError(exitWithError);
     commandSocket.onExitCommand(() => {
         logger.socketMessage("Exit command received!");
         exit();
+    });
+    commandSocket.onReloadConfigCommand((newConfigFile: any) => {
+
+        if(!_.isString(newConfigFile)) {
+            newConfigFile = _.isString(configFile) ? configFile : "config.json";
+        }
+
+        logger.socketMessage(`Reload config command received (${newConfigFile})!`);
+
+        loadConfig(newConfigFile)
+            .then(globalTwitch2Ma.reloadConfig)
+            .catch(error => logger.error(`Reloading config failed: ${error.message}!`));
     });
     return commandSocket.start();
 }
@@ -169,6 +189,7 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onPermissionDenied((channel, user, reason) => logger.channelMessage(channel,
         chalk`✋ User {bold ${user}} tried to run a command but permissions were denied because of ${reason}.`))
 
+    twitch2Ma.onNotice(logger.notice);
     twitch2Ma.onError(error => exitWithError(new Error("SOCKET ERROR: " + error.message)));
 
     return twitch2Ma;

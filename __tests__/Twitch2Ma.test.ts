@@ -30,7 +30,7 @@ test("Connection chain", async () => {
     twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
     twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
 
-    await expect(twitch2Ma.start()).resolves.toBeUndefined();
+    await expect(twitch2Ma.start()).resolves.toBe(false);
 
     expect(twitch2Ma["telnet"].connect).toBeCalled();
     expect(spyOnTelnetLogin).toBeCalled();
