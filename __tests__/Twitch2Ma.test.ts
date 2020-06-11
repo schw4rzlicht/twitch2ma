@@ -93,7 +93,7 @@ test("Twitch connection failed", async () => {
             throw Error("Not this time!");
         });
 
-    await expect(twitch2Ma.start()).rejects.toThrow(new Error("Not this time!"));
+    await expect(twitch2Ma.start()).rejects.toMatchObject(new Error("Not this time!"));
 
     expect(spyOnOnTelnetConnected).toBeCalledWith(config.ma.host, config.ma.user);
     expect(spyOnOnTwitchConnected).not.toBeCalled();
@@ -108,24 +108,23 @@ test("Twitch channel join failed", async () => {
         }
     });
 
-    let errorHandler = jest.fn();
-
     let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
 
     let spyOnOnTelnetConnected = jest.fn();
     let spyOnOnTwitchConnected = jest.fn();
+    let spyOnError = jest.fn();
 
     twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
     twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
+    twitch2Ma.onError(spyOnError);
 
-    twitch2Ma.onError(errorHandler);
-    await twitch2Ma.start();
+    await expect(twitch2Ma.start()).rejects.toThrow(new ChannelError());
 
     expect(twitch2Ma["chatClient"].join).toBeCalled();
-    expect(errorHandler).toBeCalledWith(new ChannelError());
 
     expect(spyOnOnTelnetConnected).toBeCalledWith(config.ma.host, config.ma.user);
     expect(spyOnOnTwitchConnected).not.toBeCalled();
+    expect(spyOnError).not.toBeCalled();
 })
 
 test("Message handler set", async () => {

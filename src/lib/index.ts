@@ -14,9 +14,11 @@ import childProcess = require("child_process");
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
+// TODO Improve:
 let logger = new Logger();
 let commandSocket: CommandSocket = new CommandSocket();
 let globalTwitch2Ma: Twitch2Ma;
+let globalConfigFile: string;
 
 export async function main() {
 
@@ -58,7 +60,7 @@ function init(): void {
 
                         return attachEventHandlers(twitch2Ma)
                             .then(twitch2Ma => twitch2Ma.start())
-                            .then(() => openCommandSocket(configFile));
+                            .then(() => openCommandSocket());
                     }
                 })
                 .catch(exitWithError);
@@ -133,24 +135,26 @@ function emitSocketEvent(event: string, payload?: any) {
     });
 }
 
-function openCommandSocket(configFile: string) {
+function openCommandSocket() {
 
     commandSocket.onError(exitWithError);
+
     commandSocket.onExitCommand(() => {
         logger.socketMessage("Exit command received!");
         exit();
     });
+
     commandSocket.onReloadConfigCommand((newConfigFile: any) => {
 
         if(!_.isString(newConfigFile)) {
-            newConfigFile = _.isString(configFile) ? configFile : "config.json";
+            newConfigFile = globalConfigFile;
         }
 
         logger.socketMessage(`Reload config command received (${newConfigFile})!`);
 
         loadConfig(newConfigFile)
-            .then(globalTwitch2Ma.reloadConfig)
-            .catch(error => logger.error(`Reloading config failed: ${error.message}!`));
+            .then(config => globalTwitch2Ma.reloadConfig(config))
+            .catch(error => logger.error(`Reloading config failed: ${error.message}`));
     });
     return commandSocket.start();
 }
@@ -189,8 +193,9 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onPermissionDenied((channel, user, reason) => logger.channelMessage(channel,
         chalk`✋ User {bold ${user}} tried to run a command but permissions were denied because of ${reason}.`))
 
-    twitch2Ma.onNotice(logger.notice);
-    twitch2Ma.onError(error => exitWithError(new Error("SOCKET ERROR: " + error.message)));
+    twitch2Ma.onNotice(message => logger.notice(message));
+    twitch2Ma.onConfigReloaded(() => logger.confirm(`Config reloaded.`))
+    twitch2Ma.onError(exitWithError);
 
     return twitch2Ma;
 }
@@ -214,12 +219,14 @@ export async function loadConfig(configFile: string): Promise<Config> {
         }
     }
 
+    globalConfigFile = configFile;
+
     return new Config(rawConfigObject);
 }
 
 export function exitWithError(err: Error) {
 
-    logger.error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
+    logger.error((err.message.slice(-1).match(/[!?]/) ? err.message : err.message + "!") + " Exiting...");
     logger.end();
 
     if(commandSocket) {

@@ -37,6 +37,7 @@ test("Event handlers attached", () => {
     twitch2Ma.onGodMode = jest.fn();
     twitch2Ma.onNotice = jest.fn();
     twitch2Ma.onError = jest.fn();
+    twitch2Ma.onConfigReloaded = jest.fn();
 
     index.attachEventHandlers(twitch2Ma);
 
@@ -48,6 +49,7 @@ test("Event handlers attached", () => {
     expect(twitch2Ma.onGodMode).toBeCalled();
     expect(twitch2Ma.onNotice).toBeCalled();
     expect(twitch2Ma.onError).toBeCalled();
+    expect(twitch2Ma.onConfigReloaded).toBeCalled();
 });
 
 test("Load JSON config successful", () => {

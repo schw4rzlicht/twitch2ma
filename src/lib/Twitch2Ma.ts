@@ -62,7 +62,7 @@ export default class Twitch2Ma extends EventEmitter {
 
     reloadConfig(config: Config) {
 
-        if(this.initializing) {
+        if (this.initializing) {
             throw new Error("twitch2ma is initializing!");
         }
 
@@ -73,30 +73,31 @@ export default class Twitch2Ma extends EventEmitter {
 
         let reloadChain = Promise.resolve();
 
-        if(needsTwitchReload) {
-            reloadChain
+        if (needsTwitchReload) {
+            reloadChain = reloadChain
                 .then(() => this.emit(this.onNotice, "Disconnecting Twitch..."))
                 .then(() => this.chatClient.removeListener())
-                .then(this.stopTwitch);
+                .then(() => this.stopTwitch());
         }
 
-        if(needsTelnetReload) {
-            reloadChain
+        if (needsTelnetReload) {
+            reloadChain = reloadChain
                 .then(() => this.emit(this.onNotice, "Reconnecting telnet..."))
                 .then(() => this.telnet.end())
                 .then(() => this.startTelnet(config.ma.host, config.ma.user, config.ma.password));
         }
 
-        if(needsTwitchReload) {
-            reloadChain
+        if (needsTwitchReload) {
+            reloadChain = reloadChain
                 .then(() => this.emit(this.onNotice, "Connecting Twitch..."))
-                .then(this.initTwitch);
+                .then(() => this.initTwitch(config));
         }
 
         return reloadChain
             .then(() => this.config = config)
             .then(() => this.initializing = false)
-            .catch(this.stopWithError);
+            .then(() => this.emit(this.onConfigReloaded))
+            .catch(error => this.stopWithError(error));
     }
 
     private startTelnet(host: string, user: string, password: string) {
@@ -118,8 +119,8 @@ export default class Twitch2Ma extends EventEmitter {
 
         let stopChain = Promise.resolve();
 
-        if(_.isObject(this.chatClient)) {
-            stopChain.then(this.chatClient.quit);
+        if (_.isObject(this.chatClient)) {
+            stopChain.then(() => this.chatClient.quit());
         }
 
         return stopChain;
@@ -152,26 +153,33 @@ export default class Twitch2Ma extends EventEmitter {
             });
     }
 
-    initTwitch() {
+    initTwitch(config: Config = this.config) {
 
-        this.twitchClient = Twitch.withCredentials(this.config.twitch.clientId, this.config.twitch.accessToken);
-        this.chatClient = TwitchChat.forTwitchClient(this.twitchClient);
+        return Promise.resolve()
+            .then(() => {
+                this.twitchClient = Twitch.withCredentials(config.twitch.clientId, config.twitch.accessToken);
+                this.chatClient = TwitchChat.forTwitchClient(this.twitchClient);
 
-        this.chatClient.onRegister(() => {
-            this.chatClient.join(this.config.twitch.channel)
-                .then(() => this.emit(this.onTwitchConnected, this.config.twitch.channel))
-                .catch(() => this.stopWithError(new ChannelError()));
-        });
+                this.chatClient.onPrivmsg((channel, user, message, rawMessage) =>
+                    this.handleMessage(channel, user, message, rawMessage));
 
-        this.chatClient.onPrivmsg((channel, user, message, rawMessage) =>
-            this.handleMessage(channel, user, message, rawMessage));
+            }).then(() => new Promise((resolve, reject) => {
 
-        return this.chatClient.connect();
+                this.chatClient.onRegister(() => {
+                    this.chatClient.join(config.twitch.channel)
+                        .then(() => resolve())
+                        .catch(() => reject(new ChannelError()));
+                });
+
+                this.chatClient.connect()
+                    .catch(error => reject(error));
+
+            })).then(() => this.emit(this.onTwitchConnected, config.twitch.channel));
     }
 
     async handleMessage(channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
 
-        if(this.initializing) {
+        if (this.initializing) {
             this.emit(this.onNotice, "Message ignored: still initializing!");
             return;
         }
@@ -283,4 +291,5 @@ export default class Twitch2Ma extends EventEmitter {
     onPermissionDenied = this.registerEvent<(channel: string, user: string, reason: string) => any>();
     onGodMode = this.registerEvent<(channel: string, user: string, reason: string) => any>();
     onNotice = this.registerEvent<(message: string) => any>();
+    onConfigReloaded = this.registerEvent<() => any>();
 }
