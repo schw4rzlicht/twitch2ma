@@ -1,3 +1,10 @@
+# [1.13.0-rc.2](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.1...v1.13.0-rc.2) (2020-06-11)
+
+
+### Features
+
+* Add sentry ([95ba4fe](https://github.com/schw4rzlicht/twitch2ma/commit/95ba4fe88867476d657c13bca3bf15caf64011a5))
+
 # [1.13.0-rc.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.12.0...v1.13.0-rc.1) (2020-06-10)
 
 
