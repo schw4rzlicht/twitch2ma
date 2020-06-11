@@ -2,6 +2,7 @@ import {Command} from "commander";
 import Twitch2Ma from "./Twitch2Ma";
 import {Config} from "./Config";
 import {CommandSocket} from "./CommandSocket";
+import {Logger} from "./Logger";
 
 import Fs = require("fs");
 import YAML = require("yaml");
@@ -13,6 +14,7 @@ import childProcess = require("child_process");
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
+let logger = new Logger();
 let commandSocket: CommandSocket;
 
 export async function main() {
@@ -22,7 +24,7 @@ export async function main() {
     return require("libnpm")
         .manifest(`${packageInformation.name}@latest`)
         .then(notifyUpdate)
-        .catch(() => warning("Could not get update information!"))
+        .catch(() => logger.warning("Could not get update information!"))
         .then(init);
 }
 
@@ -33,14 +35,20 @@ function init(): void {
         .version(packageInformation.version, "-v, --version", "output the current version");
 
     program.command("start", {isDefault: true})
-        .description("starts twitch2ma bot")
+        .description("start twitch2ma bot")
         .arguments("[configFile]")
         .option("-d, --detach", "detach the bot from the terminal and run as daemon")
+        .option("-l, --logfile <logfile>", "log to logfile")
         .action((configFile, cmd) => {
 
             loadConfig(configFile)
                 .then(config => new Twitch2Ma(config))
                 .then(twitch2Ma => {
+
+                    if (cmd.logfile) {
+                        logger.setLogfile(cmd.logfile);
+                    }
+
                     if (cmd.detach) {
                         startChildProcess();
                     } else {
@@ -53,7 +61,7 @@ function init(): void {
         });
 
     program.command("stop")
-        .description("stops twitch2ma bot")
+        .description("stop twitch2ma bot")
         .action(() => emitSocketEvent("exit"));
 
     program.parse(process.argv);
@@ -77,13 +85,9 @@ function startChildProcess() {
         windowsHide: true
     });
 
-    subProcess.on("error", error => {
-        console.error(error);
-    })
-
     if (subProcess) {
         subProcess.unref();
-        confirm("twitch2ma starting detached!");
+        logger.confirm("twitch2ma starting detached!");
     } else {
         throw new Error("twitch2ma could not start detached!");
     }
@@ -91,6 +95,7 @@ function startChildProcess() {
 
 function exit() {
     console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
+    logger.end();
     process.exit(0);
 }
 
@@ -108,7 +113,7 @@ function emitSocketEvent(event: string) {
 
         ipc.of.main.on("error", () => {
             ipc.disconnect("main");
-            error("Could not connect to socket: Is twitch2ma running?");
+            logger.error("Could not connect to socket: Is twitch2ma running?");
             process.exit(1);
         });
     });
@@ -117,7 +122,7 @@ function emitSocketEvent(event: string) {
 function openCommandSocket() {
     commandSocket = new CommandSocket();
     commandSocket.onExitCommand(() => {
-        socket("Exit command received!");
+        logger.socketMessage("Exit command received!");
         exit();
     });
 }
@@ -131,29 +136,29 @@ export function notifyUpdate(manifest: any) {
 
 export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2Ma> {
 
-    twitch2Ma.onTelnetConnected((host, user) => confirm(chalk`Telnet connected to {bold ${user}:***@${host}:30000}.`));
-    twitch2Ma.onTwitchConnected(channel => confirm(chalk`Twitch connected to {bold #${channel}}.`));
+    twitch2Ma.onTelnetConnected((host, user) => logger.confirm(chalk`Telnet connected to {bold ${user}:***@${host}:30000}.`));
+    twitch2Ma.onTwitchConnected(channel => logger.confirm(chalk`Twitch connected to {bold #${channel}}.`));
 
     twitch2Ma.onCommandExecuted((channel, user, chatCommand, parameterName, consoleCommand) => {
 
         parameterName = _.isString(parameterName) ? ` ${parameterName}` : "";
 
-        channelMessage(channel, chalk`💡 User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
+        logger.channelMessage(channel, chalk`💡 User {bold ${user}} executed {bold.blue !${chatCommand}${parameterName}}`
             + (_.isString(consoleCommand) ? chalk` ({magenta ${consoleCommand}}) on the desk.` : '.'));
     });
 
     twitch2Ma.onHelpExecuted((channel, user, helpCommand) => {
         if (_.isString(helpCommand)) {
-            channelMessage(channel, chalk`🤨 User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
+            logger.channelMessage(channel, chalk`🤨 User {bold ${user}} got help for {bold.blue !${helpCommand}}.`);
         } else {
-            channelMessage(channel, chalk`📖 User {bold ${user}} listed available commands.`);
+            logger.channelMessage(channel, chalk`📖 User {bold ${user}} listed available commands.`);
         }
     });
 
-    twitch2Ma.onGodMode((channel, user, reason) => channelMessage(channel,
+    twitch2Ma.onGodMode((channel, user, reason) => logger.channelMessage(channel,
         chalk`💪 User {bold ${user}} activated {bold.inverse  god mode } because: ${reason}.`));
 
-    twitch2Ma.onPermissionDenied((channel, user, reason) => channelMessage(channel,
+    twitch2Ma.onPermissionDenied((channel, user, reason) => logger.channelMessage(channel,
         chalk`✋ User {bold ${user}} tried to run a command but permissions were denied because of ${reason}.`))
 
     twitch2Ma.onError(exitWithError);
@@ -184,26 +189,7 @@ export async function loadConfig(configFile: string): Promise<Config> {
 }
 
 export function exitWithError(err: Error) {
-    error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
+    logger.error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
+    logger.end();
     process.exit(1);
-}
-
-function socket(message: string) {
-    console.log(chalk`{inverse ${message}}`);
-}
-
-function channelMessage(channel: string, message: string): void {
-    console.log(chalk`{bgGreen.black  ${channel} }: ${message}`);
-}
-
-function confirm(message: string): void {
-    console.log(chalk`✅ {green ${message}}`);
-}
-
-function warning(message: string): void {
-    console.warn(chalk`⚠️ {yellow ${message}}`)
-}
-
-function error(message: string): void {
-    console.error(chalk`❌ {bold.red ${message}}`);
 }
