@@ -15,7 +15,7 @@ const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
 let logger = new Logger();
-let commandSocket: CommandSocket;
+let commandSocket: CommandSocket = new CommandSocket();
 
 export async function main() {
 
@@ -45,13 +45,14 @@ function init(): void {
                 .then(config => new Twitch2Ma(config))
                 .then(twitch2Ma => {
 
-                    if (cmd.logfile) {
-                        logger.setLogfile(cmd.logfile);
-                    }
-
                     if (cmd.detach) {
-                        startChildProcess();
+                        return commandSocket.checkSocketExists().then(startChildProcess);
                     } else {
+
+                        if (cmd.logfile) {
+                            logger.setLogfile(cmd.logfile);
+                        }
+
                         return attachEventHandlers(twitch2Ma)
                             .then(twitch2Ma => twitch2Ma.start())
                             .then(openCommandSocket);
@@ -94,8 +95,14 @@ function startChildProcess() {
 }
 
 function exit() {
+
     console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
     logger.end();
+
+    if(commandSocket) {
+        commandSocket.stop();
+    }
+
     process.exit(0);
 }
 
@@ -120,11 +127,12 @@ function emitSocketEvent(event: string) {
 }
 
 function openCommandSocket() {
-    commandSocket = new CommandSocket();
+    commandSocket.onError(exitWithError);
     commandSocket.onExitCommand(() => {
         logger.socketMessage("Exit command received!");
         exit();
     });
+    return commandSocket.start();
 }
 
 export function notifyUpdate(manifest: any) {
@@ -161,7 +169,7 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onPermissionDenied((channel, user, reason) => logger.channelMessage(channel,
         chalk`✋ User {bold ${user}} tried to run a command but permissions were denied because of ${reason}.`))
 
-    twitch2Ma.onError(exitWithError);
+    twitch2Ma.onError(error => exitWithError(new Error("SOCKET ERROR: " + error.message)));
 
     return twitch2Ma;
 }
@@ -189,7 +197,13 @@ export async function loadConfig(configFile: string): Promise<Config> {
 }
 
 export function exitWithError(err: Error) {
+
     logger.error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
     logger.end();
+
+    if(commandSocket) {
+        commandSocket.stop();
+    }
+
     process.exit(1);
 }
