@@ -62,7 +62,8 @@ test("Telnet connection failed", async () => {
     twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
     twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
 
-    await expect(twitch2Ma.start()).rejects.toThrow(new TelnetError("Could not connect to desk!"));
+    await expect(twitch2Ma.start()).rejects.toThrow(new TelnetError("Could not connect to desk! Check Telnet enabled, " +
+        "MA IP address and firewall settings if using onPC!"));
 
     expect(spyOnOnTelnetConnected).not.toBeCalled();
     expect(spyOnOnTwitchConnected).not.toBeCalled();
@@ -81,7 +82,7 @@ test("Telnet login failed", async () => {
     twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
 
     await expect(twitch2Ma.start()).rejects
-        .toThrow(new TelnetError(`Could not log into the desk as user ${config.ma.user}!`));
+        .toThrow(new TelnetError(`Could not log into the desk as user ${config.ma.user}! Check password!`));
 
     expect(spyOnOnTelnetConnected).not.toBeCalled();
     expect(spyOnOnTwitchConnected).not.toBeCalled();
@@ -280,7 +281,7 @@ test("Telnet command failed", async () => {
         "Alice", "!red", aliceRawMessage);
 
     expect(twitch2Ma["telnet"].send).toBeCalledWith("Macro 1");
-    expect(errorHandler).toBeCalledWith(new TelnetError("Sending telnet command failed!"));
+    expect(errorHandler).toBeCalledWith(new TelnetError("Sending telnet command failed! Is MA still running?"));
     expect(commandExecutedHandler).not.toBeCalled();
 });
 
