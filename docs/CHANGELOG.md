@@ -1,3 +1,10 @@
+# [1.13.0-rc.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.2...v1.13.0-rc.3) (2020-06-12)
+
+
+### Bug Fixes
+
+* Make sACN interface configurable ([48eafa0](https://github.com/schw4rzlicht/twitch2ma/commit/48eafa02644ba209901901ff70065da1db9de140))
+
 # [1.13.0-rc.2](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.1...v1.13.0-rc.2) (2020-06-11)
 
 
