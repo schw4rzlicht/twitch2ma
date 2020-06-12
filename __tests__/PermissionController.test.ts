@@ -5,6 +5,9 @@ import ModeratorPermission from "../src/lib/permissions/ModeratorPermission";
 import OwnerPermission from "../src/lib/permissions/OwnerPermission";
 import {RuntimeInformation} from "../src/lib/RuntimeInformation";
 import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
+import SACNPermission from "../src/lib/permissions/SACNPermission";
+import MockedFunction = jest.MockedFunction;
+import MockInstance = jest.MockInstance;
 
 const Fs = require("fs");
 const _ = require("lodash");
@@ -12,16 +15,19 @@ const _ = require("lodash");
 let config: Config;
 let permissionController: PermissionController;
 
+jest.mock("sacn");
+
 beforeEach(() => {
     config = loadConfig();
     permissionController = new PermissionController()
+        .withPermissionInstance(new SACNPermission(config))
         .withPermissionInstance(new CooldownPermission())
         .withPermissionInstance(new ModeratorPermission())
         .withPermissionInstance(new OwnerPermission());
 });
 
 afterEach(() => {
-    permissionController.stop();
+    jest.clearAllMocks();
 });
 
 test("Permission collector denies permission", () => {
@@ -100,6 +106,48 @@ test("Permission granted b/c user is owner", async () => {
         "Alice", rawMessage, null))
 
     expect(permissionCollector.godModeReasons).toContain("user is channel owner");
+});
+
+test("sACN lock", async () => {
+
+    let sacnReceiver: any;
+    permissionController["permissionInstances"].forEach(permissionInstance => {
+        if(permissionInstance instanceof SACNPermission) {
+            sacnReceiver = permissionInstance["sACNReceiver"];
+        }
+    });
+
+    expect(sacnReceiver.on).toBeCalledTimes(1);
+
+    sacnReceiver.on.mock.calls[0][1]({
+        slotsData: Buffer.from(new Uint8Array(512)),
+        universe: 1
+    });
+
+    let runtimeInformation = new RuntimeInformation(config, "Alice",
+        new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"}),
+        config.getCommand("lockableCommand"));
+
+    await permissionController.checkPermissions(runtimeInformation)
+        .catch(error => {
+            expect(error).toBeInstanceOf(PermissionError);
+            expect(error.permissionCollector.permissionDeniedReasons)
+                .toContainEqual(new Reason("sacn", "@Alice, {command} is currently locked! Please wait!"));
+        });
+
+    sacnReceiver.on.mock.calls[0][1]({
+        slotsData: Buffer.from(new Uint8Array(512).fill(255)),
+        universe: 1
+    });
+
+    await permissionController.checkPermissions(runtimeInformation)
+        .then(permissionCollector => {
+            expect(permissionCollector.permissionDenied).toBe(false);
+            expect(permissionCollector.godMode).toBe(false);
+            expect(permissionCollector.permissionDeniedReasons.length).toBe(0);
+        });
+
+    expect.assertions(6);
 });
 
 function loadConfig(overrideConfigValues?: any): Config {

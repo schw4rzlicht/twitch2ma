@@ -34,11 +34,6 @@
       "type": "integer",
       "minimum": 0
     },
-    "lockMessage": {
-      "description": "The message to be sent when viewers try to execute a command that is currently locked. '{command}' is replaced by the attempted command and parameter.",
-      "type": "string",
-      "default": "{command} is currently locked! Please wait!"
-    },
     "ma": {
       "description": "GrandMA 2 telnet configuration",
       "type": "object",
@@ -92,6 +87,23 @@
         "accessToken",
         "channel"
       ]
+    },
+    "sacn": {
+      "description": "sACN specific configuration used for sACN locks.",
+      "type": "object",
+      "properties": {
+        "lockMessage": {
+          "description": "The message to be sent when viewers try to execute a command that is currently locked. '{command}' is replaced by the attempted command and parameter.",
+          "type": "string",
+          "default": "{command} is currently locked! Please wait!"
+        },
+        "interface": {
+          "description": "The IP address of the interface twitch2ma is listening on.",
+          "type": "string",
+          "format": "ipv4"
+        }
+      },
+      "additionalProperties": false
     },
     "commands": {
       "description": "An array of commands the bot reacts to.",

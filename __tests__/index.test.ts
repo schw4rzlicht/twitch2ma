@@ -11,6 +11,8 @@ jest.mock("source-map-support");
 
 jest.mock("../src/lib/Twitch2Ma");
 
+afterEach(() => jest.clearAllMocks());
+
 test("Update notification", () => {
 
     const packageInformation = require("../package.json");

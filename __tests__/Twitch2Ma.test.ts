@@ -22,7 +22,10 @@ beforeEach(() => {
     twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
 });
 
-afterEach(() => twitch2Ma.stop());
+afterEach(() => {
+    twitch2Ma.stop();
+    jest.clearAllMocks();
+});
 
 test("Connection chain", async () => {
 
