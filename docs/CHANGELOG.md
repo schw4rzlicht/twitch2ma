@@ -1,3 +1,11 @@
+# [1.13.0-rc.4](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.3...v1.13.0-rc.4) (2020-06-12)
+
+
+### Bug Fixes
+
+* Add more help to errors ([d7c9103](https://github.com/schw4rzlicht/twitch2ma/commit/d7c9103f8408200bc6b703d5aeacd00ee3daa80b)), closes [#7](https://github.com/schw4rzlicht/twitch2ma/issues/7)
+* Integration tests ([61194d8](https://github.com/schw4rzlicht/twitch2ma/commit/61194d83a81267cba1974b72dfddd0e0837354c4))
+
 # [1.13.0-rc.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.2...v1.13.0-rc.3) (2020-06-12)
 
 
