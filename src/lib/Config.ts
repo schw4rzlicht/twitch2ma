@@ -5,9 +5,9 @@ import _ = require("lodash");
 export class Config {
 
     public readonly timeout: number;
-    public readonly lockMessage: string;
     public readonly ma: MaConfig;
     public readonly twitch: TwitchConfig;
+    public readonly sacn: SACNConfig;
     public readonly commands: Array<Command>;
     public readonly availableCommands: string;
 
@@ -26,9 +26,9 @@ export class Config {
         }
 
         this.timeout = config.timeout;
-        this.lockMessage = config.lockMessage;
         this.ma = new MaConfig(config.ma);
         this.twitch = new TwitchConfig(config.twitch);
+        this.sacn = config.sacn ? config.sacn : null;
         this.commands = new Array<Command>();
 
         for (const command of config.commands) {
@@ -36,7 +36,7 @@ export class Config {
         }
 
         this.availableCommands = _.map(this.commands, command => `!${command.chatCommand}`).join(", ");
-        this.commandMap = _.zipObject(_.map(this.commands, command => command.chatCommand), this.commands); // TODO debug
+        this.commandMap = _.zipObject(_.map(this.commands, command => command.chatCommand), this.commands);
     }
 
     getCommand(chatCommand: string): Command {
@@ -70,13 +70,20 @@ export class TwitchConfig {
     }
 }
 
-export class Command {
+export interface Instructions {
+    getChatCommand(): string;
+    readonly consoleCommand: string;
+    readonly message: string;
+    readonly sacn: SACNLock;
+}
+
+export class Command implements Instructions {
 
     public readonly chatCommand: string;
     public readonly consoleCommand: string;
     public readonly message: string;
     public readonly help: string;
-    public readonly sacn: SACNConfig;
+    public readonly sacn: SACNLock;
     public readonly parameters: Array<Parameter>;
     public readonly availableParameters: string;
 
@@ -89,7 +96,7 @@ export class Command {
         this.help = command.help;
 
         if(command.sacn) {
-            this.sacn = new SACNConfig(command.sacn);
+            this.sacn = new SACNLock(command.sacn);
         }
 
         this.parameters = new Array<Parameter>();
@@ -98,11 +105,15 @@ export class Command {
             for (const parameter of command.parameters) {
                 this.parameters.push(new Parameter(parameter));
             }
-            this.parameterMap = _.zipObject(_.map(this.parameters, parameter => parameter.parameter), this.parameters); // TODO debug
+            this.parameterMap = _.zipObject(_.map(this.parameters, parameter => parameter.parameter), this.parameters);
             this.availableParameters = _.map(this.parameters, parameter => parameter.parameter).join(", ");
         } else {
             this.parameterMap = {};
         }
+    }
+
+    getChatCommand(): string {
+        return this.chatCommand;
     }
 
     getParameter(parameter: string): Parameter {
@@ -110,12 +121,12 @@ export class Command {
     }
 }
 
-export class Parameter {
+export class Parameter implements Instructions {
 
     public readonly parameter: string;
     public readonly consoleCommand: string;
     public readonly message: string;
-    public readonly sacn: SACNConfig;
+    public readonly sacn: SACNLock;
 
     constructor(parameter: any) {
         this.parameter = parameter.parameter;
@@ -123,12 +134,16 @@ export class Parameter {
         this.message = parameter.message;
 
         if(parameter.sacn) {
-            this.sacn = new SACNConfig(parameter.sacn);
+            this.sacn = new SACNLock(parameter.sacn);
         }
+    }
+
+    getChatCommand(): string {
+        return this.parameter;
     }
 }
 
-export class SACNConfig {
+export class SACNLock {
 
     public readonly universe: number;
     public readonly channel: number;
@@ -136,5 +151,16 @@ export class SACNConfig {
     constructor(sacn: any) {
         this.universe = sacn.universe;
         this.channel = sacn.channel;
+    }
+}
+
+export class SACNConfig {
+
+    public readonly lockMessage: string;
+    public readonly interface: string;
+
+    constructor(sacn: any) {
+        this.lockMessage = sacn.lockMessage;
+        this.interface = sacn.interface;
     }
 }

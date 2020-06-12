@@ -1,6 +1,9 @@
 {
   "timeout": 20,
-  "lockMessage": "{command} is currently locked! Please wait!",
+  "sacn": {
+    "lockMessage": "{command} is currently locked! Please wait!",
+    "interface": "127.0.0.1"
+  },
   "ma": {
     "host": "192.168.0.20",
     "user": "administrator",

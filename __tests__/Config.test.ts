@@ -1,4 +1,4 @@
-import {Config, MaConfig, TwitchConfig, Command, Parameter, SACNConfig} from "../src/lib/Config";
+import {Config, MaConfig, TwitchConfig, Command, Parameter, SACNLock} from "../src/lib/Config";
 
 import Fs = require("fs");
 
@@ -8,7 +8,6 @@ test("Constructor", () => {
     let config = new Config(rawConfig);
 
     expect(config.timeout).toBe(rawConfig.timeout);
-    expect(config.lockMessage).toBe(rawConfig.lockMessage);
 
     expect(config.ma).toBeInstanceOf(MaConfig);
     expect(config.ma.host).toBe(rawConfig.ma.host);
@@ -19,6 +18,9 @@ test("Constructor", () => {
     expect(config.twitch.clientId).toBe(rawConfig.twitch.clientId);
     expect(config.twitch.accessToken).toBe(rawConfig.twitch.accessToken);
     expect(config.twitch.channel).toBe(rawConfig.twitch.channel);
+
+    expect(config.sacn.lockMessage).toBe(rawConfig.sacn.lockMessage);
+    expect(config.sacn.interface).toBe(rawConfig.sacn.interface);
 
     expect(config.commands).toBeInstanceOf(Array);
     expect(config.commands.length).toBeGreaterThan(0);
@@ -38,7 +40,7 @@ test("Constructor", () => {
         expect(command.help).toBe(rawConfig.commands[index].help);
 
         if(command.sacn) {
-            expect(command.sacn).toBeInstanceOf(SACNConfig);
+            expect(command.sacn).toBeInstanceOf(SACNLock);
             expect(command.sacn.universe).toBe(rawConfig.commands[index].sacn.universe);
             expect(command.sacn.channel).toBe(rawConfig.commands[index].sacn.channel);
         }
@@ -60,7 +62,7 @@ test("Constructor", () => {
             expect(parameter.message).toBe(rawConfig.commands[index].parameters[pIndex].message);
 
             if(parameter.sacn) {
-                expect(parameter.sacn).toBeInstanceOf(SACNConfig);
+                expect(parameter.sacn).toBeInstanceOf(SACNLock);
                 expect(parameter.sacn.universe).toBe(rawConfig.commands[index].parameters[pIndex].sacn.universe);
                 expect(parameter.sacn.channel).toBe(rawConfig.commands[index].parameters[pIndex].sacn.channel);
             }
