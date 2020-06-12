@@ -68,7 +68,8 @@ export default class Twitch2Ma extends EventEmitter {
                 ors: "\r\n",
             })
             .catch(() => {
-                throw new TelnetError("Could not connect to desk!")
+                throw new TelnetError("Could not connect to desk! Check Telnet enabled, MA IP address and firewall " +
+                    "settings if using onPC!");
             })
             .then(() => this.telnetLogin())
             .then(() => this.initTwitch());
@@ -93,7 +94,7 @@ export default class Twitch2Ma extends EventEmitter {
                 if (message.match(`Logged in as User '${this.config.ma.user}'`)) {
                     this.emit(this.onTelnetConnected, this.config.ma.host, this.config.ma.user);
                 } else {
-                    throw new TelnetError(`Could not log into the desk as user ${this.config.ma.user}!`);
+                    throw new TelnetError(`Could not log into the desk as user ${this.config.ma.user}! Check password!`);
                 }
             });
     }
@@ -156,7 +157,7 @@ export default class Twitch2Ma extends EventEmitter {
                             this.chatClient.say(channel, reason.viewerMessage);
                             this.emit(this.onPermissionDenied, channel, user, reason.name);
                         })
-                        .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed! Is MA still running?")));
                 }
             }
         }
