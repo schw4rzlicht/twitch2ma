@@ -1,3 +1,10 @@
+# [1.13.0-rc.6](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.5...v1.13.0-rc.6) (2020-06-13)
+
+
+### Bug Fixes
+
+* Wrong function call in production ([cef76ca](https://github.com/schw4rzlicht/twitch2ma/commit/cef76caa7c62779957bdb83f2b2afdeefdb43bda))
+
 # [1.13.0-rc.5](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.4...v1.13.0-rc.5) (2020-06-13)
 
 
