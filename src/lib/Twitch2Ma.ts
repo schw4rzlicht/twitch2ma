@@ -14,6 +14,9 @@ import CooldownPermission from "./permissions/CooldownPermission";
 import OwnerPermission from "./permissions/OwnerPermission";
 import ModeratorPermission from "./permissions/ModeratorPermission";
 
+import * as Bluebird from "bluebird";
+global.Promise = Bluebird as any;
+
 import type Telnet from "telnet-client";
 
 import SourceMapSupport = require("source-map-support");
@@ -162,7 +165,7 @@ export default class Twitch2Ma extends EventEmitter {
                             }
                         })
                         .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
-                        .catch((error: PermissionError) => {
+                        .catch(PermissionError, error => {
                             let command = _.isString(parameterName) ? `!${chatCommand} ${parameterName}` : `!${chatCommand}`;
                             let reason = error.permissionCollector.permissionDeniedReasons.shift();
                             this.chatClient.say(channel, reason.viewerMessage.replace("{command}", command));
@@ -224,7 +227,7 @@ export default class Twitch2Ma extends EventEmitter {
         try {
             super.emit(event, ...args);
         } catch (error) {
-            console.error(error);
+            console.error(error); // TODO sentry
         }
     }
 

@@ -72,6 +72,7 @@ export default class SACNPermission implements PermissionInstance {
             try {
                 this.sACNReceiver.close();
             } catch (ignored) {
+                // TODO sentry
             }
         }
     }
