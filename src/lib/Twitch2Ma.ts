@@ -14,6 +14,8 @@ import CooldownPermission from "./permissions/CooldownPermission";
 import OwnerPermission from "./permissions/OwnerPermission";
 import ModeratorPermission from "./permissions/ModeratorPermission";
 
+import sentry from "./sentry";
+
 import type Telnet from "telnet-client";
 
 import SourceMapSupport = require("source-map-support");
@@ -68,7 +70,7 @@ export default class Twitch2Ma extends EventEmitter {
                 ors: "\r\n",
             })
             .catch(() => {
-                throw new TelnetError("Could not connect to desk!")
+                throw new TelnetError("Could not connect to desk!");
             })
             .then(() => this.telnetLogin())
             .then(() => this.initTwitch());
@@ -156,7 +158,7 @@ export default class Twitch2Ma extends EventEmitter {
                             this.chatClient.say(channel, reason.viewerMessage);
                             this.emit(this.onPermissionDenied, channel, user, reason.name);
                         })
-                        .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        .catch(error => sentry(error, () => this.stopWithError(new TelnetError("Sending telnet command failed!"))));
                 }
             }
         }

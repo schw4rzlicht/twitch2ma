@@ -1,6 +1,7 @@
 import {Command} from "commander";
-import Twitch2Ma from "./Twitch2Ma";
-import {Config} from "./Config";
+import Twitch2Ma, {TelnetError} from "./Twitch2Ma";
+import {Config, ConfigError} from "./Config";
+import sentry from "./sentry";
 
 import Fs = require("fs");
 import YAML = require("yaml");
@@ -20,7 +21,7 @@ export async function main() {
     return require("libnpm")
         .manifest(`${packageInformation.name}@latest`)
         .then(notifyUpdate)
-        .catch(() => warning("Could not get update information!"))
+        .catch((error: Error) => sentry(error, () => warning("Could not get update information!")))
         .then(init);
 }
 
@@ -35,7 +36,8 @@ function init(): void {
                 .then(config => new Twitch2Ma(config))
                 .then(attachEventHandlers)
                 .then(twitch2Ma => twitch2Ma.start())
-                .catch(exitWithError);
+                .catch((error: ConfigError | TelnetError) => exitWithError(error))
+                .catch(error => sentry(error, exitWithError));
         })
         .parse(process.argv);
 }
@@ -94,7 +96,7 @@ export async function loadConfig(configFile: string): Promise<Config> {
         try {
             rawConfigObject = YAML.parse(rawConfigFile);
         } catch (ignored) {
-            throw new Error(`Config file ${configFile} is not a valid JSON or YAML file!`);
+            throw new ConfigError(`Config file ${configFile} is not a valid JSON or YAML file!`);
         }
     }
 

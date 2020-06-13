@@ -2,6 +2,14 @@ import Ajv = require("ajv");
 import configSchema = require("../resources/config.schema.json");
 import _ = require("lodash");
 
+export class ConfigError extends Error {
+    constructor(message: string) {
+        super(message);
+        Object.setPrototypeOf(this, ConfigError.prototype);
+        this.name = ConfigError.name;
+    }
+}
+
 export class Config {
     public readonly timeout: number;
     public readonly ma: MaConfig;
@@ -20,7 +28,7 @@ export class Config {
         ajv.validate(configSchema, config);
 
         if(_.isArray(ajv.errors)) {
-            throw new Error(`Config file is invalid: ${ajv.errorsText(ajv.errors, {dataVar: "config"})}!`);
+            throw new ConfigError(`Config file is invalid: ${ajv.errorsText(ajv.errors, {dataVar: "config"})}!`);
         }
 
         this.timeout = config.timeout;

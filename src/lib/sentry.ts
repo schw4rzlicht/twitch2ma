@@ -30,18 +30,21 @@ export function init(packageInformation: any) {
                 version: process.version
             });
 
-            if(process.env.NODE_ENV === "development" || process.env.NODE_ENV === "staging") {
+            if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "staging") {
                 Sentry.setUser({username: os.userInfo().username});
             }
         }
-    } catch(ignored){
+    } catch (ignored) {
     }
 }
 
-export default async function sentry(error: Error, messageHandler?: (error: Error) => any) {
+export default function sentry(error: Error, messageHandler?: (error: Error) => any) {
     Sentry.captureException(error);
-    await Sentry.flush();
-    if(messageHandler) {
-        messageHandler(error);
-    }
+    return Sentry.flush()
+        .catch(() => Promise.resolve())
+        .then(() => {
+            if (messageHandler) {
+                messageHandler(error);
+            }
+        });
 }
