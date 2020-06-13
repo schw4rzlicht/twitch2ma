@@ -13,12 +13,14 @@ import {PermissionCollector, PermissionController, PermissionError} from "./Perm
 import CooldownPermission from "./permissions/CooldownPermission";
 import OwnerPermission from "./permissions/OwnerPermission";
 import ModeratorPermission from "./permissions/ModeratorPermission";
+import SACNPermission from "./permissions/SACNPermission";
+
+import sentry from "./sentry";
 
 import type Telnet from "telnet-client";
 
 import SourceMapSupport = require("source-map-support");
 import _ = require("lodash");
-import SACNPermission from "./permissions/SACNPermission";
 
 const TelnetClient = require("telnet-client");
 
@@ -169,7 +171,7 @@ export default class Twitch2Ma extends EventEmitter {
                             this.chatClient.say(channel, reason.viewerMessage.replace("{command}", command));
                             this.emit(this.onPermissionDenied, channel, user, command, reason.name);
                         })
-                        .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed! Is MA still running?")));
+                        .catch(error => sentry(error, () => this.stopWithError(new TelnetError("Sending telnet command failed! Is MA still running?"))));
                 }
             }
         }
