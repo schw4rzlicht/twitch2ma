@@ -5,7 +5,7 @@ const packageInformation = require("./package.json");
 
 require("dotenv").config();
 
-if(process.env.NODE_ENV === "production" && !packageInformation.version.matches(/^\d+\.\d+.\d+$/)) {
+if(process.env.NODE_ENV === "production" && !packageInformation.version.match(/^\d+\.\d+.\d+$/)) {
     process.env.NODE_ENV = "staging";
 }
 
