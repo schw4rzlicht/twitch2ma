@@ -1,3 +1,10 @@
+# [1.13.0-rc.5](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.4...v1.13.0-rc.5) (2020-06-13)
+
+
+### Bug Fixes
+
+* Add more error capturing ([5b576a6](https://github.com/schw4rzlicht/twitch2ma/commit/5b576a6c34710e4e981585e4c0349767041ff548))
+
 # [1.13.0-rc.4](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.3...v1.13.0-rc.4) (2020-06-12)
 
 
