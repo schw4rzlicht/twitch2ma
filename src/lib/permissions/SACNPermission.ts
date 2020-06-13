@@ -31,7 +31,7 @@ export default class SACNPermission implements PermissionInstance {
                 reuseAddr: true
             };
 
-            if(_.isString(config.sacn.interface)) {
+            if(config.sacn && _.isString(config.sacn.interface)) {
                 _.set(receiverOptions, "iface", config.sacn.interface);
             }
 
