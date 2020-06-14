@@ -35,6 +35,7 @@ export default class SACNPermission implements PermissionInstance {
                 _.set(receiverOptions, "iface", config.sacn.interface);
             }
 
+            // FIXME Throws when interface does not exist, see https://github.com/k-yle/sACN/issues/19
             this.sACNReceiver = new Receiver(receiverOptions);
 
             this.sACNReceiver.on("packet", (packet: Packet) => {
