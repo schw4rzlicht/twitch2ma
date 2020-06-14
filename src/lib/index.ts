@@ -48,7 +48,7 @@ function init(): void {
 }
 
 export function notifyUpdate(manifest: any) {
-    if(semverGt(manifest.version, packageInformation.version)) {
+    if (semverGt(manifest.version, packageInformation.version)) {
         console.log(chalk`🔔 {blue A new version of ${packageInformation.name} is available!} ` +
             chalk`{blue (current: {bold ${packageInformation.version}}, new: {bold ${manifest.version}})}`);
     }
@@ -95,10 +95,21 @@ export async function loadConfig(configFile: string): Promise<Config> {
         configFile = "config.json";
     }
 
-    let rawConfigFile = Fs.readFileSync(configFile, {encoding: "utf-8"});
-    let rawConfigObject = _.attempt(() => JSON.parse(rawConfigFile));
+    let rawConfigFile: string;
+    try {
+        rawConfigFile = Fs.readFileSync(configFile, {encoding: "utf-8"});
+    } catch(error) {
+        if(error.code === "ENOENT") {
+            throw new ConfigError(`Could not open config file ${configFile}!`);
+        } else {
+            throw error;
+        }
+    }
 
-    if (rawConfigObject instanceof Error) {
+    let rawConfigObject;
+    try {
+        rawConfigObject = JSON.parse(rawConfigFile);
+    } catch(error) {
         try {
             rawConfigObject = YAML.parse(rawConfigFile);
         } catch (ignored) {

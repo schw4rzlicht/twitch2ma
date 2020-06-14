@@ -62,7 +62,7 @@ test("Load YAML config successful", () => {
 
 test("File does not exist",  () => {
     return expect(index.loadConfig("doesNotExist.json")).rejects
-        .toHaveProperty("message", "ENOENT: no such file or directory, open 'doesNotExist.json'");
+        .toHaveProperty("message", "Could not open config file doesNotExist.json!");
 });
 
 test("Default config.json loaded", async () => {
