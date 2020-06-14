@@ -1,3 +1,15 @@
+# [1.13.0-rc.8](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.7...v1.13.0-rc.8) (2020-06-14)
+
+
+### Bug Fixes
+
+* Timing out sACN according to E1.31 specs ([ffdaf65](https://github.com/schw4rzlicht/twitch2ma/commit/ffdaf65c5344c15f45dbdf73d6431d1ca5225953))
+
+
+### Features
+
+* Add sACN status ([c14bdba](https://github.com/schw4rzlicht/twitch2ma/commit/c14bdba21477dc6af2ca41a682bb333f3eb02ed6))
+
 # [1.13.0-rc.7](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.6...v1.13.0-rc.7) (2020-06-14)
 
 
