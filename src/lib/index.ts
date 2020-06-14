@@ -41,7 +41,8 @@ function init(): void {
                 })
                 .then(attachEventHandlers)
                 .then(twitch2Ma => twitch2Ma.start())
-                .catch((error: ConfigError | TelnetError) => exitWithError(error))
+                // @ts-ignore
+                .catch(ConfigError, TelnetError, error => exitWithError(error))
                 .catch(error => sentry(error, exitWithError));
         })
         .parse(process.argv);
