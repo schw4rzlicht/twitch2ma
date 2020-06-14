@@ -91,9 +91,10 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                     }
                 });
 
-                this.sACNReceiver.on("PacketCorruption", () => {
+                this.sACNReceiver.on("PacketCorruption", error => {
                     this.emit(this.onStatus, new SACNCorrupt());
                     this.stop();
+                    sentry(error);
                 })
 
                 this.emit(this.onStatus, new SACNWaiting(universes));
