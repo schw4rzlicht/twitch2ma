@@ -43,6 +43,8 @@ When sACN is configured for a channel or parameter, it overrides `timeout` setti
 
 Additionally a `lockMessage` can be configured which is sent to Twitch chat when viewers try to execute a locked command/parameters.
 
+If your network is not able to handle multicast, please use unicast.
+
 ## Usage
  
 To run `twitch2ma`, just run the following command. Please be aware that you need to have a desk or onPC in your 
@@ -53,6 +55,26 @@ twitch2ma [configFile]
 ```
 
 `configFile` is optional and defaults to `config.json`.
+
+## Known issues
+
+### `Error: addMembership EADDRNOTAVAIL`
+
+The console output looks something like this:
+
+```
+Error: addMembership EADDRNOTAVAIL
+    at Socket.addMembership (dgram.js:817:11)
+    at Socket.<anonymous> (/usr/local/lib/node_modules/twitch2ma/node_modules/sacn/dist/index.js:41:29)
+    at Socket.onListening (dgram.js:224:10)
+    at Socket.emit (events.js:315:20)
+    at startListening (dgram.js:149:10)
+    at dgram.js:344:7
+    at processTicksAndRejections (internal/process/task_queues.js:85:21)
+```
+
+This happens when you set up an interface using the `sacn.interface` config option that does not exist on your machine.
+Simply use an existing one or omit the option altogether.
 
 ## Changelog
 
