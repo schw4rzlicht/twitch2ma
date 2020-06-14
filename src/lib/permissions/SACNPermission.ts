@@ -42,7 +42,7 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
 
             if (sacn) {
                 let universe = this.universes[sacn.universe];
-                if (universe && universe.data[sacn.channel - 1] < 255) {
+                if (universe && (universe.status !== UniverseStatus.Valid || universe.data[sacn.channel - 1] < 255)) {
                     permissionCollector.denyPermission("sacn",
                         `@${runtimeInformation.userName}, ${runtimeInformation.config.sacn.lockMessage}`);
                 }
@@ -77,13 +77,15 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
 
                 this.sACNReceiver.on("packet", (packet: Packet) => {
 
-                    if (this.universes[packet.universe]) {
+                    let universe = this.universes[packet.universe];
+
+                    if (universe) {
                         let data = new Array(512).fill(0);
                         packet.slotsData.forEach((value, channel) => {
                             data[channel] = value;
                         });
 
-                        this.universes[packet.universe].data = data;
+                        universe.data = data;
                     }
                 });
 
@@ -121,15 +123,15 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
             }
 
             if (lastValidTime <= universe.lastReceived &&
-                (universe.status == UniverseStatus.NeverReceived || universe.status == UniverseStatus.Expired)) {
+                (universe.watchdogStatus == UniverseStatus.NeverReceived || universe.watchdogStatus == UniverseStatus.Expired)) {
 
                 receiving.push(universe.universe);
-                universe.status = UniverseStatus.Valid;
+                universe.watchdogStatus = UniverseStatus.Valid;
             }
 
             if (lastValidTime > universe.lastReceived && universe.status == UniverseStatus.Valid) {
                 lost.push(universe.universe);
-                universe.status = UniverseStatus.Expired;
+                universe.watchdogStatus = UniverseStatus.Expired;
             }
         }
 

@@ -104,15 +104,15 @@
         },
         "timeout": {
           "description": "Time until sACN is considered lost.",
-          "type": "integer",
-          "minimum": 1,
-          "default": 1
+          "type": "number",
+          "minimum": 0.5,
+          "default": 2.5
         }
       },
       "additionalProperties": false,
       "default": {
         "lockMessage": "{command} is currently locked! Please wait!",
-        "timeout": 1
+        "timeout": 2.5
       }
     },
     "commands": {
