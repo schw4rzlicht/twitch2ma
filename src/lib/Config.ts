@@ -28,7 +28,7 @@ export class Config {
         this.timeout = config.timeout;
         this.ma = new MaConfig(config.ma);
         this.twitch = new TwitchConfig(config.twitch);
-        this.sacn = config.sacn ? config.sacn : null;
+        this.sacn = new SACNConfig(config.sacn);
         this.commands = new Array<Command>();
 
         for (const command of config.commands) {
@@ -158,9 +158,11 @@ export class SACNConfig {
 
     public readonly lockMessage: string;
     public readonly interface: string;
+    public readonly timeout: number;
 
     constructor(sacn: any) {
         this.lockMessage = sacn.lockMessage;
         this.interface = sacn.interface;
+        this.timeout = sacn.timeout;
     }
 }

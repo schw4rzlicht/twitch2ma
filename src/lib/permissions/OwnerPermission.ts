@@ -9,6 +9,9 @@ export default class OwnerPermission implements PermissionInstance {
         }
     }
 
+    start(): void {
+    }
+
     stop(): void {
     }
 }

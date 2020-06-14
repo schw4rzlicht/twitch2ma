@@ -21,6 +21,7 @@ test("Constructor", () => {
 
     expect(config.sacn.lockMessage).toBe(rawConfig.sacn.lockMessage);
     expect(config.sacn.interface).toBe(rawConfig.sacn.interface);
+    expect(config.sacn.timeout).toBe(rawConfig.sacn.timeout);
 
     expect(config.commands).toBeInstanceOf(Array);
     expect(config.commands.length).toBeGreaterThan(0);
