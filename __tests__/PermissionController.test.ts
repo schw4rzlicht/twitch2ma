@@ -5,7 +5,7 @@ import ModeratorPermission from "../src/lib/permissions/ModeratorPermission";
 import OwnerPermission from "../src/lib/permissions/OwnerPermission";
 import {RuntimeInformation} from "../src/lib/RuntimeInformation";
 import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
-import SACNPermission from "../src/lib/permissions/SACNPermission";
+import SACNPermission, {SACNLost, SACNReceiving, SACNStopped, SACNWaiting} from "../src/lib/permissions/SACNPermission";
 
 const Fs = require("fs");
 const _ = require("lodash");
@@ -21,7 +21,8 @@ beforeEach(() => {
         .withPermissionInstance(new SACNPermission(config))
         .withPermissionInstance(new CooldownPermission())
         .withPermissionInstance(new ModeratorPermission())
-        .withPermissionInstance(new OwnerPermission());
+        .withPermissionInstance(new OwnerPermission())
+        .start();
 });
 
 afterEach(() => {
@@ -110,7 +111,7 @@ test("sACN lock", async () => {
 
     let sacnReceiver: any;
     permissionController["permissionInstances"].forEach(permissionInstance => {
-        if(permissionInstance instanceof SACNPermission) {
+        if (permissionInstance instanceof SACNPermission) {
             sacnReceiver = permissionInstance["sACNReceiver"];
         }
     });
@@ -147,6 +148,46 @@ test("sACN lock", async () => {
         });
 
     expect.assertions(7);
+});
+
+test("sACN lock status", async () => {
+
+    config = loadConfig({
+        sacn: {
+            timeout: 1
+        }
+    });
+
+    let statusHandler = jest.fn();
+
+    let sACNPermissionInstance = new SACNPermission(config);
+    sACNPermissionInstance.onStatus(statusHandler);
+
+    permissionController = new PermissionController()
+        .withPermissionInstance(sACNPermissionInstance)
+        .start();
+
+    await expect(statusHandler).toBeCalledWith(new SACNWaiting([1]));
+
+    let sendData = {
+        slotsData: Buffer.from(new Uint8Array(512)),
+        universe: 1
+    };
+
+    (sACNPermissionInstance["sACNReceiver"] as any).on.mock.calls[0][1](sendData);
+
+    await expect(statusHandler).toBeCalledWith(new SACNReceiving([1]));
+    await expect(statusHandler).toBeCalledWith(new SACNLost([1]));
+
+    (sACNPermissionInstance["sACNReceiver"] as any).on.mock.calls[0][1](sendData);
+
+    await expect(statusHandler).toBeCalledWith(new SACNReceiving([1]));
+
+    sACNPermissionInstance.stop();
+
+    await expect(statusHandler).toBeCalledWith(new SACNStopped());
+
+    expect.assertions(5);
 });
 
 function loadConfig(overrideConfigValues?: any): Config {

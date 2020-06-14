@@ -9,6 +9,9 @@ export default class ModeratorPermission implements PermissionInstance {
         }
     }
 
+    start(): void {
+    }
+
     stop(): void {
     }
 }

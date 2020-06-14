@@ -101,12 +101,19 @@
           "description": "The IP address of the interface twitch2ma is listening on.",
           "type": "string",
           "format": "ipv4"
+        },
+        "timeout": {
+          "description": "Time until sACN is considered lost.",
+          "type": "number",
+          "minimum": 0.5,
+          "default": 2.5
         }
       },
+      "additionalProperties": false,
       "default": {
-        "lockMessage": "{command} is currently locked! Please wait!"
-      },
-      "additionalProperties": false
+        "lockMessage": "{command} is currently locked! Please wait!",
+        "timeout": 2.5
+      }
     },
     "commands": {
       "description": "An array of commands the bot reacts to.",

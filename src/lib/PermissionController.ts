@@ -6,6 +6,7 @@ export interface PermissionInstance {
           runtimeInformation: RuntimeInformation,
           additionalRuntimeInformation: Map<String, any>): void;
 
+    start(): void;
     stop(): void;
 }
 
@@ -62,6 +63,13 @@ export class PermissionController {
 
     setAdditionalRuntimeInformation(name: string, value: any) {
         this.additionalRuntimeInformation.set(name, value);
+    }
+
+    start() {
+        for (const permissionInstance of this.permissionInstances) {
+            permissionInstance.start();
+        }
+        return this;
     }
 
     stop() {

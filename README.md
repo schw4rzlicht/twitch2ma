@@ -43,8 +43,6 @@ When sACN is configured for a channel or parameter, it overrides `timeout` setti
 
 Additionally a `lockMessage` can be configured which is sent to Twitch chat when viewers try to execute a locked command/parameters.
 
-If your network is not able to handle multicast, please use unicast.
-
 ## Usage
  
 To run `twitch2ma`, just run the following command. Please be aware that you need to have a desk or onPC in your 
