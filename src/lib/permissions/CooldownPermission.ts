@@ -1,4 +1,4 @@
-import {PermissionCollector, PermissionInstance, Reason} from "../PermissionController";
+import {PermissionCollector, PermissionInstance} from "../PermissionController";
 import {RuntimeInformation} from "../RuntimeInformation";
 
 import humanizeDuration = require("humanize-duration");

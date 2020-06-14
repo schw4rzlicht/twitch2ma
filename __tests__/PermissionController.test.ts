@@ -6,8 +6,6 @@ import OwnerPermission from "../src/lib/permissions/OwnerPermission";
 import {RuntimeInformation} from "../src/lib/RuntimeInformation";
 import TwitchPrivateMessage from "twitch-chat-client/lib/StandardCommands/TwitchPrivateMessage";
 import SACNPermission from "../src/lib/permissions/SACNPermission";
-import MockedFunction = jest.MockedFunction;
-import MockInstance = jest.MockInstance;
 
 const Fs = require("fs");
 const _ = require("lodash");
@@ -117,6 +115,7 @@ test("sACN lock", async () => {
         }
     });
 
+    expect(sacnReceiver).not.toBeUndefined();
     expect(sacnReceiver.on).toBeCalledTimes(1);
 
     sacnReceiver.on.mock.calls[0][1]({
