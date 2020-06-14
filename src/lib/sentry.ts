@@ -1,5 +1,6 @@
 import Sentry = require("@sentry/node");
 import fs = require("fs");
+import {flush} from "@sentry/node";
 
 export function init(packageInformation: any) {
     try {
@@ -40,11 +41,19 @@ export function init(packageInformation: any) {
 
 export default function sentry(error: Error, messageHandler?: (error: Error) => any) {
     Sentry.captureException(error);
-    return Sentry.flush()
-        .catch(() => Promise.resolve())
+    return flushSentry()
         .then(() => {
             if (messageHandler) {
                 messageHandler(error);
             }
         });
+}
+
+export function sentryMessage(message: string, severity?: Sentry.Severity) {
+    Sentry.captureMessage(message, severity);
+    return flushSentry();
+}
+
+function flushSentry() {
+    return Sentry.flush().catch(() => Promise.resolve());
 }
