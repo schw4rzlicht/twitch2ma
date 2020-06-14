@@ -90,20 +90,21 @@ export async function loadConfig(configFile: string): Promise<Config> {
         configFile = "config.json";
     }
 
-    let rawConfigFile: any = _.attempt(() => Fs.readFileSync(configFile, {encoding: "utf-8"}));
-
-    if(rawConfigFile instanceof Error) {
-        // @ts-ignore
-        if(rawConfigFile.code === "ENOENT") {
+    let rawConfigFile: string;
+    try {
+        rawConfigFile = Fs.readFileSync(configFile, {encoding: "utf-8"});
+    } catch(error) {
+        if(error.code === "ENOENT") {
             throw new ConfigError(`Could not open config file ${configFile}!`);
         } else {
-            throw rawConfigFile;
+            throw error;
         }
     }
 
-    let rawConfigObject = _.attempt(() => JSON.parse(rawConfigFile));
-
-    if (rawConfigObject instanceof Error) {
+    let rawConfigObject;
+    try {
+        rawConfigObject = JSON.parse(rawConfigFile);
+    } catch(error) {
         try {
             rawConfigObject = YAML.parse(rawConfigFile);
         } catch (ignored) {
