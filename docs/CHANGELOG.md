@@ -1,3 +1,10 @@
+# [1.13.0-rc.9](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.8...v1.13.0-rc.9) (2020-06-14)
+
+
+### Bug Fixes
+
+* Resolve sentry.json ([4f60c91](https://github.com/schw4rzlicht/twitch2ma/commit/4f60c91d273e1b4213810296ac32f82c4e641bb4))
+
 # [1.13.0-rc.8](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.7...v1.13.0-rc.8) (2020-06-14)
 
 
