@@ -39,6 +39,8 @@ to get it manually with [this neat tool](https://twitchapps.com/tmi/). You will 
 `twitch2ma` listens to the respective universe/channel combination and locks configured commands and parameters when the
 channel value drops below 100%. This allows for a more flexible way of allowing or denying viewers' input.
 
+When sACN is configured for a channel or parameter, it overrides `timeout` settings for that channel or parameter.
+
 Additionally a `lockMessage` can be configured which is sent to Twitch chat when viewers try to execute a locked command/parameters.
 
 ## Usage
