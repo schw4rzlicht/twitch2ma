@@ -1,55 +1,48 @@
 import {PermissionCollector, PermissionInstance} from "../PermissionController";
 import {RuntimeInformation} from "../RuntimeInformation";
 import {Config} from "../Config";
-import {Receiver, Packet} from "sacn";
+import {Packet, Receiver} from "sacn";
 import {EventEmitter} from "@d-fischer/typed-event-emitter";
-
-import _ = require("lodash");
 import {EventBinder} from "@d-fischer/typed-event-emitter/lib/EventEmitter";
+import {SACNUniverse, UniverseStatus} from "./SACNUniverse";
+import _ = require("lodash");
 
 export default class SACNPermission extends EventEmitter implements PermissionInstance {
 
-    private readonly watchUniverses: Array<number>;
-    private readonly universeData: Map<number, Array<number>>;
-    private readonly lastData: Map<number, number>;
+    private readonly universes: Array<SACNUniverse>;
     private readonly config: Config;
     private sACNReceiver: Receiver;
-    private status: SACNStatus;
+    private watchdogTimeout: NodeJS.Timeout;
 
     constructor(config: Config) {
         super();
 
-        this.universeData = new Map();
-        this.lastData = new Map();
+        this.universes = [];
         this.config = config;
 
         for (const command of this.config.commands) {
             if (command.sacn) {
-                this.universeData.set(command.sacn.universe, null);
-                this.lastData.set(command.sacn.universe, 0);
+                this.universes[command.sacn.universe] = new SACNUniverse(command.sacn.universe);
             }
             for (const parameter of command.parameters) {
                 if (parameter.sacn) {
-                    this.universeData.set(parameter.sacn.universe, null);
-                    this.lastData.set(parameter.sacn.universe, 0);
+                    this.universes[parameter.sacn.universe] = new SACNUniverse(parameter.sacn.universe);
                 }
             }
         }
-
-        this.universeData.size > 0 ? this.watchUniverses = Array.from(this.universeData.keys()) : [];
     }
 
     check(permissionCollector: PermissionCollector,
           runtimeInformation: RuntimeInformation,
           additionalRuntimeInformation: Map<String, any>): void {
 
-        if (this.status instanceof SACNReceiving && runtimeInformation.instructions) {
+        if (runtimeInformation.instructions) {
 
             let sacn = runtimeInformation.instructions.sacn;
 
             if (sacn) {
-                let universeData = this.universeData.get(sacn.universe);
-                if (universeData && _.isInteger(universeData[sacn.channel - 1]) && universeData[sacn.channel - 1] < 255) {
+                let universe = this.universes[sacn.universe];
+                if (universe && universe.data[sacn.channel - 1] < 255) {
                     permissionCollector.denyPermission("sacn",
                         `@${runtimeInformation.userName}, ${runtimeInformation.config.sacn.lockMessage}`);
                 }
@@ -59,35 +52,46 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
 
     start(): void {
 
-        if (this.watchUniverses.length > 0) {
+        if (this.universes.length > 0) {
 
-            let receiverOptions = {
-                universes: this.watchUniverses,
-                reuseAddr: true
-            };
-
-            if (this.config.sacn && _.isString(this.config.sacn.interface)) {
-                _.set(receiverOptions, "iface", this.config.sacn.interface);
+            let universes = [];
+            for (const universe of this.universes) {
+                if (universe) {
+                    universes.push(universe.universe);
+                }
             }
 
-            // FIXME Throws when interface does not exist, see https://github.com/k-yle/sACN/issues/19
-            this.sACNReceiver = new Receiver(receiverOptions);
+            if (universes.length > 0) {
 
-            this.sACNReceiver.on("packet", (packet: Packet) => {
+                let receiverOptions = {
+                    universes: universes,
+                    reuseAddr: true
+                };
 
-                if(_.includes(this.watchUniverses, packet.universe)) {
-                    let data = new Array(512).fill(0);
-                    packet.slotsData.forEach((value, channel) => {
-                        data[channel] = value;
-                    });
-
-                    this.universeData.set(packet.universe, data);
-                    this.lastData.set(packet.universe, new Date().getTime());
+                if (this.config.sacn && _.isString(this.config.sacn.interface)) {
+                    _.set(receiverOptions, "iface", this.config.sacn.interface);
                 }
-            });
 
-            setTimeout(this.watchdog, this.config.sacn.timeout);
-            this.setStatus(new SACNWaiting(this.watchUniverses));
+                // FIXME Throws when interface does not exist, see https://github.com/k-yle/sACN/issues/21
+                this.sACNReceiver = new Receiver(receiverOptions);
+
+                this.sACNReceiver.on("packet", (packet: Packet) => {
+
+                    if (this.universes[packet.universe]) {
+                        let data = new Array(512).fill(0);
+                        packet.slotsData.forEach((value, channel) => {
+                            data[channel] = value;
+                        });
+
+                        this.universes[packet.universe].data = data;
+                    }
+                });
+
+                this.emit(this.onStatus, new SACNWaiting(universes));
+
+                this.watchdogTimeout = setInterval(() => this.watchdog(), this.config.sacn.timeout);
+                this.watchdogTimeout.unref();
+            }
         }
     }
 
@@ -99,21 +103,48 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                 // TODO sentry
             }
         }
-        this.setStatus(new SACNStopped());
+        _.attempt(() => clearInterval(this.watchdogTimeout));
+        this.emit(this.onStatus, new SACNStopped());
     }
 
     private watchdog() {
 
-        /************************
-        ** TODO status changes **
-        ************************/
+        let lastValidTime = new Date().getTime() - this.config.sacn.timeout * 1000;
 
-        setTimeout(this.watchdog, this.config.sacn.timeout);
+        let receiving = [];
+        let lost = [];
+
+        for (const universe of this.universes) {
+
+            if (!universe) {
+                continue;
+            }
+
+            if (lastValidTime <= universe.lastReceived &&
+                (universe.status == UniverseStatus.NeverReceived || universe.status == UniverseStatus.Expired)) {
+
+                receiving.push(universe.universe);
+                universe.status = UniverseStatus.Valid;
+            }
+
+            if (lastValidTime > universe.lastReceived && universe.status == UniverseStatus.Valid) {
+                lost.push(universe.universe);
+                universe.status = UniverseStatus.Expired;
+            }
+        }
+
+        if (receiving.length > 0) {
+            this.emit(this.onStatus, new SACNReceiving(receiving));
+        }
+
+        if (lost.length > 0) {
+            this.emit(this.onStatus, new SACNLost(lost));
+        }
     }
 
-    private setStatus(status: SACNStatus) {
-        this.status = status;
-        this.emit(this.onStatus, status);
+    withOnStatusHandler(handler: (status: SACNStatus) => any) {
+        this.onStatus(handler);
+        return this;
     }
 
     protected emit<Args extends any[]>(event: EventBinder<Args>, ...args: Args) {
@@ -127,10 +158,7 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
     onStatus = this.registerEvent<(status: SACNStatus) => any>();
 }
 
-export interface SACNStatus {
-}
-
-export class SACNWaiting implements SACNStatus {
+export class SACNStatus {
 
     readonly universes: Array<number>;
 
@@ -139,11 +167,18 @@ export class SACNWaiting implements SACNStatus {
     }
 }
 
-export class SACNReceiving implements SACNStatus {
+export class SACNWaiting extends SACNStatus {
 }
 
-export class SACNLost implements SACNStatus {
+export class SACNReceiving extends SACNStatus {
 }
 
-export class SACNStopped implements SACNStatus {
+export class SACNLost extends SACNStatus {
+}
+
+export class SACNStopped extends SACNStatus {
+
+    constructor() {
+        super(null);
+    }
 }

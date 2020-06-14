@@ -10,6 +10,15 @@ import {Config, Command, Parameter} from "./Config";
 import {RuntimeInformation} from "./RuntimeInformation";
 
 import {PermissionCollector, PermissionController, PermissionError} from "./PermissionController";
+
+import SACNPermission, {
+    SACNLost,
+    SACNReceiving,
+    SACNStatus,
+    SACNStopped,
+    SACNWaiting
+} from "./permissions/SACNPermission";
+
 import CooldownPermission from "./permissions/CooldownPermission";
 import OwnerPermission from "./permissions/OwnerPermission";
 import ModeratorPermission from "./permissions/ModeratorPermission";
@@ -21,7 +30,6 @@ import type Telnet from "telnet-client";
 
 import SourceMapSupport = require("source-map-support");
 import _ = require("lodash");
-import SACNPermission from "./permissions/SACNPermission";
 
 const TelnetClient = require("telnet-client");
 
@@ -57,7 +65,8 @@ export default class Twitch2Ma extends EventEmitter {
         this.telnet = new TelnetClient();
 
         this.permissionController = new PermissionController()
-            .withPermissionInstance(new SACNPermission(config))
+            .withPermissionInstance(new SACNPermission(config)
+                .withOnStatusHandler(status => this.handleSACNStatus(status)))
             .withPermissionInstance(new CooldownPermission())
             .withPermissionInstance(new OwnerPermission())
             .withPermissionInstance(new ModeratorPermission());
@@ -75,6 +84,7 @@ export default class Twitch2Ma extends EventEmitter {
             .catch(() => {
                 throw new TelnetError("Could not connect to desk!")
             })
+            .then(() => this.permissionController.start())
             .then(() => this.telnetLogin())
             .then(() => this.initTwitch());
     }
@@ -226,6 +236,27 @@ export default class Twitch2Ma extends EventEmitter {
         return _.isString(command.availableParameters) ? `Available parameters: ${command.availableParameters}` : "";
     }
 
+    private handleSACNStatus(status: SACNStatus) {
+        switch(status.constructor) {
+            case SACNWaiting:
+                this.emit(this.onNotice, `sACN status: Waiting for universes: ${status.universes.join(", ")}`);
+                break;
+            case SACNReceiving:
+                this.emit(this.onNotice, `sACN status: Receiving universes: ${status.universes.join(", ")}`);
+                break;
+            case SACNLost:
+                this.emit(this.onNotice, `sACN status: Lost universes: ${status.universes.join(", ")}`);
+                break;
+            case SACNStopped:
+                this.emit(this.onNotice, "sACN status: Stopped listening.");
+                break;
+            default:
+                this.emit(this.onNotice, `sACN status: Received unknown status: ${typeof status}`);
+                // TODO sentry
+                break;
+        }
+    }
+
     protected emit<Args extends any[]>(event: EventBinder<Args>, ...args: Args) {
         try {
             super.emit(event, ...args);
@@ -241,4 +272,5 @@ export default class Twitch2Ma extends EventEmitter {
     onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
     onPermissionDenied = this.registerEvent<(channel: string, user: string, command: string, reason: string) => any>();
     onGodMode = this.registerEvent<(channel: string, user: string, reason: string) => any>();
+    onNotice = this.registerEvent<(message: string) => any>();
 }

@@ -107,7 +107,7 @@ test("Permission granted b/c user is owner", async () => {
     expect(permissionCollector.godModeReasons).toContain("user is channel owner");
 });
 
-test.skip("sACN lock", async () => { // FIXME
+test("sACN lock", async () => {
 
     let sacnReceiver: any;
     permissionController["permissionInstances"].forEach(permissionInstance => {
@@ -149,7 +149,7 @@ test.skip("sACN lock", async () => { // FIXME
     expect.assertions(6);
 });
 
-test.skip("sACN lock status", async () => { // FIXME
+test("sACN lock status", async () => {
 
     config = loadConfig({
         sacn: {
@@ -175,12 +175,12 @@ test.skip("sACN lock status", async () => { // FIXME
 
     (sACNPermissionInstance["sACNReceiver"] as any).on.mock.calls[0][1](sendData);
 
-    await expect(statusHandler).toBeCalledWith(new SACNReceiving());
-    await expect(statusHandler).toBeCalledWith(new SACNLost());
+    await expect(statusHandler).toBeCalledWith(new SACNReceiving([1]));
+    await expect(statusHandler).toBeCalledWith(new SACNLost([1]));
 
     (sACNPermissionInstance["sACNReceiver"] as any).on.mock.calls[0][1](sendData);
 
-    await expect(statusHandler).toBeCalledWith(new SACNReceiving());
+    await expect(statusHandler).toBeCalledWith(new SACNReceiving([1]));
 
     sACNPermissionInstance.stop();
 

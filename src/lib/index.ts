@@ -15,7 +15,6 @@ let twitch2Ma: Twitch2Ma;
 export async function main() {
 
     process.on("SIGINT", () => {
-        console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
         exit(0);
     });
 
@@ -79,6 +78,7 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onPermissionDenied((channel, user, command, reason) => channelMessage(channel,
         chalk`✋ User {bold ${user}} tried to run {bold.blue ${command}} but permissions were denied by ${reason}.`))
 
+    twitch2Ma.onNotice(notice);
     twitch2Ma.onError(exitWithError);
 
     return twitch2Ma;
@@ -117,7 +117,9 @@ async function exit(statusCode: number) {
                 process.exit(1);
             })
     }
-    return stopPromise.then(() => process.exit(statusCode));
+    return stopPromise
+        .then(() => console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`))
+        .then(() => process.exit(statusCode));
 }
 
 export async function exitWithError(err: Error) {
@@ -135,6 +137,10 @@ function confirm(message: string): void {
 
 function warning(message: string): void {
     console.warn(chalk`⚠️ {yellow ${message}}`)
+}
+
+function notice(message: string): void {
+    console.log(chalk`ℹ️ {blue ${message}}`);
 }
 
 function error(message: string): void {
