@@ -103,6 +103,9 @@
           "format": "ipv4"
         }
       },
+      "default": {
+        "lockMessage": "{command} is currently locked! Please wait!"
+      },
       "additionalProperties": false
     },
     "commands": {
