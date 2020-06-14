@@ -91,6 +91,11 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                     }
                 });
 
+                this.sACNReceiver.on("PacketCorruption", () => {
+                    this.emit(this.onStatus, new SACNCorrupt());
+                    this.stop();
+                })
+
                 this.emit(this.onStatus, new SACNWaiting(universes));
 
                 this.watchdogTimeout = setInterval(() => this.watchdog(), this.config.sacn.timeout);
@@ -181,7 +186,12 @@ export class SACNLost extends SACNStatus {
 }
 
 export class SACNStopped extends SACNStatus {
+    constructor() {
+        super(null);
+    }
+}
 
+export class SACNCorrupt extends SACNStatus {
     constructor() {
         super(null);
     }

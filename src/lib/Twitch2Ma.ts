@@ -12,6 +12,7 @@ import {RuntimeInformation} from "./RuntimeInformation";
 import {PermissionCollector, PermissionController, PermissionError} from "./PermissionController";
 
 import SACNPermission, {
+    SACNCorrupt,
     SACNLost,
     SACNReceiving,
     SACNStatus,
@@ -254,6 +255,10 @@ export default class Twitch2Ma extends EventEmitter {
                 break;
             case SACNStopped:
                 this.emit(this.onNotice, "sACN status: Stopped listening.");
+                break;
+            case SACNCorrupt:
+                this.emit(this.onNotice, "sACN status: Unexpected packet received. Are you using the \"final\" " +
+                    "protocol version in your MA sACN settings?");
                 break;
             default:
                 this.emit(this.onNotice, `sACN status: Received unknown status: ${typeof status}`);
