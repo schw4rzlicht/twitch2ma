@@ -2,6 +2,7 @@ import {PermissionCollector, PermissionInstance} from "../PermissionController";
 import {RuntimeInformation} from "../RuntimeInformation";
 import {Config} from "../Config";
 import {Receiver, Packet} from "sacn";
+import sentry from "../sentry";
 
 import _ = require("lodash");
 
@@ -72,8 +73,8 @@ export default class SACNPermission implements PermissionInstance {
         if (this.sACNReceiver) {
             try {
                 this.sACNReceiver.close();
-            } catch (ignored) {
-                // TODO sentry
+            } catch (error) {
+                sentry(error);
             }
         }
     }
