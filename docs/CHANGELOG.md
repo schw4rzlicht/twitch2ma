@@ -1,3 +1,10 @@
+# [1.13.0-rc.11](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.10...v1.13.0-rc.11) (2020-06-14)
+
+
+### Bug Fixes
+
+* Error reporting when config file was not found ([78fc048](https://github.com/schw4rzlicht/twitch2ma/commit/78fc0482d906da5b7338b11660500bc8eb54109f))
+
 # [1.13.0-rc.10](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.9...v1.13.0-rc.10) (2020-06-14)
 
 
