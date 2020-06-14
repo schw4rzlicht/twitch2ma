@@ -146,7 +146,7 @@ test("sACN lock", async () => {
             expect(permissionCollector.permissionDeniedReasons.length).toBe(0);
         });
 
-    expect.assertions(6);
+    expect.assertions(7);
 });
 
 function loadConfig(overrideConfigValues?: any): Config {
