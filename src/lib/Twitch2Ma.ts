@@ -192,7 +192,7 @@ export default class Twitch2Ma extends EventEmitter {
                 if (_.isString(instructions.consoleCommand)) {
                     return this.telnet.send(instructions.consoleCommand)
                         .catch(() => {
-                            throw new TelnetError("Sending telnet command failed!");
+                            throw new TelnetError("Sending telnet command failed! Is MA still running?");
                         })
                         .then(() => this.permissionController.setAdditionalRuntimeInformation("lastCall", new Date().getTime()));
                 }
