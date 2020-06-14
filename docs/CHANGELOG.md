@@ -1,3 +1,14 @@
+# [1.13.0-rc.7](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.6...v1.13.0-rc.7) (2020-06-14)
+
+
+### Bug Fixes
+
+* Add default sACN object to config ([15970fb](https://github.com/schw4rzlicht/twitch2ma/commit/15970fbeee5ad6393af52bf35bf171b3d9912162))
+* Filter exceptions ([7777311](https://github.com/schw4rzlicht/twitch2ma/commit/7777311d4d95811905ccd0db04b17f03ee841954))
+* Null pointer when config.sacn is not used ([08b69f2](https://github.com/schw4rzlicht/twitch2ma/commit/08b69f2edce9fcb647e6ff46b5960a00a24c24ad))
+* Null pointer when sACN was never received ([bc30dd9](https://github.com/schw4rzlicht/twitch2ma/commit/bc30dd99a54f88c64a49649cdaf4de2dd1a31ae7))
+* Throw TelnetError where it occurs ([efb525a](https://github.com/schw4rzlicht/twitch2ma/commit/efb525ae23cb0f63886b9439ae2b4eac47b3da6c))
+
 # [1.13.0-rc.6](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.5...v1.13.0-rc.6) (2020-06-13)
 
 
