@@ -1,3 +1,11 @@
+# [1.13.0-rc.10](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.9...v1.13.0-rc.10) (2020-06-14)
+
+
+### Bug Fixes
+
+* Detect corrupt sACN ([675cbbc](https://github.com/schw4rzlicht/twitch2ma/commit/675cbbce4f68f9e2e20217b212ddc301de76a9bb))
+* Resolve path to .env ([9d97959](https://github.com/schw4rzlicht/twitch2ma/commit/9d97959e3e80b3d6ed4dbf0e2084c9b4bf28be2c))
+
 # [1.13.0-rc.9](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.8...v1.13.0-rc.9) (2020-06-14)
 
 
