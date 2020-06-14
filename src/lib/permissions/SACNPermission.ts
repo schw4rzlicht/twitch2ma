@@ -59,7 +59,7 @@ export default class SACNPermission implements PermissionInstance {
 
             if (sacn) {
                 let universeData = this.universeData.get(sacn.universe);
-                if (_.isInteger(universeData[sacn.channel - 1]) && universeData[sacn.channel - 1] < 255) {
+                if (universeData && _.isInteger(universeData[sacn.channel - 1]) && universeData[sacn.channel - 1] < 255) {
                     permissionCollector.denyPermission("sacn",
                         `@${runtimeInformation.userName}, ${runtimeInformation.config.sacn.lockMessage}`);
                 }
