@@ -171,7 +171,7 @@ export default class Twitch2Ma extends EventEmitter {
                             this.chatClient.say(channel, reason.viewerMessage.replace("{command}", command));
                             this.emit(this.onPermissionDenied, channel, user, command, reason.name);
                         })
-                        .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        .catch(TelnetError, error => this.stopWithError(error)); // TODO catch sentry
                 }
             }
         }
@@ -187,6 +187,9 @@ export default class Twitch2Ma extends EventEmitter {
             .then(() => {
                 if (_.isString(instructions.consoleCommand)) {
                     return this.telnet.send(instructions.consoleCommand)
+                        .catch(() => {
+                            throw new TelnetError("Sending telnet command failed!");
+                        })
                         .then(() => this.permissionController.setAdditionalRuntimeInformation("lastCall", new Date().getTime()));
                 }
             });
