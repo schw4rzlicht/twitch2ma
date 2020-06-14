@@ -1,6 +1,5 @@
 import Sentry = require("@sentry/node");
 import fs = require("fs");
-import {flush} from "@sentry/node";
 
 export function init(packageInformation: any) {
     try {

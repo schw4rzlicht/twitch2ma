@@ -155,7 +155,7 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
         try {
             super.emit(event, ...args);
         } catch (error) {
-            console.error(error); // TODO sentry
+            sentry(error);
         }
     }
 

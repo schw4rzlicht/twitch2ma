@@ -23,7 +23,8 @@ import CooldownPermission from "./permissions/CooldownPermission";
 import OwnerPermission from "./permissions/OwnerPermission";
 import ModeratorPermission from "./permissions/ModeratorPermission";
 
-import sentry from "./sentry";
+import sentry, {sentryMessage} from "./sentry";
+const Sentry = require("@sentry/node");
 
 import * as Bluebird from "bluebird";
 global.Promise = Bluebird as any;
@@ -256,7 +257,7 @@ export default class Twitch2Ma extends EventEmitter {
                 break;
             default:
                 this.emit(this.onNotice, `sACN status: Received unknown status: ${typeof status}`);
-                // TODO sentry
+                sentryMessage(`Unknown sACN status received: ${typeof status}`, Sentry.Severity.Warning);
                 break;
         }
     }
