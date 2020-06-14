@@ -175,7 +175,7 @@ export default class Twitch2Ma extends EventEmitter {
                             this.emit(this.onPermissionDenied, channel, user, command, reason.name);
                         })
                         .catch(TelnetError, error => this.stopWithError(error))
-                        .catch(sentry);
+                        .catch(error => sentry(error, error => this.stopWithError(error)));
                 }
             }
         }
