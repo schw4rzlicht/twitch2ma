@@ -115,6 +115,7 @@ async function exit(statusCode: number) {
         stopPromise
             .then(() => twitch2Ma.stop())
             .catch((err: Error) => {
+                // TODO sentry
                 error(err.message);
                 process.exit(1);
             })
