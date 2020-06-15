@@ -1,3 +1,10 @@
+# [1.13.0-rc.14](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.13...v1.13.0-rc.14) (2020-06-15)
+
+
+### Bug Fixes
+
+* Exit instead of throw ([fb5576f](https://github.com/schw4rzlicht/twitch2ma/commit/fb5576f9f9f35cfcf84e9dbebe5567b255492e57))
+
 # [1.13.0-rc.13](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.12...v1.13.0-rc.13) (2020-06-15)
 
 
