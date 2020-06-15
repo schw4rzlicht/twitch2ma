@@ -117,7 +117,7 @@ test("sACN lock", async () => {
     });
 
     expect(sacnReceiver).not.toBeUndefined();
-    expect(sacnReceiver.on).toBeCalledTimes(2);
+    expect(sacnReceiver.on).toBeCalledTimes(3);
 
     sacnReceiver.on.mock.calls[0][1]({
         slotsData: Buffer.from(new Uint8Array(512)),

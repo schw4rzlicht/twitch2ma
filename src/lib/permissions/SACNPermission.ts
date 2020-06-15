@@ -15,12 +15,14 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
     private readonly config: Config;
     private sACNReceiver: Receiver;
     private watchdogTimeout: NodeJS.Timeout;
+    private running: boolean;
 
     constructor(config: Config) {
         super();
 
         this.universes = [];
         this.config = config;
+        this.running = false;
 
         for (const command of this.config.commands) {
             if (command.sacn) {
@@ -54,7 +56,7 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
 
     start(): void {
 
-        if (this.universes.length > 0) {
+        if (this.universes.length > 0 && !this.running) {
 
             let universes = [];
             for (const universe of this.universes) {
@@ -74,7 +76,6 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                     _.set(receiverOptions, "iface", this.config.sacn.interface);
                 }
 
-                // FIXME Throws when interface does not exist, see https://github.com/k-yle/sACN/issues/21
                 this.sACNReceiver = new Receiver(receiverOptions);
 
                 this.sACNReceiver.on("packet", (packet: Packet) => {
@@ -92,29 +93,54 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                 });
 
                 this.sACNReceiver.on("PacketCorruption", error => {
-                    this.emit(this.onStatus, new SACNCorrupt());
+                    this.emit(this.onError, new SACNCorruptError());
                     this.stop();
                     sentry(error);
-                })
+                });
+
+                this.sACNReceiver.on("error", (error: Error) => {
+                    // @ts-ignore
+                    if(error.code) {
+                        // @ts-ignore
+                        switch (error.code) {
+                            case "EADDRNOTAVAIL":
+                            case "ENODEV":
+                                this.emit(this.onError, new SACNError(`sACN error: Have you configured the right interface IP?`));
+                                break;
+                            case "ERR_SOCKET_DGRAM_NOT_RUNNING":
+                                this.emit(this.onError, new SACNError("sACN error: UDP subsystem not running!"));
+                                break;
+                            default:
+                                this.emit(this.onError, error);
+                                break;
+                        }
+                    } else {
+                        this.emit(this.onError, error);
+                    }
+                    this.stop();
+                });
 
                 this.emit(this.onStatus, new SACNWaiting(universes));
 
                 this.watchdogTimeout = setInterval(() => this.watchdog(), this.config.sacn.timeout);
                 this.watchdogTimeout.unref();
+
+                this.running = true;
             }
         }
     }
 
     stop(): void {
-        if (this.sACNReceiver) {
+        if (this.sACNReceiver && this.running) {
             try {
                 this.sACNReceiver.close();
             } catch (error) {
                 sentry(error);
             }
+            this.running = false;
+            this.emit(this.onStatus, new SACNStopped());
         }
         _.attempt(() => clearInterval(this.watchdogTimeout));
-        this.emit(this.onStatus, new SACNStopped());
     }
 
     private watchdog() {
@@ -157,6 +183,11 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
         return this;
     }
 
+    withOnErrorHandler(handler: (error: Error) => any) {
+        this.onError(handler);
+        return this;
+    }
+
     protected emit<Args extends any[]>(event: EventBinder<Args>, ...args: Args) {
         try {
             super.emit(event, ...args);
@@ -166,6 +197,7 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
     }
 
     onStatus = this.registerEvent<(status: SACNStatus) => any>();
+    onError = this.registerEvent<(error: SACNError) => any>();
 }
 
 export class SACNStatus {
@@ -192,8 +224,22 @@ export class SACNStopped extends SACNStatus {
     }
 }
 
-export class SACNCorrupt extends SACNStatus {
+export class SACNError extends Error {
+
+    constructor(message?: string) {
+        super(message);
+
+        Object.setPrototypeOf(this, SACNError.prototype);
+        this.name = SACNError.name;
+    }
+}
+
+export class SACNCorruptError extends SACNError {
     constructor() {
-        super(null);
+        super("sACN error: Unexpected packet received. Are you using the \"final\" " +
+            "protocol version in your MA sACN settings?");
+
+        Object.setPrototypeOf(this, SACNCorruptError.prototype);
+        this.name = SACNCorruptError.name;
     }
 }
