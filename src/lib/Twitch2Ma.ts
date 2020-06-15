@@ -12,7 +12,7 @@ import {RuntimeInformation} from "./RuntimeInformation";
 import {PermissionCollector, PermissionController, PermissionError} from "./PermissionController";
 
 import SACNPermission, {
-    SACNCorrupt,
+    SACNError,
     SACNLost,
     SACNReceiving,
     SACNStatus,
@@ -67,7 +67,8 @@ export default class Twitch2Ma extends EventEmitter {
 
         this.permissionController = new PermissionController()
             .withPermissionInstance(new SACNPermission(config)
-                .withOnStatusHandler(status => this.handleSACNStatus(status)))
+                .withOnStatusHandler(status => this.handleSACNStatus(status))
+                .withOnErrorHandler(error => this.handleSACNError(error)))
             .withPermissionInstance(new CooldownPermission())
             .withPermissionInstance(new OwnerPermission())
             .withPermissionInstance(new ModeratorPermission());
@@ -251,12 +252,21 @@ export default class Twitch2Ma extends EventEmitter {
             case SACNStopped:
                 this.emit(this.onNotice, "sACN status: Stopped listening.");
                 break;
-            case SACNCorrupt:
-                this.emit(this.onNotice, "sACN status: Unexpected packet received. Are you using the \"final\" " +
-                    "protocol version in your MA sACN settings?");
-                break;
             default:
                 this.emit(this.onNotice, `sACN status: Received unknown status: ${typeof status}`);
+                // TODO sentry
+                break;
+        }
+    }
+
+    private handleSACNError(error: Error) {
+        switch (error.constructor) {
+            case SACNError:
+                this.emit(this.onNotice, error.message);
+                break;
+            default:
+                // @ts-ignore
+                this.emit(this.onNotice, "sACN error: unknown error" + (error.code ? ` (${error.code})` : ""));
                 // TODO sentry
                 break;
         }
