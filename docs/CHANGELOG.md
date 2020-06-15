@@ -1,3 +1,39 @@
+# [1.13.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.12.0...v1.13.0) (2020-06-15)
+
+
+### Bug Fixes
+
+* Add default sACN object to config ([15970fb](https://github.com/schw4rzlicht/twitch2ma/commit/15970fbeee5ad6393af52bf35bf171b3d9912162))
+* Add more error capturing ([5b576a6](https://github.com/schw4rzlicht/twitch2ma/commit/5b576a6c34710e4e981585e4c0349767041ff548))
+* Add more help to errors ([d7c9103](https://github.com/schw4rzlicht/twitch2ma/commit/d7c9103f8408200bc6b703d5aeacd00ee3daa80b)), closes [#7](https://github.com/schw4rzlicht/twitch2ma/issues/7)
+* Detect corrupt sACN ([675cbbc](https://github.com/schw4rzlicht/twitch2ma/commit/675cbbce4f68f9e2e20217b212ddc301de76a9bb))
+* Enable graceful shutdown ([24272bd](https://github.com/schw4rzlicht/twitch2ma/commit/24272bd573d25c232d7b245f854fd6f30bc6e247))
+* Error handling for Twitch chat client ([dc0fda9](https://github.com/schw4rzlicht/twitch2ma/commit/dc0fda9bd6e9802395cb55769ed3e48e50def010))
+* Error reporting when config file was not found ([78fc048](https://github.com/schw4rzlicht/twitch2ma/commit/78fc0482d906da5b7338b11660500bc8eb54109f))
+* Exit instead of throw ([fb5576f](https://github.com/schw4rzlicht/twitch2ma/commit/fb5576f9f9f35cfcf84e9dbebe5567b255492e57))
+* Filter exceptions ([7777311](https://github.com/schw4rzlicht/twitch2ma/commit/7777311d4d95811905ccd0db04b17f03ee841954))
+* Fix line numbers being wrong in index tests (see https://github.com/evanw/node-source-map-support/issues/279) ([56fd884](https://github.com/schw4rzlicht/twitch2ma/commit/56fd884de80b20ff87fab071604701685c8a36ec))
+* Graceful closing connections ([9b2ceb7](https://github.com/schw4rzlicht/twitch2ma/commit/9b2ceb75ef02a6acd0279f659db1e250d13b6c42))
+* Improve error handling ([58c40cf](https://github.com/schw4rzlicht/twitch2ma/commit/58c40cf469caae4f4ef2ec8f70774e08ec85df1e))
+* Improve graceful shutdown ([626430d](https://github.com/schw4rzlicht/twitch2ma/commit/626430d16e8ec9eda9ce27aaa8f0a8a909ef47b0))
+* Integration tests ([61194d8](https://github.com/schw4rzlicht/twitch2ma/commit/61194d83a81267cba1974b72dfddd0e0837354c4))
+* Make sACN interface configurable ([48eafa0](https://github.com/schw4rzlicht/twitch2ma/commit/48eafa02644ba209901901ff70065da1db9de140))
+* Null pointer when config.sacn is not used ([08b69f2](https://github.com/schw4rzlicht/twitch2ma/commit/08b69f2edce9fcb647e6ff46b5960a00a24c24ad))
+* Null pointer when sACN was never received ([bc30dd9](https://github.com/schw4rzlicht/twitch2ma/commit/bc30dd99a54f88c64a49649cdaf4de2dd1a31ae7))
+* Resolve path to .env ([9d97959](https://github.com/schw4rzlicht/twitch2ma/commit/9d97959e3e80b3d6ed4dbf0e2084c9b4bf28be2c))
+* Resolve sentry.json ([4f60c91](https://github.com/schw4rzlicht/twitch2ma/commit/4f60c91d273e1b4213810296ac32f82c4e641bb4))
+* Throw TelnetError where it occurs ([efb525a](https://github.com/schw4rzlicht/twitch2ma/commit/efb525ae23cb0f63886b9439ae2b4eac47b3da6c))
+* Timing out sACN according to E1.31 specs ([ffdaf65](https://github.com/schw4rzlicht/twitch2ma/commit/ffdaf65c5344c15f45dbdf73d6431d1ca5225953))
+* Wrong function call in production ([cef76ca](https://github.com/schw4rzlicht/twitch2ma/commit/cef76caa7c62779957bdb83f2b2afdeefdb43bda))
+
+
+### Features
+
+* Add command to log when permissions are denied ([40bdf94](https://github.com/schw4rzlicht/twitch2ma/commit/40bdf94b2742394993b91963729e4e9d6c8cb24e))
+* Add sACN lock ([c3a08c5](https://github.com/schw4rzlicht/twitch2ma/commit/c3a08c544bcaa5b7d080fc8dcc6dc9a3b824422c)), closes [#2](https://github.com/schw4rzlicht/twitch2ma/issues/2)
+* Add sACN status ([c14bdba](https://github.com/schw4rzlicht/twitch2ma/commit/c14bdba21477dc6af2ca41a682bb333f3eb02ed6))
+* Add sentry ([95ba4fe](https://github.com/schw4rzlicht/twitch2ma/commit/95ba4fe88867476d657c13bca3bf15caf64011a5))
+
 # [1.13.0-rc.14](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.13...v1.13.0-rc.14) (2020-06-15)
 
 
