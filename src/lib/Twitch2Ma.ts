@@ -10,9 +10,25 @@ import {Config, Command, Parameter} from "./Config";
 import {RuntimeInformation} from "./RuntimeInformation";
 
 import {PermissionCollector, PermissionController, PermissionError} from "./PermissionController";
+
+import SACNPermission, {
+    SACNError,
+    SACNLost,
+    SACNReceiving,
+    SACNStatus,
+    SACNStopped,
+    SACNWaiting
+} from "./permissions/SACNPermission";
+
 import CooldownPermission from "./permissions/CooldownPermission";
 import OwnerPermission from "./permissions/OwnerPermission";
 import ModeratorPermission from "./permissions/ModeratorPermission";
+
+import sentry, {sentryMessage} from "./sentry";
+const Sentry = require("@sentry/node");
+
+import * as Bluebird from "bluebird";
+global.Promise = Bluebird as any;
 
 import type Telnet from "telnet-client";
 
@@ -41,9 +57,9 @@ export class ChannelError extends Error {
 
 export default class Twitch2Ma extends EventEmitter {
 
-    private config: Config;
-    private telnet: Telnet;
-    private permissionController: PermissionController;
+    private readonly config: Config;
+    private readonly telnet: Telnet;
+    private readonly permissionController: PermissionController;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
 
@@ -53,6 +69,9 @@ export default class Twitch2Ma extends EventEmitter {
         this.telnet = new TelnetClient();
 
         this.permissionController = new PermissionController()
+            .withPermissionInstance(new SACNPermission(config)
+                .withOnStatusHandler(status => this.handleSACNStatus(status))
+                .withOnErrorHandler(error => this.handleSACNError(error)))
             .withPermissionInstance(new CooldownPermission())
             .withPermissionInstance(new OwnerPermission())
             .withPermissionInstance(new ModeratorPermission());
@@ -68,21 +87,32 @@ export default class Twitch2Ma extends EventEmitter {
                 ors: "\r\n",
             })
             .catch(() => {
-                throw new TelnetError("Could not connect to desk!")
+                throw new TelnetError("Could not connect to desk! Check Telnet enabled, MA IP address and firewall " +
+                    "settings if using onPC!");
             })
+            .then(() => this.permissionController.start())
             .then(() => this.telnetLogin())
             .then(() => this.initTwitch());
     }
 
-    stop(): Promise<void> {
-        if (_.isObject(this.chatClient)) {
-            return this.chatClient.quit()
-                .finally(this.telnet.end);
+    async stop() {
+
+        let promises: Array<Promise<any>> = [];
+
+        if (this.chatClient) {
+            promises.push(this.chatClient.quit());
         }
-        return this.telnet.end();
+
+        if (this.telnet) {
+            promises.push(this.telnet.end());
+        }
+
+        this.permissionController.stop();
+
+        return Promise.all(promises);
     }
 
-    stopWithError(error: Error): Promise<void> {
+    stopWithError(error: Error): Promise<any> {
         this.emit(this.onError, error);
         return this.stop();
     }
@@ -93,7 +123,7 @@ export default class Twitch2Ma extends EventEmitter {
                 if (message.match(`Logged in as User '${this.config.ma.user}'`)) {
                     this.emit(this.onTelnetConnected, this.config.ma.host, this.config.ma.user);
                 } else {
-                    throw new TelnetError(`Could not log into the desk as user ${this.config.ma.user}!`);
+                    throw new TelnetError(`Could not log into the desk as user ${this.config.ma.user}! Check password!`);
                 }
             });
     }
@@ -101,7 +131,11 @@ export default class Twitch2Ma extends EventEmitter {
     initTwitch(): Promise<void> {
 
         this.twitchClient = Twitch.withCredentials(this.config.twitch.clientId, this.config.twitch.accessToken);
-        this.chatClient = TwitchChat.forTwitchClient(this.twitchClient);
+        this.chatClient = TwitchChat.forTwitchClient(this.twitchClient,{
+            logger: {
+                minLevel: "CRITICAL"
+            }
+        });
 
         this.chatClient.onRegister(() => {
             this.chatClient.join(this.config.twitch.channel)
@@ -151,19 +185,21 @@ export default class Twitch2Ma extends EventEmitter {
                             }
                         })
                         .then(() => this.emit(this.onCommandExecuted, channel, user, chatCommand, parameterName, instructions.consoleCommand))
-                        .catch((error: PermissionError) => {
+                        .catch(PermissionError, error => {
+                            let command = _.isString(parameterName) ? `!${chatCommand} ${parameterName}` : `!${chatCommand}`;
                             let reason = error.permissionCollector.permissionDeniedReasons.shift();
-                            this.chatClient.say(channel, reason.viewerMessage);
-                            this.emit(this.onPermissionDenied, channel, user, reason.name);
+                            this.chatClient.say(channel, reason.viewerMessage.replace("{command}", command));
+                            this.emit(this.onPermissionDenied, channel, user, command, reason.name);
                         })
-                        .catch(() => this.stopWithError(new TelnetError("Sending telnet command failed!")));
+                        .catch(TelnetError, error => this.stopWithError(error))
+                        .catch(error => sentry(error, error => this.stopWithError(error)));
                 }
             }
         }
     }
 
     async sendCommand(instructions: any, channel: string, user: string, rawMessage: TwitchPrivateMessage) {
-        return this.permissionController.checkPermissions(new RuntimeInformation(this.config, user, rawMessage))
+        return this.permissionController.checkPermissions(new RuntimeInformation(this.config, user, rawMessage, instructions))
             .then((permissionCollector: PermissionCollector) => {
                 if (permissionCollector.permissionDeniedReasons.length > 0 && permissionCollector.godMode) {
                     this.emit(this.onGodMode, channel, user, permissionCollector.godModeReasons.shift());
@@ -172,6 +208,9 @@ export default class Twitch2Ma extends EventEmitter {
             .then(() => {
                 if (_.isString(instructions.consoleCommand)) {
                     return this.telnet.send(instructions.consoleCommand)
+                        .catch(() => {
+                            throw new TelnetError("Sending telnet command failed! Is MA still running?");
+                        })
                         .then(() => this.permissionController.setAdditionalRuntimeInformation("lastCall", new Date().getTime()));
                 }
             });
@@ -208,11 +247,45 @@ export default class Twitch2Ma extends EventEmitter {
         return _.isString(command.availableParameters) ? `Available parameters: ${command.availableParameters}` : "";
     }
 
+    private handleSACNStatus(status: SACNStatus) {
+        switch(status.constructor) {
+            case SACNWaiting:
+                this.emit(this.onNotice, `sACN status: Waiting for universes: ${status.universes.join(", ")}`);
+                break;
+            case SACNReceiving:
+                this.emit(this.onNotice, `sACN status: Receiving universes: ${status.universes.join(", ")}`);
+                break;
+            case SACNLost:
+                this.emit(this.onNotice, `sACN status: Lost universes: ${status.universes.join(", ")}`);
+                break;
+            case SACNStopped:
+                this.emit(this.onNotice, "sACN status: Stopped listening.");
+                break;
+            default:
+                this.emit(this.onNotice, `sACN status: Received unknown status: ${typeof status}`);
+                sentryMessage(`Unknown sACN status received: ${typeof status}`, Sentry.Severity.Warning);
+                break;
+        }
+    }
+
+    private handleSACNError(error: Error) {
+        switch (error.constructor) {
+            case SACNError:
+                this.emit(this.onNotice, error.message);
+                break;
+            default:
+                // @ts-ignore
+                this.emit(this.onNotice, "sACN error: unknown error" + (error.code ? ` (${error.code})` : ""));
+                sentry(error);
+                break;
+        }
+    }
+
     protected emit<Args extends any[]>(event: EventBinder<Args>, ...args: Args) {
         try {
             super.emit(event, ...args);
         } catch (error) {
-            console.error(error);
+            sentry(error);
         }
     }
 
@@ -221,6 +294,7 @@ export default class Twitch2Ma extends EventEmitter {
     onError = this.registerEvent<(error: Error) => any>();
     onCommandExecuted = this.registerEvent<(channel: string, user: string, chatCommand: string, parameter: string, consoleCommand: string) => any>();
     onHelpExecuted = this.registerEvent<(channel: string, user: string, helpCommand?: string) => any>();
-    onPermissionDenied = this.registerEvent<(channel: string, user: string, reason: string) => any>();
+    onPermissionDenied = this.registerEvent<(channel: string, user: string, command: string, reason: string) => any>();
     onGodMode = this.registerEvent<(channel: string, user: string, reason: string) => any>();
+    onNotice = this.registerEvent<(message: string) => any>();
 }

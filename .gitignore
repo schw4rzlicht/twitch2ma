@@ -1,6 +1,7 @@
 config.json
 config.yml
 *.log
+sentry.json
 .idea
 dist
 node_modules

@@ -2,6 +2,31 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Config",
   "description": "The schema for the config JSON used by twitch2ma",
+  "definitions": {
+    "sacn": {
+      "description": "The sACN configuration for locking commands and parameters.",
+      "type": "object",
+      "properties": {
+        "universe": {
+          "description": "The sACN universe to listen to.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64000
+        },
+        "channel": {
+          "description": "The sACN channel to listen to.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "universe",
+        "channel"
+      ]
+    }
+  },
   "type": "object",
   "properties": {
     "timeout": {
@@ -63,6 +88,33 @@
         "channel"
       ]
     },
+    "sacn": {
+      "description": "sACN specific configuration used for sACN locks.",
+      "type": "object",
+      "properties": {
+        "lockMessage": {
+          "description": "The message to be sent when viewers try to execute a command that is currently locked. '{command}' is replaced by the attempted command and parameter.",
+          "type": "string",
+          "default": "{command} is currently locked! Please wait!"
+        },
+        "interface": {
+          "description": "The IP address of the interface twitch2ma is listening on.",
+          "type": "string",
+          "format": "ipv4"
+        },
+        "timeout": {
+          "description": "Time until sACN is considered lost.",
+          "type": "number",
+          "minimum": 0.5,
+          "default": 2.5
+        }
+      },
+      "additionalProperties": false,
+      "default": {
+        "lockMessage": "{command} is currently locked! Please wait!",
+        "timeout": 2.5
+      }
+    },
     "commands": {
       "description": "An array of commands the bot reacts to.",
       "type": "array",
@@ -86,6 +138,9 @@
             "description": "A help message that is sent to Twitch when viewers run the command '!lights !<command>'. '{parameterList}' is replaced by a list of available parameters if any.",
             "type": "string"
           },
+          "sacn": {
+            "$ref": "#/definitions/sacn"
+          },
           "parameters": {
             "description": "An array of parameters for each command so viewers can call '!<command> <parameter>'.",
             "type": "array",
@@ -104,6 +159,9 @@
                 "message": {
                   "description": "A message that is sent to Twitch chat when the parameter was executed on the desk. '{user}' gets replaced by the user who issued the command.",
                   "type": "string"
+                },
+                "sacn": {
+                  "$ref": "#/definitions/sacn"
                 }
               },
               "additionalProperties": false,

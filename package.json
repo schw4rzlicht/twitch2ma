@@ -1,6 +1,6 @@
 {
   "name": "twitch2ma",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "description": "Twitch chat bot that runs commands on the MA GrandMA2 using Telnet.",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -10,7 +10,8 @@
     "prepare": "npm run build",
     "buildYamlConfigSample": "json2yaml ./config.json.sample > ./config.yml.sample",
     "validateConfig": "npm run validateConfigSchema && ajv validate -s src/resources/config.schema.json -d config.json.sample",
-    "validateConfigSchema": "ajv compile -s src/resources/**.schema.json"
+    "validateConfigSchema": "ajv compile -s src/resources/**.schema.json",
+    "prepublishOnly": "echo \"{ \\\"dsn\\\": \\\"$SENTRY_DSN\\\" }\" > sentry.json && echo \"NODE_ENV=production\" > .env"
   },
   "author": {
     "name": "Julian Rabe",
@@ -27,13 +28,17 @@
   "license": "MIT",
   "dependencies": {
     "@d-fischer/typed-event-emitter": "^3.0.0",
+    "@sentry/node": "^5.17.0",
     "ajv": "^6.12.2",
+    "bluebird": "^3.7.2",
     "chalk": "^4.0.0",
     "commander": "^5.1.0",
+    "dotenv": "^8.2.0",
     "humanize-duration": "^3.23.0",
     "libnpm": "^3.0.1",
     "lodash": "^4.17.15",
     "node-ipc": "^9.1.1",
+    "sacn": "^2.3.2",
     "semver": "^7.3.2",
     "source-map-support": "^0.5.19",
     "strip-ansi-stream": "^1.0.0",
@@ -51,6 +56,7 @@
     "@types/node-ipc": "^9.1.3",
     "@types/semver": "^7.2.0",
     "@types/source-map-support": "^0.5.1",
+    "@types/bluebird-global": "^3.5.12",
     "ajv-cli": "~3.1.0",
     "jest": "^26.0.1",
     "json2yaml": "^1.1.0",

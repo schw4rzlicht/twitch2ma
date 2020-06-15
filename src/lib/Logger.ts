@@ -34,7 +34,12 @@ export class Logger {
         this.toLogfile(`WARNING: ${message}`);
     }
 
-    confirm(message: string): void {
+    notice(message: string) {
+        console.log(chalk`ℹ️ {blue ${message}}`);
+        this.toLogfile(`NOTICE: ${message}`);
+    }
+
+    confirm(message: string) {
         console.log(chalk`✅ {green ${message}}`);
         this.toLogfile(`SUCCESS: ${message}`);
     }
