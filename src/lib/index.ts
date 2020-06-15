@@ -1,4 +1,5 @@
 import {Command} from "commander";
+import {HTTPStatusCodeError, InvalidTokenError} from "twitch";
 import Twitch2Ma, {TelnetError} from "./Twitch2Ma";
 import {Config, ConfigError} from "./Config";
 import sentry from "./sentry";
@@ -42,6 +43,15 @@ function init(): void {
                 .then(twitch2Ma => twitch2Ma.start())
                 // @ts-ignore
                 .catch(ConfigError, TelnetError, error => exitWithError(error))
+                .catch(InvalidTokenError, () => exitWithError(new Error("Twitch error: Access token invalid!")))
+                .catch(HTTPStatusCodeError, error => {
+                    if(error.statusCode === 500) {
+                        throw new Error("Twitch error: Twitch seems to be broken at the moment (see https://status.twitch.tv " +
+                            "for status) 😕");
+                    } else {
+                        throw error;
+                    }
+                })
                 .catch(error => sentry(error, exitWithError));
         })
         .parse(process.argv);

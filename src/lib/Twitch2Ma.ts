@@ -131,7 +131,11 @@ export default class Twitch2Ma extends EventEmitter {
     initTwitch(): Promise<void> {
 
         this.twitchClient = Twitch.withCredentials(this.config.twitch.clientId, this.config.twitch.accessToken);
-        this.chatClient = TwitchChat.forTwitchClient(this.twitchClient);
+        this.chatClient = TwitchChat.forTwitchClient(this.twitchClient,{
+            logger: {
+                minLevel: "CRITICAL"
+            }
+        });
 
         this.chatClient.onRegister(() => {
             this.chatClient.join(this.config.twitch.channel)
