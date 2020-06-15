@@ -3,7 +3,8 @@ module.exports = () => {
         return {
             connect: jest.fn().mockResolvedValue(null),
             exec: jest.fn().mockResolvedValue(""),
-            send: jest.fn().mockResolvedValue("")
+            send: jest.fn().mockResolvedValue(""),
+            end: jest.fn().mockResolvedValue(null)
         };
     });
 }

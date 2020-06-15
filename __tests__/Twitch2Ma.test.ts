@@ -14,11 +14,20 @@ jest.mock("source-map-support");
 jest.mock("twitch-chat-client");
 jest.mock("telnet-client", require("./mocks/telnet-client"));
 
-let config = loadConfig();
+let config: Config;
+let twitch2Ma: Twitch2Ma;
+
+beforeEach(() => {
+    config = loadConfig();
+    twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+});
+
+afterEach(() => {
+    twitch2Ma.stop();
+    jest.clearAllMocks();
+});
 
 test("Connection chain", async () => {
-
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
 
     let spyOnTelnetLogin = jest.spyOn(twitch2Ma, "telnetLogin");
     let spyOnInitTwitch = jest.spyOn(twitch2Ma, "initTwitch");
@@ -45,8 +54,6 @@ test("Connection chain", async () => {
 
 test("Telnet connection failed", async () => {
 
-    let twitch2Ma = new Twitch2Ma(config);
-
     jest.spyOn(twitch2Ma["telnet"], "connect").mockRejectedValueOnce("Fooled!");
 
     let spyOnOnTelnetConnected = jest.fn();
@@ -55,7 +62,8 @@ test("Telnet connection failed", async () => {
     twitch2Ma.onTelnetConnected(spyOnOnTelnetConnected);
     twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
 
-    await expect(twitch2Ma.start()).rejects.toThrow(new TelnetError("Could not connect to desk!"));
+    await expect(twitch2Ma.start()).rejects.toThrow(new TelnetError("Could not connect to desk! Check Telnet enabled, " +
+        "MA IP address and firewall settings if using onPC!"));
 
     expect(spyOnOnTelnetConnected).not.toBeCalled();
     expect(spyOnOnTwitchConnected).not.toBeCalled();
@@ -63,7 +71,9 @@ test("Telnet connection failed", async () => {
 
 test("Telnet login failed", async () => {
 
-    let twitch2Ma = new Twitch2Ma(config);
+    await twitch2Ma.stop();
+
+    twitch2Ma = new Twitch2Ma(config);
 
     let spyOnOnTelnetConnected = jest.fn();
     let spyOnOnTwitchConnected = jest.fn();
@@ -72,15 +82,13 @@ test("Telnet login failed", async () => {
     twitch2Ma.onTwitchConnected(spyOnOnTwitchConnected);
 
     await expect(twitch2Ma.start()).rejects
-        .toThrow(new TelnetError(`Could not log into the desk as user ${config.ma.user}!`));
+        .toThrow(new TelnetError(`Could not log into the desk as user ${config.ma.user}! Check password!`));
 
     expect(spyOnOnTelnetConnected).not.toBeCalled();
     expect(spyOnOnTwitchConnected).not.toBeCalled();
 });
 
 test("Twitch connection failed", async () => {
-
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
 
     let spyOnOnTelnetConnected = jest.fn();
     let spyOnOnTwitchConnected = jest.fn();
@@ -108,7 +116,7 @@ test("Twitch channel join failed", async () => {
         }
     });
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
+    let errorHandler = jest.fn();
 
     let spyOnOnTelnetConnected = jest.fn();
     let spyOnOnTwitchConnected = jest.fn();
@@ -129,7 +137,6 @@ test("Twitch channel join failed", async () => {
 
 test("Message handler set", async () => {
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     await twitch2Ma.start();
 
     let spyOnMessageHandler = jest.spyOn(twitch2Ma, "handleMessage");
@@ -143,8 +150,8 @@ test("Send help", async () => {
 
     let helpExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onHelpExecuted(helpExecutedHandler);
+
     await twitch2Ma.start();
 
     let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
@@ -180,7 +187,9 @@ test("Send help w/o commands", async () => {
 
     let helpExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig({commands: []}));
+    await twitch2Ma.stop();
+
+    twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig({commands: []}));
     twitch2Ma.onHelpExecuted(helpExecutedHandler);
     await twitch2Ma.start();
 
@@ -194,8 +203,8 @@ test("Command successful", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let commandExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onCommandExecuted(commandExecutedHandler);
+
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
@@ -213,8 +222,8 @@ test("Text only command successful", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let commandExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onCommandExecuted(commandExecutedHandler);
+
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
@@ -229,8 +238,8 @@ test("Parameter successful", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let commandExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onCommandExecuted(commandExecutedHandler);
+
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
@@ -245,8 +254,8 @@ test("Parameter does not exist", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let commandExecutedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onCommandExecuted(commandExecutedHandler);
+
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
@@ -262,7 +271,6 @@ test("Telnet command failed", async () => {
     let commandExecutedHandler = jest.fn();
     let errorHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin(loadConfig());
     twitch2Ma.onCommandExecuted(commandExecutedHandler);
     twitch2Ma.onError(errorHandler);
 
@@ -274,7 +282,7 @@ test("Telnet command failed", async () => {
         "Alice", "!red", aliceRawMessage);
 
     expect(twitch2Ma["telnet"].send).toBeCalledWith("Macro 1");
-    expect(errorHandler).toBeCalledWith(new TelnetError("Sending telnet command failed!"));
+    expect(errorHandler).toBeCalledWith(new TelnetError("Sending telnet command failed! Is MA still running?"));
     expect(commandExecutedHandler).not.toBeCalled();
 });
 
@@ -283,8 +291,8 @@ test("Command permissions denied", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, null, {nick: "Alice"});
     let permissionDeniedHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onPermissionDenied(permissionDeniedHandler);
+
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
@@ -293,7 +301,7 @@ test("Command permissions denied", async () => {
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
         "Alice", "!red", aliceRawMessage, "@Alice, please wait \\d{1,2} seconds and try again!");
 
-    return expect(permissionDeniedHandler).toBeCalledWith("#doesNotMatter", "Alice", "cooldown");
+    return expect(permissionDeniedHandler).toBeCalledWith("#doesNotMatter", "Alice", "!red", "cooldown");
 });
 
 test("Command permissions denied but godMode enabled", async () => {
@@ -301,8 +309,8 @@ test("Command permissions denied but godMode enabled", async () => {
     let aliceRawMessage = new TwitchPrivateMessage("doesNotMatter", null, new Map([["badges", "moderator"]]), {nick: "Alice"});
     let godModeHandler = jest.fn();
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     twitch2Ma.onGodMode(godModeHandler);
+
     await twitch2Ma.start();
 
     await sendMessageToBotAndExpectAnswer(twitch2Ma, jest.spyOn(twitch2Ma["chatClient"], "say"), "#doesNotMatter",
@@ -316,7 +324,6 @@ test("Command permissions denied but godMode enabled", async () => {
 
 test("Message not involving the bot", async () => {
 
-    let twitch2Ma = getTwitch2MaInstanceAndEnableLogin();
     await twitch2Ma.start();
 
     let spyOnTwitchSay = jest.spyOn(twitch2Ma["chatClient"], "say");
@@ -358,7 +365,7 @@ async function sendMessageToBot(twitch2Ma: Twitch2Ma, channel: string, user: str
 
 function getTwitch2MaInstanceAndEnableLogin(newConfig?: Config): Twitch2Ma {
 
-    let twitch2Ma = newConfig ? new Twitch2Ma(newConfig) : new Twitch2Ma(config);
+    let twitch2Ma = new Twitch2Ma(newConfig || config);
 
     jest.spyOn(twitch2Ma["telnet"], "exec")
         .mockResolvedValueOnce(`Logged in as User '${config.ma.user}'`);

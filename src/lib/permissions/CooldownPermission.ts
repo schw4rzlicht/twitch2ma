@@ -1,4 +1,4 @@
-import {PermissionCollector, PermissionInstance, Reason} from "../PermissionController";
+import {PermissionCollector, PermissionInstance} from "../PermissionController";
 import {RuntimeInformation} from "../RuntimeInformation";
 
 import humanizeDuration = require("humanize-duration");
@@ -19,5 +19,11 @@ export default class CooldownPermission implements PermissionInstance {
                     `@${runtimeInformation.userName}, please wait ${differenceString} and try again!`);
             }
         }
+    }
+
+    start(): void {
+    }
+
+    stop(): void {
     }
 }

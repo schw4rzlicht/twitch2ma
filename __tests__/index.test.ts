@@ -11,6 +11,8 @@ jest.mock("source-map-support");
 
 jest.mock("../src/lib/Twitch2Ma");
 
+afterEach(() => jest.clearAllMocks());
+
 test("Update notification", () => {
 
     const packageInformation = require("../package.json");
@@ -62,7 +64,7 @@ test("Load YAML config successful", () => {
 
 test("File does not exist",  () => {
     return expect(index.loadConfig("doesNotExist.json")).rejects
-        .toHaveProperty("message", "ENOENT: no such file or directory, open 'doesNotExist.json'");
+        .toHaveProperty("message", "Could not open config file doesNotExist.json!");
 });
 
 test("Default config.json loaded", async () => {
@@ -98,14 +100,14 @@ test("Invalid config", async () => {
     restoreConfigFile(configTmp);
 });
 
-test("Exit with error", () => {
+test("Exit with error", async () => {
 
     let consoleSpy = jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
     // @ts-ignore
     let exitSpy = jest.spyOn(process, "exit").mockImplementationOnce(() => {});
 
-    index.exitWithError(new Error("Fuck dat!"));
+    await expect(index.exitWithError(new Error("Fuck dat!"))).resolves.toBeUndefined();
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching("Fuck dat! Exiting..."));
     expect(exitSpy).toHaveBeenCalledWith(1);

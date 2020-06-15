@@ -1,8 +1,10 @@
 import {Command} from "commander";
-import Twitch2Ma from "./Twitch2Ma";
-import {Config} from "./Config";
+import {HTTPStatusCodeError, InvalidTokenError} from "twitch";
+import Twitch2Ma, {TelnetError} from "./Twitch2Ma";
+import {Config, ConfigError} from "./Config";
 import {CommandSocket} from "./CommandSocket";
 import {Logger} from "./Logger";
+import sentry from "./sentry";
 
 import Fs = require("fs");
 import YAML = require("yaml");
@@ -22,12 +24,12 @@ let globalConfigFile: string;
 
 export function main() {
 
-    process.on("SIGINT", exit);
+    process.on("SIGINT", () => exit(0));
 
     require("libnpm")
         .manifest(`${packageInformation.name}@latest`)
         .then(notifyUpdate)
-        .catch(() => logger.warning("Could not get update information!"))
+        .catch((error: Error) => sentry(error, () => logger.warning("Could not get update information!")))
         .then(init);
 }
 
@@ -51,7 +53,6 @@ function init(): void {
                     if (cmd.detach) {
                         return commandSocket.checkSocketExists().then(startChildProcess);
                     } else {
-
                         if (cmd.logfile) {
                             logger.setLogfile(cmd.logfile);
                         }
@@ -63,7 +64,18 @@ function init(): void {
                             .then(() => openCommandSocket());
                     }
                 })
-                .catch(exitWithError);
+                // @ts-ignore
+                .catch(ConfigError, TelnetError, error => exitWithError(error))
+                .catch(InvalidTokenError, () => exitWithError(new Error("Twitch error: Access token invalid!")))
+                .catch(HTTPStatusCodeError, error => {
+                    if (error.statusCode === 500) {
+                        return exitWithError(new Error("Twitch error: Twitch seems to be broken at the moment (see " +
+                            "https://status.twitch.tv for status) 😕"));
+                    } else {
+                        throw error;
+                    }
+                })
+                .catch(error => sentry(error, exitWithError));
         });
 
     program.command("stop")
@@ -103,18 +115,6 @@ function startChildProcess() {
     }
 }
 
-function exit() {
-
-    console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`);
-    logger.end();
-
-    if(commandSocket) {
-        commandSocket.stop();
-    }
-
-    process.exit(0);
-}
-
 function emitSocketEvent(event: string, payload?: any) {
 
     ipc.config.appspace = "twitch2ma.";
@@ -141,7 +141,7 @@ function openCommandSocket() {
 
     commandSocket.onExitCommand(() => {
         logger.socketMessage("Exit command received!");
-        exit();
+        exit(0);
     });
 
     commandSocket.onReloadConfigCommand((newConfigFile: any) => {
@@ -190,10 +190,10 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onGodMode((channel, user, reason) => logger.channelMessage(channel,
         chalk`💪 User {bold ${user}} activated {bold.inverse  god mode } because: ${reason}.`));
 
-    twitch2Ma.onPermissionDenied((channel, user, reason) => logger.channelMessage(channel,
-        chalk`✋ User {bold ${user}} tried to run a command but permissions were denied because of ${reason}.`))
+    twitch2Ma.onPermissionDenied((channel, user, command, reason) => logger.channelMessage(channel,
+        chalk`✋ User {bold ${user}} tried to run {bold.blue ${command}} but permissions were denied by ${reason}.`))
 
-    twitch2Ma.onNotice(message => logger.notice(message));
+    twitch2Ma.onNotice(logger.notice);
     twitch2Ma.onConfigReloaded(() => logger.confirm(`Config reloaded.`))
     twitch2Ma.onError(exitWithError);
 
@@ -208,14 +208,25 @@ export async function loadConfig(configFile: string): Promise<Config> {
         configFile = "config.json";
     }
 
-    let rawConfigFile = Fs.readFileSync(configFile, {encoding: "utf-8"});
-    let rawConfigObject = _.attempt(() => JSON.parse(rawConfigFile));
+    let rawConfigFile: string;
+    try {
+        rawConfigFile = Fs.readFileSync(configFile, {encoding: "utf-8"});
+    } catch (error) {
+        if (error.code === "ENOENT") {
+            throw new ConfigError(`Could not open config file ${configFile}!`);
+        } else {
+            throw error;
+        }
+    }
 
-    if (rawConfigObject instanceof Error) {
+    let rawConfigObject;
+    try {
+        rawConfigObject = JSON.parse(rawConfigFile);
+    } catch (error) {
         try {
             rawConfigObject = YAML.parse(rawConfigFile);
         } catch (ignored) {
-            throw new Error(`Config file ${configFile} is not a valid JSON or YAML file!`);
+            throw new ConfigError(`Config file ${configFile} is not a valid JSON or YAML file!`);
         }
     }
 
@@ -224,14 +235,34 @@ export async function loadConfig(configFile: string): Promise<Config> {
     return new Config(rawConfigObject);
 }
 
-export function exitWithError(err: Error) {
+async function exit(statusCode: number) {
+    let stopPromise = Promise.resolve();
+    if (globalTwitch2Ma) {
+        stopPromise
+            .then(() => globalTwitch2Ma.stop())
+            .catch(err => {
+                sentry(err);
+                process.exit(1);
+            })
+    }
+    return stopPromise
+        .then(() => console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`))
+        .then(() => logger.end())
+        .then(() => {
+            if(commandSocket) {
+                commandSocket.stop();
+            }
+        })
+        .finally(() => process.exit(statusCode));
+}
 
+export async function exitWithError(err: Error) {
     logger.error((err.message.slice(-1).match(/[!?]/) ? err.message : err.message + "!") + " Exiting...");
     logger.end();
 
-    if(commandSocket) {
+    if (commandSocket) {
         commandSocket.stop();
     }
 
-    process.exit(1);
+    return exit(1);
 }
