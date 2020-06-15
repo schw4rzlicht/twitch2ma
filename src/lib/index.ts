@@ -46,8 +46,8 @@ function init(): void {
                 .catch(InvalidTokenError, () => exitWithError(new Error("Twitch error: Access token invalid!")))
                 .catch(HTTPStatusCodeError, error => {
                     if(error.statusCode === 500) {
-                        throw new Error("Twitch error: Twitch seems to be broken at the moment (see https://status.twitch.tv " +
-                            "for status) 😕");
+                        return exitWithError(new Error("Twitch error: Twitch seems to be broken at the moment (see " +
+                            "https://status.twitch.tv for status) 😕"));
                     } else {
                         throw error;
                     }
@@ -168,4 +168,12 @@ function notice(message: string): void {
 
 function error(message: string): void {
     console.error(chalk`❌ {bold.red ${message}}`);
+}
+
+function conditionalThrow(originalError: Error, predicate: (error: Error) => boolean, customError: Error) {
+    if(predicate(originalError)) {
+        throw customError;
+    } else {
+        throw originalError;
+    }
 }
