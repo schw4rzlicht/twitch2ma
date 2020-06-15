@@ -1,3 +1,17 @@
+# [1.14.0-rc.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0...v1.14.0-rc.1) (2020-06-15)
+
+
+### Bug Fixes
+
+* Should not start multiple instances ([4f35dce](https://github.com/schw4rzlicht/twitch2ma/commit/4f35dce3dbb0f0c2a8dff03c1893bbce8b3a3486))
+
+
+### Features
+
+* Add daemon mode ([b460b1c](https://github.com/schw4rzlicht/twitch2ma/commit/b460b1c2a178e62890182a546a20a79d39425ff2))
+* Add IPC to enable commands from different processes ([f0bc52c](https://github.com/schw4rzlicht/twitch2ma/commit/f0bc52c8473e8e63ba5fdd12c9b41fb3f389f753))
+* Add logging to file ([aab4e4e](https://github.com/schw4rzlicht/twitch2ma/commit/aab4e4e595c645879820ca17239f858855192d1f))
+
 # [1.13.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.12.0...v1.13.0) (2020-06-15)
 
 
