@@ -1,3 +1,10 @@
+# [1.13.0-rc.13](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.12...v1.13.0-rc.13) (2020-06-15)
+
+
+### Bug Fixes
+
+* Error handling for Twitch chat client ([dc0fda9](https://github.com/schw4rzlicht/twitch2ma/commit/dc0fda9bd6e9802395cb55769ed3e48e50def010))
+
 # [1.13.0-rc.12](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0-rc.11...v1.13.0-rc.12) (2020-06-15)
 
 
