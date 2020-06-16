@@ -8,7 +8,6 @@ jobs:
       deploy:
         provider: script
         skip_cleanup: true
-        # Debug in next line: " && cat .env"
-        script: npx semantic-release && cat .env
+        script: npx semantic-release
         on:
           all_branches: true
