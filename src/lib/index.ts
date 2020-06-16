@@ -132,7 +132,7 @@ function emitSocketEvent(event: string) {
 }
 
 function openCommandSocket() {
-    commandSocket.onError(exitWithError);
+    commandSocket.onError(error => exitWithError(error));
     commandSocket.onExitCommand(() => {
         logger.socketMessage("Exit command received!");
         exit(0);
@@ -174,8 +174,8 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onPermissionDenied((channel, user, command, reason) => logger.channelMessage(channel,
         chalk`✋ User {bold ${user}} tried to run {bold.blue ${command}} but permissions were denied by ${reason}.`))
 
-    twitch2Ma.onNotice(logger.notice);
-    twitch2Ma.onError(exitWithError);
+    twitch2Ma.onNotice(message => logger.notice(message));
+    twitch2Ma.onError(error => exitWithError(error));
 
     return twitch2Ma;
 }
