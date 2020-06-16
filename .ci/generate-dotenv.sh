@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "generate-dotenv.sh started!"      # DEBUG
+
 if [[ "$1" = "undefined" ]]
 then
     echo "Posting production to .env"   # DEBUG

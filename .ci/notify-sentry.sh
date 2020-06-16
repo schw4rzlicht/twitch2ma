@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "notify-sentry.sh started!"                    # DEBUG
+
 set -a
 source .env
 set +a
