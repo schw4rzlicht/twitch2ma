@@ -2,7 +2,7 @@ import {Command} from "commander";
 import {HTTPStatusCodeError, InvalidTokenError} from "twitch";
 import Twitch2Ma, {TelnetError} from "./Twitch2Ma";
 import {Config, ConfigError} from "./Config";
-import {CommandSocket} from "./CommandSocket";
+import {CommandSocket, SocketError} from "./CommandSocket";
 import {Logger} from "./Logger";
 import sentry from "./sentry";
 
@@ -53,7 +53,7 @@ function init(): void {
                 .then(twitch2Ma => {
 
                     if (cmd.detach) {
-                        return commandSocket.checkSocketExists().then(startChildProcess);
+                        return commandSocket.checkSocketExists().then(() => startChildProcess());
                     } else {
                         if (cmd.logfile) {
                             logger.setLogfile(cmd.logfile);
@@ -65,7 +65,7 @@ function init(): void {
                     }
                 })
                 // @ts-ignore
-                .catch(ConfigError, TelnetError, error => exitWithError(error))
+                .catch(ConfigError, TelnetError, SocketError, error => exitWithError(error))
                 .catch(InvalidTokenError, () => exitWithError(new Error("Twitch error: Access token invalid!")))
                 .catch(HTTPStatusCodeError, error => {
                     if (error.statusCode === 500) {
@@ -132,7 +132,7 @@ function emitSocketEvent(event: string) {
 }
 
 function openCommandSocket() {
-    commandSocket.onError(exitWithError);
+    commandSocket.onError(error => exitWithError(error));
     commandSocket.onExitCommand(() => {
         logger.socketMessage("Exit command received!");
         exit(0);
@@ -174,8 +174,8 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
     twitch2Ma.onPermissionDenied((channel, user, command, reason) => logger.channelMessage(channel,
         chalk`✋ User {bold ${user}} tried to run {bold.blue ${command}} but permissions were denied by ${reason}.`))
 
-    twitch2Ma.onNotice(logger.notice);
-    twitch2Ma.onError(exitWithError);
+    twitch2Ma.onNotice(message => logger.notice(message));
+    twitch2Ma.onError(error => exitWithError(error));
 
     return twitch2Ma;
 }
