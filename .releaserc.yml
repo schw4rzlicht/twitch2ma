@@ -16,8 +16,10 @@ plugins:
     - changelogFile: docs/CHANGELOG.md
   - "@semantic-release/npm"
   - - "@semantic-release/git"
-    - message: "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
-      assets:
+    - assets:
         - package.json
         - package-lock.json
         - docs/CHANGELOG.md
+  - - "@semantic-release/exec"
+    - prepare: ".ci/generate-dotenv.sh ${nextRelease.channel}"
+      success: ".ci/notify-sentry.sh ${nextRelease.version}"
