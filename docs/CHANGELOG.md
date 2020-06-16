@@ -1,3 +1,11 @@
+# [1.14.0-rc.2](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.1...v1.14.0-rc.2) (2020-06-16)
+
+
+### Bug Fixes
+
+* Custom SocketError ([922d470](https://github.com/schw4rzlicht/twitch2ma/commit/922d470fae467265c0f19f68abad05af0eb02576))
+* Logfile reference error ([af67cb5](https://github.com/schw4rzlicht/twitch2ma/commit/af67cb5e4fc112ec4080882467fbbede7fc0d7c1))
+
 # [1.14.0-rc.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0...v1.14.0-rc.1) (2020-06-15)
 
 
