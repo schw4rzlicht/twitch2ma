@@ -2,7 +2,7 @@ import {Command} from "commander";
 import {HTTPStatusCodeError, InvalidTokenError} from "twitch";
 import Twitch2Ma, {TelnetError} from "./Twitch2Ma";
 import {Config, ConfigError} from "./Config";
-import {CommandSocket} from "./CommandSocket";
+import {CommandSocket, SocketError} from "./CommandSocket";
 import {Logger} from "./Logger";
 import sentry from "./sentry";
 
@@ -65,7 +65,7 @@ function init(): void {
                     }
                 })
                 // @ts-ignore
-                .catch(ConfigError, TelnetError, error => exitWithError(error))
+                .catch(ConfigError, TelnetError, SocketError, error => exitWithError(error))
                 .catch(InvalidTokenError, () => exitWithError(new Error("Twitch error: Access token invalid!")))
                 .catch(HTTPStatusCodeError, error => {
                     if (error.statusCode === 500) {
