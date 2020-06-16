@@ -1,3 +1,10 @@
+# [1.14.0-rc.5](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.4...v1.14.0-rc.5) (2020-06-16)
+
+
+### Bug Fixes
+
+* semantic-release exec scripts ([1daea65](https://github.com/schw4rzlicht/twitch2ma/commit/1daea65233390958a45fdadde722048e21f51fe3))
+
 # [1.14.0-rc.4](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.3...v1.14.0-rc.4) (2020-06-16)
 
 
