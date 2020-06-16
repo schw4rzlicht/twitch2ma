@@ -56,7 +56,7 @@ twitch2ma [configFile]
 
 ### Advanced usage
 
-There are more commands and options available when running `twitch2ma`. Please run `twitch2ma -h` for more help.
+There are more commands and options available when running `twitch2ma`. Please run `twitch2ma -h` or `twitch2ma help` for more help.
 
 ## Changelog
 

@@ -2,6 +2,14 @@ import {EventEmitter} from "@d-fischer/typed-event-emitter";
 
 import ipc = require("node-ipc");
 
+export class SocketError extends Error {
+    constructor(message: string) {
+        super(message);
+        Object.setPrototypeOf(this, SocketError.prototype);
+        this.name = SocketError.name;
+    }
+}
+
 export class CommandSocket extends EventEmitter {
 
     constructor() {
@@ -47,7 +55,7 @@ export class CommandSocket extends EventEmitter {
 
                 ipc.of.main.on("connect", () => {
                     ipc.disconnect("main");
-                    reject(new Error("Socket exists! Is twitch2ma already running?"));
+                    reject(new SocketError("Socket exists! Is twitch2ma already running?"));
                 });
 
                 ipc.of.main.on("error", () => {

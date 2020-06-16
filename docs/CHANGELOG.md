@@ -1,3 +1,87 @@
+## [1.14.2](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.1...v1.14.2) (2020-06-16)
+
+
+### Bug Fixes
+
+* .env generation ([e781e61](https://github.com/schw4rzlicht/twitch2ma/commit/e781e617463efdf7b653be9f3ad570461064f0cb))
+
+## [1.14.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0...v1.14.1) (2020-06-16)
+
+
+### Bug Fixes
+
+* Debug .env generation ([0e2a285](https://github.com/schw4rzlicht/twitch2ma/commit/0e2a28554b773c34bf8d9e4e048c3a05e6ae9f49))
+
+# [1.14.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0...v1.14.0) (2020-06-16)
+
+
+### Bug Fixes
+
+* Custom SocketError ([922d470](https://github.com/schw4rzlicht/twitch2ma/commit/922d470fae467265c0f19f68abad05af0eb02576))
+* Deprecation warning of sentry-cli ([7a1efe0](https://github.com/schw4rzlicht/twitch2ma/commit/7a1efe044692701ce9c72f8aede534d01aa5d3c8))
+* Logfile reference error ([af67cb5](https://github.com/schw4rzlicht/twitch2ma/commit/af67cb5e4fc112ec4080882467fbbede7fc0d7c1))
+* Missing .env automatically leads to dev environment ([cc7577c](https://github.com/schw4rzlicht/twitch2ma/commit/cc7577ce03d62948d5991f4b5e75fcd600fe9c94))
+* Print right environment to .env on build ([a3b1f80](https://github.com/schw4rzlicht/twitch2ma/commit/a3b1f80f119cf5f0d1186d9c1471347a151d4a39))
+* semantic-release exec scripts ([1daea65](https://github.com/schw4rzlicht/twitch2ma/commit/1daea65233390958a45fdadde722048e21f51fe3))
+* Should not start multiple instances ([4f35dce](https://github.com/schw4rzlicht/twitch2ma/commit/4f35dce3dbb0f0c2a8dff03c1893bbce8b3a3486))
+
+
+### Features
+
+* Add daemon mode ([b460b1c](https://github.com/schw4rzlicht/twitch2ma/commit/b460b1c2a178e62890182a546a20a79d39425ff2))
+* Add IPC to enable commands from different processes ([f0bc52c](https://github.com/schw4rzlicht/twitch2ma/commit/f0bc52c8473e8e63ba5fdd12c9b41fb3f389f753))
+* Add logging to file ([aab4e4e](https://github.com/schw4rzlicht/twitch2ma/commit/aab4e4e595c645879820ca17239f858855192d1f))
+
+# [1.14.0-rc.6](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.5...v1.14.0-rc.6) (2020-06-16)
+
+
+### Bug Fixes
+
+* Deprecation warning of sentry-cli ([7a1efe0](https://github.com/schw4rzlicht/twitch2ma/commit/7a1efe044692701ce9c72f8aede534d01aa5d3c8))
+
+# [1.14.0-rc.5](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.4...v1.14.0-rc.5) (2020-06-16)
+
+
+### Bug Fixes
+
+* semantic-release exec scripts ([1daea65](https://github.com/schw4rzlicht/twitch2ma/commit/1daea65233390958a45fdadde722048e21f51fe3))
+
+# [1.14.0-rc.4](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.3...v1.14.0-rc.4) (2020-06-16)
+
+
+### Bug Fixes
+
+* Missing .env automatically leads to dev environment ([cc7577c](https://github.com/schw4rzlicht/twitch2ma/commit/cc7577ce03d62948d5991f4b5e75fcd600fe9c94))
+
+# [1.14.0-rc.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.2...v1.14.0-rc.3) (2020-06-16)
+
+
+### Bug Fixes
+
+* Print right environment to .env on build ([a3b1f80](https://github.com/schw4rzlicht/twitch2ma/commit/a3b1f80f119cf5f0d1186d9c1471347a151d4a39))
+
+# [1.14.0-rc.2](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.1...v1.14.0-rc.2) (2020-06-16)
+
+
+### Bug Fixes
+
+* Custom SocketError ([922d470](https://github.com/schw4rzlicht/twitch2ma/commit/922d470fae467265c0f19f68abad05af0eb02576))
+* Logfile reference error ([af67cb5](https://github.com/schw4rzlicht/twitch2ma/commit/af67cb5e4fc112ec4080882467fbbede7fc0d7c1))
+
+# [1.14.0-rc.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0...v1.14.0-rc.1) (2020-06-15)
+
+
+### Bug Fixes
+
+* Should not start multiple instances ([4f35dce](https://github.com/schw4rzlicht/twitch2ma/commit/4f35dce3dbb0f0c2a8dff03c1893bbce8b3a3486))
+
+
+### Features
+
+* Add daemon mode ([b460b1c](https://github.com/schw4rzlicht/twitch2ma/commit/b460b1c2a178e62890182a546a20a79d39425ff2))
+* Add IPC to enable commands from different processes ([f0bc52c](https://github.com/schw4rzlicht/twitch2ma/commit/f0bc52c8473e8e63ba5fdd12c9b41fb3f389f753))
+* Add logging to file ([aab4e4e](https://github.com/schw4rzlicht/twitch2ma/commit/aab4e4e595c645879820ca17239f858855192d1f))
+
 # [1.13.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.12.0...v1.13.0) (2020-06-15)
 
 

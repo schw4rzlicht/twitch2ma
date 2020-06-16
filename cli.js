@@ -8,8 +8,8 @@ require("dotenv").config({
     path: path.resolve(__dirname, ".env")
 });
 
-if(process.env.NODE_ENV === "production" && !packageInformation.version.match(/^\d+\.\d+.\d+$/)) {
-    process.env.NODE_ENV = "staging";
+if(process.env.NODE_ENV === undefined) {
+    process.env.NODE_ENV = "development";
 }
 
 sentry.init(packageInformation);

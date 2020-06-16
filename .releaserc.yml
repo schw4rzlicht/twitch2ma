@@ -20,3 +20,6 @@ plugins:
         - package.json
         - package-lock.json
         - docs/CHANGELOG.md
+  - - "@semantic-release/exec"
+    - prepareCmd: ".ci/generate-dotenv.sh ${nextRelease.channel}"
+      successCmd: ".ci/notify-sentry.sh ${nextRelease.version}"

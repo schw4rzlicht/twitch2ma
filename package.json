@@ -1,6 +1,6 @@
 {
   "name": "twitch2ma",
-  "version": "1.13.0",
+  "version": "1.14.2",
   "description": "Twitch chat bot that runs commands on the MA GrandMA2 using Telnet.",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -11,7 +11,7 @@
     "buildYamlConfigSample": "json2yaml ./config.json.sample > ./config.yml.sample",
     "validateConfig": "npm run validateConfigSchema && ajv validate -s src/resources/config.schema.json -d config.json.sample",
     "validateConfigSchema": "ajv compile -s src/resources/**.schema.json",
-    "prepublishOnly": "echo \"{ \\\"dsn\\\": \\\"$SENTRY_DSN\\\" }\" > sentry.json && echo \"NODE_ENV=production\" > .env"
+    "prepublishOnly": "echo \"{ \\\"dsn\\\": \\\"$SENTRY_DSN\\\" }\" > sentry.json"
   },
   "author": {
     "name": "Julian Rabe",
@@ -49,14 +49,15 @@
   },
   "devDependencies": {
     "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/exec": "^5.0.0",
     "@semantic-release/git": "^9.0.0",
+    "@types/bluebird-global": "^3.5.12",
     "@types/humanize-duration": "^3.18.0",
     "@types/jest": "^25.2.3",
     "@types/lodash": "^4.14.152",
     "@types/node-ipc": "^9.1.3",
     "@types/semver": "^7.2.0",
     "@types/source-map-support": "^0.5.1",
-    "@types/bluebird-global": "^3.5.12",
     "ajv-cli": "~3.1.0",
     "jest": "^26.0.1",
     "json2yaml": "^1.1.0",
