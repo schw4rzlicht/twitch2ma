@@ -183,7 +183,7 @@ test("sACN lock status", async () => {
 
     await expect(statusHandler).toBeCalledWith(new SACNReceiving([1]));
 
-    sACNPermissionInstance.stop();
+    await sACNPermissionInstance.stop();
 
     await expect(statusHandler).toBeCalledWith(new SACNStopped());
 

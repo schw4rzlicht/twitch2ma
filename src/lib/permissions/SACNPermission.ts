@@ -130,17 +130,23 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
         }
     }
 
-    stop(): void {
+    stop(): Promise<any> {
+        let stopChain = Promise.resolve();
         if (this.sACNReceiver && this.running) {
             try {
                 this.sACNReceiver.close();
             } catch (error) {
-                sentry(error);
+                stopChain = stopChain.then(() => sentry(error));
             }
-            this.running = false;
-            this.emit(this.onStatus, new SACNStopped());
+
+            stopChain = stopChain
+                .then(() => this.running = false)
+                .then(() => this.emit(this.onStatus, new SACNStopped()));
         }
+
         _.attempt(() => clearInterval(this.watchdogTimeout));
+
+        return stopChain;
     }
 
     private watchdog() {

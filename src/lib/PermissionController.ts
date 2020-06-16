@@ -7,7 +7,7 @@ export interface PermissionInstance {
           additionalRuntimeInformation: Map<String, any>): void;
 
     start(): void;
-    stop(): void;
+    stop(): Promise<any>;
 }
 
 export class PermissionError extends Error {
@@ -73,9 +73,11 @@ export class PermissionController {
     }
 
     stop() {
+        let stopChain = [];
         for (const permissionInstance of this.permissionInstances) {
-            permissionInstance.stop();
+            stopChain.push(permissionInstance.stop());
         }
+        return Promise.all(stopChain);
     }
 }
 

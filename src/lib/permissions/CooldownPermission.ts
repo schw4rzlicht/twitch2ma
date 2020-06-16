@@ -24,6 +24,7 @@ export default class CooldownPermission implements PermissionInstance {
     start(): void {
     }
 
-    stop(): void {
+    stop(): Promise<any> {
+        return Promise.resolve();
     }
 }
