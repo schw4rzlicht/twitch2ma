@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0...v1.14.1) (2020-06-16)
+
+
+### Bug Fixes
+
+* Debug .env generation ([0e2a285](https://github.com/schw4rzlicht/twitch2ma/commit/0e2a28554b773c34bf8d9e4e048c3a05e6ae9f49))
+
 # [1.14.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.13.0...v1.14.0) (2020-06-16)
 
 
