@@ -53,7 +53,7 @@ function init(): void {
                 .then(twitch2Ma => {
 
                     if (cmd.detach) {
-                        return commandSocket.checkSocketExists().then(startChildProcess);
+                        return commandSocket.checkSocketExists().then(() => startChildProcess());
                     } else {
                         if (cmd.logfile) {
                             logger.setLogfile(cmd.logfile);
