@@ -113,10 +113,11 @@ export default class Twitch2Ma extends EventEmitter {
         }
 
         return reloadChain
+            .then(() => this.permissionController.reloadConfig(config))
             .then(() => this.config = config)
             .then(() => this.initializing = false)
             .then(() => this.emit(this.onConfigReloaded))
-            .catch(error => this.stopWithError(error));
+            .catch(error => sentry(error, () => this.stopWithError(error)));
     }
 
     private startTelnet(host: string, user: string, password: string) {
@@ -148,13 +149,13 @@ export default class Twitch2Ma extends EventEmitter {
 
     start() {
         this.initializing = true;
-        return Promise.resolve(this.permissionController.start())
+        return this.permissionController.start()
             .then(() => this.startTelnet(this.config.ma.host, this.config.ma.user, this.config.ma.password))
             .then(() => this.initTwitch())
             .then(() => this.initializing = false);
     }
 
-    stop() {
+    stop(): Promise<void> {
         return this.stopTwitch()
             .then(() => this.telnet.end())
             .then(() => this.permissionController.stop());
@@ -179,7 +180,8 @@ export default class Twitch2Ma extends EventEmitter {
     initTwitch(config: Config = this.config) {
 
         return Promise.resolve()
-            .then(() => {
+            .then(() => new Promise((resolve, reject) => {
+
                 this.twitchClient = Twitch.withCredentials(config.twitch.clientId, config.twitch.accessToken);
                 this.chatClient = TwitchChat.forTwitchClient(this.twitchClient, {
                     logger: {
@@ -189,8 +191,6 @@ export default class Twitch2Ma extends EventEmitter {
 
                 this.chatClient.onPrivmsg((channel, user, message, rawMessage) =>
                     this.handleMessage(channel, user, message, rawMessage));
-
-            }).then(() => new Promise((resolve, reject) => {
 
                 this.chatClient.onRegister(() => {
                     this.chatClient.join(config.twitch.channel)
@@ -205,6 +205,13 @@ export default class Twitch2Ma extends EventEmitter {
     }
 
     async handleMessage(channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
+
+        if(this.initializing) {
+            this.chatClient.say(channel, "The bot is currently reloading its config, please wait a moment " +
+                "and try it again!");
+            this.emit(this.onNotice, `${channel}: ${user} tried to execute something but it was denied due to reloading config.`);
+            return;
+        }
 
         let raw = message.match(/!([a-zA-Z0-9-]+)( !?([a-zA-Z0-9-]+))?/);
         if (_.isArray(raw)) {

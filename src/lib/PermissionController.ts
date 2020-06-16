@@ -1,4 +1,5 @@
 import {RuntimeInformation} from "./RuntimeInformation";
+import {Config} from "./Config";
 
 export interface PermissionInstance {
 
@@ -7,7 +8,8 @@ export interface PermissionInstance {
           additionalRuntimeInformation: Map<String, any>): void;
 
     start(): void;
-    stop(): Promise<any>;
+    stop(): Promise<void>;
+    reloadConfig(config: Config): Promise<void>;
 }
 
 export class PermissionError extends Error {
@@ -66,18 +68,30 @@ export class PermissionController {
     }
 
     start() {
+        let startChain = Promise.resolve();
         for (const permissionInstance of this.permissionInstances) {
-            permissionInstance.start();
+            startChain = startChain
+                .then(() => permissionInstance.start());
         }
-        return this;
+        return startChain;
     }
 
     stop() {
-        let stopChain = [];
+        let stopChain = Promise.resolve();
         for (const permissionInstance of this.permissionInstances) {
-            stopChain.push(permissionInstance.stop());
+            stopChain = stopChain
+                .then(() => permissionInstance.stop());
         }
-        return Promise.all(stopChain);
+        return stopChain;
+    }
+
+    reloadConfig(config: Config) {
+        let reloadChain = Promise.resolve();
+        for (const permissionInstance of this.permissionInstances) {
+            reloadChain
+                .then(() => permissionInstance.reloadConfig(config));
+        }
+        return reloadChain;
     }
 }
 

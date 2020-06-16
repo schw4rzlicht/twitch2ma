@@ -12,7 +12,7 @@ import _ = require("lodash");
 export default class SACNPermission extends EventEmitter implements PermissionInstance {
 
     private readonly universes: Array<SACNUniverse>;
-    private readonly config: Config;
+    private config: Config;
     private sACNReceiver: Receiver;
     private watchdogTimeout: NodeJS.Timeout;
     private running: boolean;
@@ -24,15 +24,8 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
         this.config = config;
         this.running = false;
 
-        for (const command of this.config.commands) {
-            if (command.sacn) {
-                this.universes[command.sacn.universe] = new SACNUniverse(command.sacn.universe);
-            }
-            for (const parameter of command.parameters) {
-                if (parameter.sacn) {
-                    this.universes[parameter.sacn.universe] = new SACNUniverse(parameter.sacn.universe);
-                }
-            }
+        for (const universe of SACNPermission.getUniverses(this.config)) {
+            this.universes[universe] = new SACNUniverse(universe);
         }
     }
 
@@ -54,16 +47,11 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
         }
     }
 
-    start(): void {
+    start(): Promise<void> {
 
         if (this.universes.length > 0 && !this.running) {
 
-            let universes = [];
-            for (const universe of this.universes) {
-                if (universe) {
-                    universes.push(universe.universe);
-                }
-            }
+            let universes = SACNPermission.getUniverses(this.config);
 
             if (universes.length > 0) {
 
@@ -94,13 +82,13 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
 
                 this.sACNReceiver.on("PacketCorruption", error => {
                     this.emit(this.onError, new SACNCorruptError());
-                    this.stop();
+                    this.stop().catch(error => sentry(error));
                     sentry(error);
                 });
 
                 this.sACNReceiver.on("error", (error: Error) => {
                     // @ts-ignore
-                    if(error.code) {
+                    if (error.code) {
                         // @ts-ignore
                         switch (error.code) {
                             case "EADDRNOTAVAIL":
@@ -117,7 +105,7 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                     } else {
                         this.emit(this.onError, error);
                     }
-                    this.stop();
+                    this.stop().catch(error => sentry(error));
                 });
 
                 this.emit(this.onStatus, new SACNWaiting(universes));
@@ -128,13 +116,15 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                 this.running = true;
             }
         }
+
+        return Promise.resolve();
     }
 
     stop(): Promise<any> {
         let stopChain = Promise.resolve();
         if (this.sACNReceiver && this.running) {
             try {
-                this.sACNReceiver.close();
+                this.sACNReceiver.close(); // FIXME Needs callback, otherwise port will be occupied when reloading config
             } catch (error) {
                 stopChain = stopChain.then(() => sentry(error));
             }
@@ -147,6 +137,19 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
         _.attempt(() => clearInterval(this.watchdogTimeout));
 
         return stopChain;
+    }
+
+    reloadConfig(config: Config): Promise<void> {
+
+        if (!_.isEqual(this.config.sacn, config.sacn)
+            || !_.isEqual(SACNPermission.getUniverses(this.config), SACNPermission.getUniverses(config))) {
+
+            return this.stop()
+                .then(() => this.config = config)
+                .then(() => this.start());
+        }
+
+        return Promise.resolve();
     }
 
     private watchdog() {
@@ -192,6 +195,26 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
     withOnErrorHandler(handler: (error: Error) => any) {
         this.onError(handler);
         return this;
+    }
+
+    static getUniverses(config: Config): Array<number> {
+
+        function findAndPush(sacn: any) {
+            if(sacn && !_.find(universes, universe => universe === sacn.universe)) {
+                universes.push(sacn.universe);
+            }
+        }
+
+        let universes = new Array<number>();
+
+        for (const command of config.commands) {
+            findAndPush(command.sacn);
+            for (const parameter of command.parameters) {
+                findAndPush(parameter.sacn);
+            }
+        }
+
+        return universes;
     }
 
     protected emit<Args extends any[]>(event: EventBinder<Args>, ...args: Args) {

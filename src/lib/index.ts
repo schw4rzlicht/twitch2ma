@@ -154,7 +154,7 @@ function openCommandSocket() {
 
         loadConfig(newConfigFile)
             .then(config => globalTwitch2Ma.reloadConfig(config))
-            .catch(error => logger.error(`Reloading config failed: ${error.message}`));
+            .catch(error => sentry(error, () => logger.error(`Reloading config failed: ${error.message}`)));
     });
 
     return commandSocket.start();
@@ -237,16 +237,19 @@ export async function loadConfig(configFile: string): Promise<Config> {
 }
 
 async function exit(statusCode: number) {
-    let stopPromise = Promise.resolve();
+
+    let stopChain = Promise.resolve();
+
     if (globalTwitch2Ma) {
-        stopPromise
+        stopChain = stopChain
             .then(() => globalTwitch2Ma.stop())
             .catch(err => {
                 sentry(err);
                 process.exit(1);
-            })
+            });
     }
-    return stopPromise
+
+    return stopChain
         .then(() => console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`))
         .then(() => logger.end())
         .then(() => {

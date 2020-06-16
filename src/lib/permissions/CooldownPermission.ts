@@ -3,6 +3,7 @@ import {RuntimeInformation} from "../RuntimeInformation";
 
 import humanizeDuration = require("humanize-duration");
 import _ = require("lodash");
+import {Config} from "../Config";
 
 export default class CooldownPermission implements PermissionInstance {
 
@@ -21,10 +22,15 @@ export default class CooldownPermission implements PermissionInstance {
         }
     }
 
-    start(): void {
+    start(): Promise<void> {
+        return Promise.resolve();
     }
 
-    stop(): Promise<any> {
+    stop(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    reloadConfig(config: Config): Promise<void> {
         return Promise.resolve();
     }
 }

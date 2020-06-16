@@ -1,5 +1,6 @@
 import {PermissionCollector, PermissionInstance} from "../PermissionController";
 import {RuntimeInformation} from "../RuntimeInformation";
+import {Config} from "../Config";
 
 export default class OwnerPermission implements PermissionInstance {
 
@@ -9,10 +10,15 @@ export default class OwnerPermission implements PermissionInstance {
         }
     }
 
-    start(): void {
+    start(): Promise<void> {
+        return Promise.resolve();
     }
 
     stop(): Promise<any> {
+        return Promise.resolve();
+    }
+
+    reloadConfig(config: Config): Promise<void> {
         return Promise.resolve();
     }
 }
