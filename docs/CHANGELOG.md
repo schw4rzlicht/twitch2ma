@@ -1,3 +1,10 @@
+# [1.14.0-rc.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.2...v1.14.0-rc.3) (2020-06-16)
+
+
+### Bug Fixes
+
+* Print right environment to .env on build ([a3b1f80](https://github.com/schw4rzlicht/twitch2ma/commit/a3b1f80f119cf5f0d1186d9c1471347a151d4a39))
+
 # [1.14.0-rc.2](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.1...v1.14.0-rc.2) (2020-06-16)
 
 
