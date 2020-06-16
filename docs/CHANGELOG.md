@@ -1,3 +1,10 @@
+# [1.14.0-rc.6](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.5...v1.14.0-rc.6) (2020-06-16)
+
+
+### Bug Fixes
+
+* Deprecation warning of sentry-cli ([7a1efe0](https://github.com/schw4rzlicht/twitch2ma/commit/7a1efe044692701ce9c72f8aede534d01aa5d3c8))
+
 # [1.14.0-rc.5](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.4...v1.14.0-rc.5) (2020-06-16)
 
 
