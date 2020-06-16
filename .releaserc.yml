@@ -16,7 +16,8 @@ plugins:
     - changelogFile: docs/CHANGELOG.md
   - "@semantic-release/npm"
   - - "@semantic-release/git"
-    - assets:
+    - message: "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+      assets:
         - package.json
         - package-lock.json
         - docs/CHANGELOG.md
