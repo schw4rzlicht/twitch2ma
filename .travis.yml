@@ -16,7 +16,7 @@ jobs:
       if: tag IS present
       deploy:
         provider: script
-        skip_cleanup: false
+        skip_cleanup: true
         script: |
           curl -sL https://sentry.io/get-cli/ | bash
           export SENTRY_RELEASE=$TRAVIS_TAG
