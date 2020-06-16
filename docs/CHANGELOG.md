@@ -1,3 +1,10 @@
+# [1.14.0-rc.4](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.3...v1.14.0-rc.4) (2020-06-16)
+
+
+### Bug Fixes
+
+* Missing .env automatically leads to dev environment ([cc7577c](https://github.com/schw4rzlicht/twitch2ma/commit/cc7577ce03d62948d5991f4b5e75fcd600fe9c94))
+
 # [1.14.0-rc.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.0-rc.2...v1.14.0-rc.3) (2020-06-16)
 
 
