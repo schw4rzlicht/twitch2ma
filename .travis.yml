@@ -5,9 +5,25 @@ node_js:
 jobs:
   include:
     - stage: release
+      if: tag IS blank
       deploy:
         provider: script
         skip_cleanup: true
         script: npx semantic-release
+        on:
+          all_branches: true
+    - stage: notifySentry
+      if: tag IS present
+      deploy:
+        provider: script
+        skip_cleanup: false
+        script: |
+          curl -sL https://sentry.io/get-cli/ | bash
+          export SENTRY_RELEASE=$TRAVIS_TAG
+          sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE
+          sentry-cli releases set-commits $SENTRY_RELEASE --auto
+          sentry-cli releases files $SENTRY_RELEASE upload-sourcemaps dist
+          sentry-cli releases finalize $SENTRY_RELEASE
+          sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
         on:
           all_branches: true
