@@ -15,14 +15,16 @@ let permissionController: PermissionController;
 
 jest.mock("sacn");
 
-beforeEach(() => {
+beforeEach(async () => {
+
     config = loadConfig();
     permissionController = new PermissionController()
         .withPermissionInstance(new SACNPermission(config))
         .withPermissionInstance(new CooldownPermission())
         .withPermissionInstance(new ModeratorPermission())
-        .withPermissionInstance(new OwnerPermission())
-        .start();
+        .withPermissionInstance(new OwnerPermission());
+
+    await permissionController.start();
 });
 
 afterEach(() => {
@@ -120,7 +122,7 @@ test("sACN lock", async () => {
     expect(sacnReceiver.on).toBeCalledTimes(3);
 
     sacnReceiver.on.mock.calls[0][1]({
-        slotsData: Buffer.from(new Uint8Array(512)),
+        payloadAsRawArray: new Array(512).fill(0),
         universe: 1
     });
 
@@ -136,7 +138,7 @@ test("sACN lock", async () => {
         });
 
     sacnReceiver.on.mock.calls[0][1]({
-        slotsData: Buffer.from(new Uint8Array(512).fill(255)),
+        payloadAsRawArray: new Array(512).fill(255),
         universe: 1
     });
 
@@ -164,13 +166,14 @@ test("sACN lock status", async () => {
     sACNPermissionInstance.onStatus(statusHandler);
 
     permissionController = new PermissionController()
-        .withPermissionInstance(sACNPermissionInstance)
-        .start();
+        .withPermissionInstance(sACNPermissionInstance);
+
+    await permissionController.start();
 
     await expect(statusHandler).toBeCalledWith(new SACNWaiting([1]));
 
     let sendData = {
-        slotsData: Buffer.from(new Uint8Array(512)),
+        payloadAsRawArray: new Array(512).fill(0),
         universe: 1
     };
 
@@ -183,11 +186,15 @@ test("sACN lock status", async () => {
 
     await expect(statusHandler).toBeCalledWith(new SACNReceiving([1]));
 
-    sACNPermissionInstance.stop();
+    await sACNPermissionInstance.stop();
 
     await expect(statusHandler).toBeCalledWith(new SACNStopped());
 
     expect.assertions(5);
+});
+
+test("sACNPermission -> getUniverses()", () => {
+    return expect(SACNPermission.getUniverses(config)).toMatchObject([1]);
 });
 
 function loadConfig(overrideConfigValues?: any): Config {

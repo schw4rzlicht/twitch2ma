@@ -17,12 +17,13 @@ import childProcess = require("child_process");
 const semverGt = require('semver/functions/gt')
 const packageInformation = require("../../package.json");
 
+// TODO Improve:
 let logger = new Logger();
 let commandSocket: CommandSocket = new CommandSocket();
+let globalTwitch2Ma: Twitch2Ma;
+let globalConfigFile: string;
 
-let twitch2Ma: Twitch2Ma;
-
-export async function main() {
+export function main() {
 
     process.on("SIGINT", () => exit(0));
 
@@ -46,10 +47,7 @@ function init(): void {
         .action((configFile, cmd) => {
 
             loadConfig(configFile)
-                .then(config => {
-                    twitch2Ma = new Twitch2Ma(config);
-                    return twitch2Ma;
-                })
+                .then(config => new Twitch2Ma(config))
                 .then(twitch2Ma => {
 
                     if (cmd.detach) {
@@ -59,9 +57,11 @@ function init(): void {
                             logger.setLogfile(cmd.logfile);
                         }
 
+                        globalTwitch2Ma = twitch2Ma;
+
                         return attachEventHandlers(twitch2Ma)
                             .then(twitch2Ma => twitch2Ma.start())
-                            .then(openCommandSocket);
+                            .then(() => openCommandSocket());
                     }
                 })
                 // @ts-ignore
@@ -81,6 +81,10 @@ function init(): void {
     program.command("stop")
         .description("stop twitch2ma bot")
         .action(() => emitSocketEvent("exit"));
+
+    program.command("reloadConfig [configFile]")
+        .description("reload running twitch2ma instance with a new config")
+        .action(configFile => emitSocketEvent("reloadConfig", configFile));
 
     program.parse(process.argv);
 }
@@ -111,7 +115,7 @@ function startChildProcess() {
     }
 }
 
-function emitSocketEvent(event: string) {
+function emitSocketEvent(event: string, payload?: any) {
 
     ipc.config.appspace = "twitch2ma.";
     ipc.config.silent = true;
@@ -119,7 +123,7 @@ function emitSocketEvent(event: string) {
     ipc.connectTo("main", () => {
 
         ipc.of.main.on("connect", () => {
-            ipc.of.main.emit(event);
+            ipc.of.main.emit(event, payload);
             ipc.disconnect("main");
         });
 
@@ -132,11 +136,27 @@ function emitSocketEvent(event: string) {
 }
 
 function openCommandSocket() {
+
     commandSocket.onError(error => exitWithError(error));
+
     commandSocket.onExitCommand(() => {
         logger.socketMessage("Exit command received!");
         exit(0);
     });
+
+    commandSocket.onReloadConfigCommand((newConfigFile: any) => {
+
+        if(!_.isString(newConfigFile)) {
+            newConfigFile = globalConfigFile;
+        }
+
+        logger.socketMessage(`Reload config command received (${newConfigFile})!`);
+
+        loadConfig(newConfigFile)
+            .then(config => globalTwitch2Ma.reloadConfig(config))
+            .catch(error => sentry(error, () => logger.error(`Reloading config failed: ${error.message}`)));
+    });
+
     return commandSocket.start();
 }
 
@@ -175,6 +195,7 @@ export async function attachEventHandlers(twitch2Ma: Twitch2Ma): Promise<Twitch2
         chalk`✋ User {bold ${user}} tried to run {bold.blue ${command}} but permissions were denied by ${reason}.`))
 
     twitch2Ma.onNotice(message => logger.notice(message));
+    twitch2Ma.onConfigReloaded(() => logger.confirm(`Config reloaded.`))
     twitch2Ma.onError(error => exitWithError(error));
 
     return twitch2Ma;
@@ -210,20 +231,25 @@ export async function loadConfig(configFile: string): Promise<Config> {
         }
     }
 
+    globalConfigFile = configFile;
+
     return new Config(rawConfigObject);
 }
 
 async function exit(statusCode: number) {
-    let stopPromise = Promise.resolve();
-    if (twitch2Ma) {
-        stopPromise
-            .then(() => twitch2Ma.stop())
+
+    let stopChain = Promise.resolve();
+
+    if (globalTwitch2Ma) {
+        stopChain = stopChain
+            .then(() => globalTwitch2Ma.stop())
             .catch(err => {
                 sentry(err);
                 process.exit(1);
-            })
+            });
     }
-    return stopPromise
+
+    return stopChain
         .then(() => console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`))
         .then(() => logger.end())
         .then(() => {
@@ -235,7 +261,7 @@ async function exit(statusCode: number) {
 }
 
 export async function exitWithError(err: Error) {
-    logger.error((err.message.slice(-1) === "!" ? err.message : err.message + "!") + " Exiting...");
+    logger.error((err.message.slice(-1).match(/[!?]/) ? err.message : err.message + "!") + " Exiting...");
     logger.end();
 
     if (commandSocket) {

@@ -32,6 +32,10 @@ export class CommandSocket extends EventEmitter {
                     ipc.server.on("exit", () => {
                         this.emit(this.onExitCommand);
                     });
+
+                    ipc.server.on("reloadConfig", newConfigFile => {
+                        this.emit(this.onReloadConfigCommand, newConfigFile);
+                    })
                 });
 
                 ipc.server.start();
@@ -63,5 +67,6 @@ export class CommandSocket extends EventEmitter {
     }
 
     onExitCommand = this.registerEvent<() => any>();
+    onReloadConfigCommand = this.registerEvent<(newConfigFile: string) => any>();
     onError = this.registerEvent<(error: Error) => any>();
 }

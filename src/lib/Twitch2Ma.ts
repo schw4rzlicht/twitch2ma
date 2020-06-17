@@ -57,16 +57,18 @@ export class ChannelError extends Error {
 
 export default class Twitch2Ma extends EventEmitter {
 
-    private readonly config: Config;
-    private readonly telnet: Telnet;
-    private readonly permissionController: PermissionController;
+    private config: Config;
+    private telnet: Telnet;
+    private permissionController: PermissionController;
     private twitchClient: TwitchClient;
     private chatClient: TwitchChat;
+    private initializing: boolean;
 
     constructor(config: Config) {
         super();
         this.config = config;
         this.telnet = new TelnetClient();
+        this.initializing = false;
 
         this.permissionController = new PermissionController()
             .withPermissionInstance(new SACNPermission(config)
@@ -77,10 +79,51 @@ export default class Twitch2Ma extends EventEmitter {
             .withPermissionInstance(new ModeratorPermission());
     }
 
-    start(): Promise<void> {
+    reloadConfig(config: Config) {
+
+        if (this.initializing) {
+            throw new Error("twitch2ma is initializing!");
+        }
+
+        let needsTelnetReload = !_.isEqual(this.config.ma, config.ma);
+        let needsTwitchReload = !_.isEqual(this.config.twitch, config.twitch) || needsTelnetReload;
+
+        this.initializing = true;
+
+        let reloadChain = Promise.resolve();
+
+        if (needsTwitchReload) {
+            reloadChain = reloadChain
+                .then(() => this.emit(this.onNotice, "Disconnecting Twitch..."))
+                .then(() => this.chatClient.removeListener())
+                .then(() => this.stopTwitch());
+        }
+
+        if (needsTelnetReload) {
+            reloadChain = reloadChain
+                .then(() => this.emit(this.onNotice, "Reconnecting telnet..."))
+                .then(() => this.telnet.end())
+                .then(() => this.startTelnet(config.ma.host, config.ma.user, config.ma.password));
+        }
+
+        if (needsTwitchReload) {
+            reloadChain = reloadChain
+                .then(() => this.emit(this.onNotice, "Connecting Twitch..."))
+                .then(() => this.initTwitch(config));
+        }
+
+        return reloadChain
+            .then(() => this.permissionController.reloadConfig(config))
+            .then(() => this.config = config)
+            .then(() => this.initializing = false)
+            .then(() => this.emit(this.onConfigReloaded))
+            .catch(error => sentry(error, () => this.stopWithError(error)));
+    }
+
+    private startTelnet(host: string, user: string, password: string) {
         return this.telnet
             .connect({
-                host: this.config.ma.host,
+                host: host,
                 port: 30000,
                 shellPrompt: /\[.+]>.../,
                 echoLines: 0,
@@ -90,66 +133,85 @@ export default class Twitch2Ma extends EventEmitter {
                 throw new TelnetError("Could not connect to desk! Check Telnet enabled, MA IP address and firewall " +
                     "settings if using onPC!");
             })
-            .then(() => this.permissionController.start())
-            .then(() => this.telnetLogin())
-            .then(() => this.initTwitch());
+            .then(() => this.telnetLogin(host, user, password));
     }
 
-    async stop() {
+    private stopTwitch() {
 
-        let promises: Array<Promise<any>> = [];
+        let stopChain = Promise.resolve();
 
-        if (this.chatClient) {
-            promises.push(this.chatClient.quit());
+        if (_.isObject(this.chatClient)) {
+            stopChain.then(() => this.chatClient.quit());
         }
 
-        if (this.telnet) {
-            promises.push(this.telnet.end());
-        }
-
-        this.permissionController.stop();
-
-        return Promise.all(promises);
+        return stopChain;
     }
 
-    stopWithError(error: Error): Promise<any> {
+    start() {
+        this.initializing = true;
+        return this.permissionController.start()
+            .then(() => this.startTelnet(this.config.ma.host, this.config.ma.user, this.config.ma.password))
+            .then(() => this.initTwitch())
+            .then(() => this.initializing = false);
+    }
+
+    stop(): Promise<void> {
+        return this.stopTwitch()
+            .then(() => this.telnet.end())
+            .then(() => this.permissionController.stop());
+    }
+
+    stopWithError(error: Error) {
         this.emit(this.onError, error);
         return this.stop();
     }
 
-    telnetLogin(): Promise<void> {
-        return this.telnet.exec(`Login ${this.config.ma.user} ${this.config.ma.password}`)
+    telnetLogin(host: string, user: string, password: string) {
+        return this.telnet.exec(`Login ${user} ${password}`)
             .then((message: string) => {
-                if (message.match(`Logged in as User '${this.config.ma.user}'`)) {
-                    this.emit(this.onTelnetConnected, this.config.ma.host, this.config.ma.user);
+                if (message.match(`Logged in as User '${user}'`)) {
+                    this.emit(this.onTelnetConnected, host, user);
                 } else {
-                    throw new TelnetError(`Could not log into the desk as user ${this.config.ma.user}! Check password!`);
+                    throw new TelnetError(`Could not log into the desk as user ${user}! Check password!`);
                 }
             });
     }
 
-    initTwitch(): Promise<void> {
+    initTwitch(config: Config = this.config) {
 
-        this.twitchClient = Twitch.withCredentials(this.config.twitch.clientId, this.config.twitch.accessToken);
-        this.chatClient = TwitchChat.forTwitchClient(this.twitchClient,{
-            logger: {
-                minLevel: "CRITICAL"
-            }
-        });
+        return Promise.resolve()
+            .then(() => new Promise((resolve, reject) => {
 
-        this.chatClient.onRegister(() => {
-            this.chatClient.join(this.config.twitch.channel)
-                .then(() => this.emit(this.onTwitchConnected, this.config.twitch.channel))
-                .catch(() => this.stopWithError(new ChannelError()));
-        });
+                this.twitchClient = Twitch.withCredentials(config.twitch.clientId, config.twitch.accessToken);
+                this.chatClient = TwitchChat.forTwitchClient(this.twitchClient, {
+                    logger: {
+                        minLevel: "CRITICAL"
+                    }
+                });
 
-        this.chatClient.onPrivmsg((channel, user, message, rawMessage) =>
-            this.handleMessage(channel, user, message, rawMessage));
+                this.chatClient.onPrivmsg((channel, user, message, rawMessage) =>
+                    this.handleMessage(channel, user, message, rawMessage));
 
-        return this.chatClient.connect();
+                this.chatClient.onRegister(() => {
+                    this.chatClient.join(config.twitch.channel)
+                        .then(() => resolve())
+                        .catch(() => reject(new ChannelError()));
+                });
+
+                this.chatClient.connect()
+                    .catch(error => reject(error));
+
+            })).then(() => this.emit(this.onTwitchConnected, config.twitch.channel));
     }
 
     async handleMessage(channel: string, user: string, message: string, rawMessage: TwitchPrivateMessage) {
+
+        if(this.initializing) {
+            this.chatClient.say(channel, "The bot is currently reloading its config, please wait a moment " +
+                "and try it again!");
+            this.emit(this.onNotice, `${channel}: ${user} tried to execute something but it was denied due to reloading config.`);
+            return;
+        }
 
         let raw = message.match(/!([a-zA-Z0-9-]+)( !?([a-zA-Z0-9-]+))?/);
         if (_.isArray(raw)) {
@@ -297,4 +359,5 @@ export default class Twitch2Ma extends EventEmitter {
     onPermissionDenied = this.registerEvent<(channel: string, user: string, command: string, reason: string) => any>();
     onGodMode = this.registerEvent<(channel: string, user: string, reason: string) => any>();
     onNotice = this.registerEvent<(message: string) => any>();
+    onConfigReloaded = this.registerEvent<() => any>();
 }
