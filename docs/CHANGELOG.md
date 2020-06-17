@@ -1,3 +1,10 @@
+## [1.14.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.2...v1.14.3) (2020-06-17)
+
+
+### Bug Fixes
+
+* Swap libnpm → axios to not affect download counter by update notification ([eff8735](https://github.com/schw4rzlicht/twitch2ma/commit/eff8735729c20bb9e71b0165eabba9bd51ff88a3))
+
 ## [1.14.2](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.1...v1.14.2) (2020-06-16)
 
 
