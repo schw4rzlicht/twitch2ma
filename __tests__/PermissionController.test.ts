@@ -122,7 +122,7 @@ test("sACN lock", async () => {
     expect(sacnReceiver.on).toBeCalledTimes(3);
 
     sacnReceiver.on.mock.calls[0][1]({
-        slotsData: Buffer.from(new Uint8Array(512)),
+        payloadAsRawArray: new Array(512).fill(0),
         universe: 1
     });
 
@@ -138,7 +138,7 @@ test("sACN lock", async () => {
         });
 
     sacnReceiver.on.mock.calls[0][1]({
-        slotsData: Buffer.from(new Uint8Array(512).fill(255)),
+        payloadAsRawArray: new Array(512).fill(255),
         universe: 1
     });
 
@@ -173,7 +173,7 @@ test("sACN lock status", async () => {
     await expect(statusHandler).toBeCalledWith(new SACNWaiting([1]));
 
     let sendData = {
-        slotsData: Buffer.from(new Uint8Array(512)),
+        payloadAsRawArray: new Array(512).fill(0),
         universe: 1
     };
 

@@ -23,10 +23,6 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
         this.universes = [];
         this.config = config;
         this.running = false;
-
-        for (const universe of SACNPermission.getUniverses(this.config)) {
-            this.universes[universe] = new SACNUniverse(universe);
-        }
     }
 
     check(permissionCollector: PermissionCollector,
@@ -49,7 +45,11 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
 
     start(): Promise<void> {
 
-        if (this.universes.length > 0 && !this.running) {
+        if (!this.running) {
+
+            for (const universe of SACNPermission.getUniverses(this.config)) {
+                this.universes[universe] = new SACNUniverse(universe);
+            }
 
             let universes = SACNPermission.getUniverses(this.config);
 
@@ -67,17 +67,7 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                 this.sACNReceiver = new Receiver(receiverOptions);
 
                 this.sACNReceiver.on("packet", (packet: Packet) => {
-
-                    let universe = this.universes[packet.universe];
-
-                    if (universe) {
-                        let data = new Array(512).fill(0);
-                        packet.slotsData.forEach((value, channel) => {
-                            data[channel] = value;
-                        });
-
-                        universe.data = data;
-                    }
+                    this.universes[packet.universe].data = packet.payloadAsRawArray;
                 });
 
                 this.sACNReceiver.on("PacketCorruption", error => {
@@ -121,22 +111,22 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
     }
 
     stop(): Promise<any> {
-        let stopChain = Promise.resolve();
+        let stopChain: Promise<any> = Promise.resolve();
         if (this.sACNReceiver && this.running) {
-            try {
-                this.sACNReceiver.close(); // FIXME Needs callback, otherwise port will be occupied when reloading config
-            } catch (error) {
-                stopChain = stopChain.then(() => sentry(error));
-            }
-
             stopChain = stopChain
-                .then(() => this.running = false)
-                .then(() => this.emit(this.onStatus, new SACNStopped()));
+                .then(() => new Promise(resolve => {
+                    this.sACNReceiver.close(() => {
+                        resolve();
+                    });
+                }))
+                .catch(error => sentry(error));
         }
 
         _.attempt(() => clearInterval(this.watchdogTimeout));
 
-        return stopChain;
+        return stopChain
+            .then(() => this.running = false)
+            .then(() => this.emit(this.onStatus, new SACNStopped()));
     }
 
     reloadConfig(config: Config): Promise<void> {
