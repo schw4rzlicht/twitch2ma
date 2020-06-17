@@ -1,3 +1,15 @@
+# [1.15.0-rc.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.3...v1.15.0-rc.1) (2020-06-17)
+
+
+### Bug Fixes
+
+* Reload sACNReceiver on config reload ([0c021c2](https://github.com/schw4rzlicht/twitch2ma/commit/0c021c27de7d0b1414492b53401224a82dc1cce0))
+
+
+### Features
+
+* Reload sACN config ([d166035](https://github.com/schw4rzlicht/twitch2ma/commit/d166035a89adbe70c25c4ff75495570d7c014709))
+
 ## [1.14.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.2...v1.14.3) (2020-06-17)
 
 
