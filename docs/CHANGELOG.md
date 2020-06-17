@@ -1,3 +1,10 @@
+## [1.14.4](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.3...v1.14.4) (2020-06-17)
+
+
+### Bug Fixes
+
+* Add missing production dependency strip-ansi ([70ac395](https://github.com/schw4rzlicht/twitch2ma/commit/70ac3957f52d4914bcbb4578c6639448a5939505))
+
 ## [1.14.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.2...v1.14.3) (2020-06-17)
 
 
