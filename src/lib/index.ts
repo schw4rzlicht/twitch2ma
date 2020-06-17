@@ -5,6 +5,7 @@ import {Config, ConfigError} from "./Config";
 import {CommandSocket, SocketError} from "./CommandSocket";
 import {Logger} from "./Logger";
 import sentry from "./sentry";
+import axios from "axios";
 
 import Fs = require("fs");
 import YAML = require("yaml");
@@ -25,9 +26,8 @@ export async function main() {
 
     process.on("SIGINT", () => exit(0));
 
-    return require("libnpm")
-        .manifest(`${packageInformation.name}@latest`)
-        .then(notifyUpdate)
+    axios.get("https://registry.npmjs.org/twitch2ma")
+        .then(response => notifyUpdate(response.data["dist-tags"].latest))
         .catch((error: Error) => sentry(error, () => logger.warning("Could not get update information!")))
         .then(init);
 }
@@ -140,10 +140,10 @@ function openCommandSocket() {
     return commandSocket.start();
 }
 
-export function notifyUpdate(manifest: any) {
-    if (semverGt(manifest.version, packageInformation.version)) {
+export function notifyUpdate(latestVersion: string) {
+    if (semverGt(latestVersion, packageInformation.version)) {
         console.log(chalk`🔔 {blue A new version of ${packageInformation.name} is available!} ` +
-            chalk`{blue (current: {bold ${packageInformation.version}}, new: {bold ${manifest.version}})}`);
+            chalk`{blue (current: {bold ${packageInformation.version}}, new: {bold ${latestVersion}})}`);
     }
 }
 
@@ -227,7 +227,7 @@ async function exit(statusCode: number) {
         .then(() => console.log(chalk`\n{bold Thank you for using twitch2ma} ❤️`))
         .then(() => logger.end())
         .then(() => {
-            if(commandSocket) {
+            if (commandSocket) {
                 commandSocket.stop();
             }
         })

@@ -20,7 +20,7 @@ test("Update notification", () => {
 
     let consoleSpy = jest.spyOn(console, "log").mockImplementationOnce(() => {});
 
-    index.notifyUpdate({version: higherVersion});
+    index.notifyUpdate(higherVersion);
 
     expect(consoleSpy).toBeCalledWith(
         expect.stringMatching("A new version of \\w+ is available!"));
