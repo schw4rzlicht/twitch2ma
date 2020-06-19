@@ -67,7 +67,7 @@ export default class SACNPermission extends EventEmitter implements PermissionIn
                 this.sACNReceiver = new Receiver(receiverOptions);
 
                 this.sACNReceiver.on("packet", (packet: Packet) => {
-                    this.universes[packet.universe].data = packet.payloadAsRawArray;
+                    this.universes[packet.universe].data = [...packet.payloadAsBuffer];
                 });
 
                 this.sACNReceiver.on("PacketCorruption", error => {
