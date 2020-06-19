@@ -1,3 +1,10 @@
+# [1.15.0-rc.2](https://github.com/schw4rzlicht/twitch2ma/compare/v1.15.0-rc.1...v1.15.0-rc.2) (2020-06-19)
+
+
+### Bug Fixes
+
+* drop-in replacement for node-sacn ([4999b7f](https://github.com/schw4rzlicht/twitch2ma/commit/4999b7f8d8faea4132fde104d6e9663a9de99d63))
+
 # [1.15.0-rc.1](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.3...v1.15.0-rc.1) (2020-06-17)
 
 
