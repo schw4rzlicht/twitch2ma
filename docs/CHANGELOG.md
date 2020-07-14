@@ -1,3 +1,15 @@
+# [1.15.0](https://github.com/schw4rzlicht/twitch2ma/compare/v1.14.4...v1.15.0) (2020-07-14)
+
+
+### Bug Fixes
+
+* drop-in replacement for node-sacn ([4999b7f](https://github.com/schw4rzlicht/twitch2ma/commit/4999b7f8d8faea4132fde104d6e9663a9de99d63))
+* Reload sACNReceiver on config reload ([0c021c2](https://github.com/schw4rzlicht/twitch2ma/commit/0c021c27de7d0b1414492b53401224a82dc1cce0))
+
+
+### Features
+
+* Reload sACN config ([d166035](https://github.com/schw4rzlicht/twitch2ma/commit/d166035a89adbe70c25c4ff75495570d7c014709))
 
 # [1.15.0-rc.3](https://github.com/schw4rzlicht/twitch2ma/compare/v1.15.0-rc.2...v1.15.0-rc.3) (2020-06-19)
 
