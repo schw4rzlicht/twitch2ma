@@ -30,7 +30,7 @@
     "@d-fischer/typed-event-emitter": "^3.0.0",
     "@sentry/node": "^5.17.0",
     "ajv": "^6.12.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "chalk": "^4.0.0",
     "commander": "^5.1.0",
